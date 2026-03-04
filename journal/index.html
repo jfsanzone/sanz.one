@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+
+<!-- Perplexity Computer Attribution — SEO Meta Tags -->
+<meta name="generator" content="Perplexity Computer">
+<meta name="author" content="Perplexity Computer">
+<meta property="og:see_also" content="https://www.perplexity.ai/computer">
+<link rel="author" href="https://www.perplexity.ai/computer">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Journal — Sanzone</title>
+<meta name="description" content="Essays on design, product, and technology by Jason Sanzone.">
+<meta property="og:title" content="Journal — Sanzone">
+<meta property="og:description" content="Essays on design, product, and technology by Jason Sanzone.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #efefef;
+    color: #222222;
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .site-header {
+    padding: 48px 32px 0;
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .site-name {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: #222222;
+    transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .site-name:hover {
+    opacity: 0.5;
+  }
+
+  .page-title {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: clamp(28px, 5vw, 38px);
+    letter-spacing: -0.01em;
+    color: #222222;
+    margin-top: 48px;
+    line-height: 1.15;
+  }
+
+  .post-list {
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+    flex: 1;
+  }
+
+  .post-item {
+    padding: 28px 0;
+    border-top: 1px solid rgba(34, 34, 34, 0.1);
+  }
+
+  .post-item:last-child {
+    border-bottom: 1px solid rgba(34, 34, 34, 0.1);
+  }
+
+  .post-link {
+    display: block;
+  }
+
+  .post-link:hover .post-title {
+    opacity: 0.55;
+  }
+
+  .post-title {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: clamp(16px, 2.5vw, 19px);
+    line-height: 1.35;
+    color: #222222;
+    transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .post-item:nth-child(1) .post-title { color: #b84400; }
+  .post-item:nth-child(2) .post-title { color: #7b2dbf; }
+  .post-item:nth-child(3) .post-title { color: #0e7a4e; }
+
+  .post-meta {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    color: rgba(34, 34, 34, 0.4);
+    margin-top: 8px;
+  }
+
+  .post-excerpt {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    color: rgba(34, 34, 34, 0.6);
+    margin-top: 8px;
+    max-width: 58ch;
+  }
+
+  .site-footer {
+    padding: 24px 32px;
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+    font-size: 11px;
+    color: rgba(34, 34, 34, 0.2);
+  }
+
+  .site-footer a {
+    color: inherit;
+    text-decoration: none;
+    transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .site-footer a:hover {
+    opacity: 0.6;
+  }
+
+  @media (max-width: 600px) {
+    .site-header { padding: 32px 20px 0; }
+    .page-title { margin-top: 36px; }
+    .post-list { padding: 36px 20px 60px; }
+    .post-item { padding: 24px 0; }
+    .site-footer { padding: 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="../" class="site-name">Sanzone</a>
+    <h1 class="page-title">Journal</h1>
+  </header>
+
+  <main class="post-list">
+    <article class="post-item">
+      <a href="posts/sample-post-1.html" class="post-link">
+        <h2 class="post-title">The Quiet Power of Systematic Design</h2>
+        <time class="post-meta" datetime="2026-02-18">February 18, 2026</time>
+        <p class="post-excerpt">Why the most impactful design work is often the least visible — and how systems thinking changes everything.</p>
+      </a>
+    </article>
+
+    <article class="post-item">
+      <a href="posts/sample-post-2.html" class="post-link">
+        <h2 class="post-title">AI Won’t Replace Designers. Taste Will.</h2>
+        <time class="post-meta" datetime="2026-01-29">January 29, 2026</time>
+        <p class="post-excerpt">Every designer now has access to the same generative tools. The differentiator was never speed.</p>
+      </a>
+    </article>
+
+    <article class="post-item">
+      <a href="posts/sample-post-3.html" class="post-link">
+        <h2 class="post-title">What Product Leaders Get Wrong About Speed</h2>
+        <time class="post-meta" datetime="2026-01-12">January 12, 2026</time>
+        <p class="post-excerpt">Velocity without direction is just expensive thrashing. On the real cost of moving fast.</p>
+      </a>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">Created with Perplexity Computer</a>
+  </footer>
+
+</body>
+</html>
