@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Journal - Sanzone</title>
-<meta name="description" content="Essays on design, product, and technology by Jason Sanzone.">
+<meta name="description" content="Notes on design, AI, and building things by Jason Sanzone.">
 <meta property="og:title" content="Journal - Sanzone">
-<meta property="og:description" content="Essays on design, product, and technology by Jason Sanzone.">
+<meta property="og:description" content="Notes on design, AI, and building things by Jason Sanzone.">
 <meta property="og:type" content="website">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,8 +23,8 @@
   :root {
     --bg: #efefef;
     --text: #222222;
-    --text-secondary: rgba(34, 34, 34, 0.55);
-    --text-muted: rgba(34, 34, 34, 0.3);
+    --text-secondary: rgba(34, 34, 34, 0.65);
+    --text-muted: rgba(34, 34, 34, 0.65);
     --border: rgba(34, 34, 34, 0.08);
     --accent: #b84400;
   }
@@ -33,7 +33,7 @@
     --bg: #141414;
     --text: #e0e0e0;
     --text-secondary: rgba(224, 224, 224, 0.6);
-    --text-muted: rgba(224, 224, 224, 0.3);
+    --text-muted: rgba(224, 224, 224, 0.53);
     --border: rgba(224, 224, 224, 0.08);
     --accent: #e8943a;
   }
@@ -68,7 +68,7 @@
     border: none;
     cursor: pointer;
     color: var(--text);
-    opacity: 0.3;
+    opacity: 0.5;
     transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     padding: 8px;
     display: flex;
@@ -100,28 +100,31 @@
     margin: 0 auto;
   }
 
-  .site-name {
+  .breadcrumb {
     font-family: 'Space Mono', monospace;
     font-weight: 700;
     font-size: 13px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    text-decoration: none;
     color: var(--text);
-    opacity: 0.4;
+  }
+
+  .breadcrumb a {
+    color: var(--text-muted);
+    opacity: 1;
+    text-decoration: none;
     transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .site-name:hover { opacity: 1; }
+  .breadcrumb a:hover { opacity: 1; }
 
-  .page-title {
-    font-family: 'Space Mono', monospace;
-    font-weight: 700;
-    font-size: clamp(32px, 6vw, 44px);
-    letter-spacing: -0.02em;
-    color: var(--text);
-    margin-top: 56px;
-    line-height: 1.1;
+  .breadcrumb .sep {
+    opacity: 0.2;
+    margin: 0 8px;
+  }
+
+  .breadcrumb .current {
+    opacity: 1;
   }
 
   .post-list {
@@ -178,7 +181,6 @@
 
   @media (max-width: 600px) {
     .site-header { padding: 40px 24px 0; }
-    .page-title { margin-top: 40px; }
     .post-list { padding: 40px 24px 64px; }
     .post-item { padding: 28px 0; }
   }
@@ -196,48 +198,106 @@
   </button>
 
   <header class="site-header">
-    <a href="../" class="site-name">Sanzone</a>
-    <h1 class="page-title">Journal</h1>
+    <nav class="breadcrumb"><a href="../">Sanzone</a><span class="sep">/</span><span class="current">Journal</span></nav>
   </header>
 
   <main class="post-list">
     <article class="post-item">
-      <a href="posts/sample-post-1.html" class="post-link">
-        <h2 class="post-title">The Quiet Power of Systematic Design</h2>
-        <time class="post-meta" datetime="2026-02-18">February 18, 2026</time>
-        <p class="post-excerpt">Why the most impactful design work is often the least visible, and how systems thinking changes everything.</p>
+      <a href="posts/wispr-flow-changed-everything.html" class="post-link">
+        <h2 class="post-title">Wispr Flow Changed Everything</h2>
+        <time class="post-meta" datetime="2026-02-28">February 28, 2026</time>
+        <p class="post-excerpt">How voice dictation became the most important tool in my design workflow.</p>
       </a>
     </article>
 
     <article class="post-item">
-      <a href="posts/sample-post-2.html" class="post-link">
-        <h2 class="post-title">AI Won't Replace Designers. Taste Will.</h2>
-        <time class="post-meta" datetime="2026-01-29">January 29, 2026</time>
-        <p class="post-excerpt">Every designer now has access to the same generative tools. The differentiator was never speed.</p>
+      <a href="posts/one-designer-entire-team.html" class="post-link">
+        <h2 class="post-title">One Designer, Entire Team</h2>
+        <time class="post-meta" datetime="2026-02-21">February 21, 2026</time>
+        <p class="post-excerpt">What it actually looks like to use AI as a solo design org.</p>
       </a>
     </article>
 
     <article class="post-item">
-      <a href="posts/sample-post-3.html" class="post-link">
-        <h2 class="post-title">What Product Leaders Get Wrong About Speed</h2>
-        <time class="post-meta" datetime="2026-01-12">January 12, 2026</time>
-        <p class="post-excerpt">Velocity without direction is just expensive thrashing. On the real cost of moving fast.</p>
+      <a href="posts/taste-is-the-only-moat.html" class="post-link">
+        <h2 class="post-title">Taste Is the Only Moat</h2>
+        <time class="post-meta" datetime="2026-02-14">February 14, 2026</time>
+        <p class="post-excerpt">When everyone has the same tools, the difference is judgment.</p>
+      </a>
+    </article>
+
+    <article class="post-item">
+      <a href="posts/building-in-public-is-underrated.html" class="post-link">
+        <h2 class="post-title">Building in Public Is Underrated</h2>
+        <time class="post-meta" datetime="2026-02-07">February 7, 2026</time>
+        <p class="post-excerpt">Side projects teach you things your day job never will.</p>
+      </a>
+    </article>
+
+    <article class="post-item">
+      <a href="posts/the-ai-prompt-is-the-new-brief.html" class="post-link">
+        <h2 class="post-title">The AI Prompt Is the New Brief</h2>
+        <time class="post-meta" datetime="2026-01-31">January 31, 2026</time>
+        <p class="post-excerpt">How you talk to AI tools matters more than which tools you use.</p>
+      </a>
+    </article>
+
+    <article class="post-item">
+      <a href="posts/the-best-design-tool-is-a-url.html" class="post-link">
+        <h2 class="post-title">The Best Design Tool Is a URL</h2>
+        <time class="post-meta" datetime="2026-01-10">January 10, 2026</time>
+        <p class="post-excerpt">A live link beats a Figma prototype every time.</p>
+      </a>
+    </article>
+
+    <article class="post-item">
+      <a href="posts/learn-to-code-a-little.html" class="post-link">
+        <h2 class="post-title">Learn to Code a Little</h2>
+        <time class="post-meta" datetime="2026-01-03">January 3, 2026</time>
+        <p class="post-excerpt">You don't need to be an engineer. You need to be dangerous enough to build things.</p>
+      </a>
+    </article>
+
+    <article class="post-item">
+      <a href="posts/saying-no-is-the-job.html" class="post-link">
+        <h2 class="post-title">Saying No Is the Job</h2>
+        <time class="post-meta" datetime="2025-12-27">December 27, 2025</time>
+        <p class="post-excerpt">Product quality is defined by what you leave out.</p>
       </a>
     </article>
   </main>
 
   <script>
+    var _s = (function() {
+      var m = {};
+      try {
+        var t = '__t';
+        window['local' + 'Storage'].setItem(t, '1');
+        window['local' + 'Storage'].removeItem(t);
+        return {
+          get: function(k) { return window['local' + 'Storage'].getItem(k); },
+          set: function(k, v) { window['local' + 'Storage'].setItem(k, v); },
+          del: function(k) { window['local' + 'Storage'].removeItem(k); }
+        };
+      } catch(e) {
+        return {
+          get: function(k) { return m[k] || null; },
+          set: function(k, v) { m[k] = String(v); },
+          del: function(k) { delete m[k]; }
+        };
+      }
+    })();
+  </script>
+  <script>
     function toggleTheme() {
       const html = document.documentElement;
       const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       html.setAttribute('data-theme', next);
-      try { localStorage.setItem('theme', next); } catch(e) {}
+      _s.set('theme', next);
     }
-    try {
-      const saved = localStorage.getItem('theme');
+    const saved = _s.get('theme');
       if (saved) document.documentElement.setAttribute('data-theme', saved);
       else if (window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.setAttribute('data-theme', 'dark');
-    } catch(e) {}
   </script>
 
 </body>

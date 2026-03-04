@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Designer, Entire Team - Sanzone</title>
+<meta name="description" content="What it actually looks like to use AI as a solo design org.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --bg: #efefef;
+    --text: #222222;
+    --text-body: rgba(34, 34, 34, 0.78);
+    --text-muted: rgba(34, 34, 34, 0.65);
+    --accent: #b84400;
+  }
+
+  [data-theme="dark"] {
+    --bg: #141414;
+    --text: #e0e0e0;
+    --text-body: rgba(224, 224, 224, 0.78);
+    --text-muted: rgba(224, 224, 224, 0.53);
+    --accent: #e8943a;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-size: 17px;
+    line-height: 1.65;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    opacity: 0.5;
+    transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .theme-toggle:hover { opacity: 1; }
+
+  .theme-toggle svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .icon-sun { display: none; }
+  .icon-moon { display: block; }
+  [data-theme="dark"] .icon-sun { display: block; }
+  [data-theme="dark"] .icon-moon { display: none; }
+
+  .post-header {
+    padding: 56px 32px 0;
+    max-width: 680px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .breadcrumb {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .breadcrumb a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .breadcrumb a:hover {
+    color: var(--text);
+  }
+
+  .breadcrumb .sep {
+    margin: 0 6px;
+  }
+
+  .post-title {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: clamp(20px, 4vw, 28px);
+    line-height: 1.25;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-top: 56px;
+  }
+
+  .post-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 20px;
+  }
+
+  .post-body {
+    max-width: 680px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 48px 32px 96px;
+    flex: 1;
+  }
+
+  .post-body p {
+    max-width: 60ch;
+    margin-bottom: 1.6em;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--text-body);
+  }
+
+  .post-body p:last-child {
+    margin-bottom: 0;
+  }
+
+  .post-image {
+    width: 100%;
+    margin: 40px 0 8px;
+    border-radius: 6px;
+    display: block;
+  }
+
+  .post-image-caption {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+  }
+
+  @media (max-width: 600px) {
+    .post-header { padding: 40px 24px 0; }
+    .post-title { margin-top: 40px; }
+    .post-body { padding: 36px 24px 64px; }
+    .post-body p { font-size: 16px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+  <button class="theme-toggle" aria-label="Toggle dark mode" onclick="toggleTheme()">
+    <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+    <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+  </button>
+
+  <header class="post-header">
+    <nav class="breadcrumb"><a href="../../">Sanzone</a><span class="sep">/</span><a href="../">Journal</a></nav>
+    <h1 class="post-title">One Designer, Entire Team</h1>
+    <time class="post-date" datetime="2026-02-21">February 21, 2026</time>
+  </header>
+
+  <article class="post-body">
+    <p>People ask me how I handle design for the whole org by myself. The honest answer is that I don't, not really. I have help. It's just not human help.</p>
+<p>On any given day I might use AI to generate initial layout concepts, write product copy, build a working prototype, research competitors, or draft a presentation. Things that would've taken a team of four a week, I can get a working version of in a day. It's not the same as having a team. But it's closer than most people think.</p>
+    <p>The trick isn't using AI for everything. It's knowing where it's good and where it's not. AI is great at first drafts, research, and grunt work. It's bad at taste, prioritization, and knowing when something feels off even though it technically checks every box. That's still my job. I'm the editor, the creative director, and the quality bar, all in one.</p>
+    <p>It's a weird way to work. But honestly, I kind of love it. There's no waiting for approvals, no design-by-committee, no "can we see three more options." Just me, a clear problem, and every tool I need to solve it fast.</p>
+  </article>
+
+  <script>
+    var _s = (function() {
+      var m = {};
+      try {
+        var t = '__t';
+        window['local' + 'Storage'].setItem(t, '1');
+        window['local' + 'Storage'].removeItem(t);
+        return {
+          get: function(k) { return window['local' + 'Storage'].getItem(k); },
+          set: function(k, v) { window['local' + 'Storage'].setItem(k, v); },
+          del: function(k) { window['local' + 'Storage'].removeItem(k); }
+        };
+      } catch(e) {
+        return {
+          get: function(k) { return m[k] || null; },
+          set: function(k, v) { m[k] = String(v); },
+          del: function(k) { delete m[k]; }
+        };
+      }
+    })();
+  </script>
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      _s.set('theme', next);
+    }
+    const saved = _s.get('theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+      else if (window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.setAttribute('data-theme', 'dark');
+  </script>
+
+</body>
+</html>
