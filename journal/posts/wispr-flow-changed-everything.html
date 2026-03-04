@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +10,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
 
+<script>
+(function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.setAttribute('data-theme',t)}else if(window.matchMedia('(prefers-color-scheme:dark)').matches){document.documentElement.setAttribute('data-theme','dark')}else{document.documentElement.setAttribute('data-theme','light')}}catch(e){document.documentElement.setAttribute('data-theme','light')}})();
+</script>
 <style>
   *, *::before, *::after {
     margin: 0;
@@ -208,36 +211,13 @@
   </article>
 
   <script>
-    var _s = (function() {
-      var m = {};
-      try {
-        var t = '__t';
-        window['local' + 'Storage'].setItem(t, '1');
-        window['local' + 'Storage'].removeItem(t);
-        return {
-          get: function(k) { return window['local' + 'Storage'].getItem(k); },
-          set: function(k, v) { window['local' + 'Storage'].setItem(k, v); },
-          del: function(k) { window['local' + 'Storage'].removeItem(k); }
-        };
-      } catch(e) {
-        return {
-          get: function(k) { return m[k] || null; },
-          set: function(k, v) { m[k] = String(v); },
-          del: function(k) { delete m[k]; }
-        };
-      }
-    })();
-  </script>
-  <script>
     function toggleTheme() {
       const html = document.documentElement;
       const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       html.setAttribute('data-theme', next);
-      _s.set('theme', next);
+      try{localStorage.setItem('theme',next)}catch(e){}
     }
-    const saved = _s.get('theme');
-      if (saved) document.documentElement.setAttribute('data-theme', saved);
-      else if (window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.setAttribute('data-theme', 'dark');
+    // Theme already set by blocking head script
   </script>
 
 </body>
