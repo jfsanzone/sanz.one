@@ -161,6 +161,18 @@
     margin-bottom: 0;
   }
 
+  .post-body a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    transition: color 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .post-body a:hover {
+    color: var(--text);
+  }
+
   @media (max-width: 600px) {
     .post-header { padding: 40px 24px 0; }
     .post-title { margin-top: 40px; }
@@ -187,9 +199,10 @@
   </header>
 
   <article class="post-body">
-    <p>I built a whole product database app recently. Not for work. Just because I wanted it to exist. It catalogs gear I'm into, has filtering, comparison tools, an admin panel. The whole thing.</p>
-    <p>Building it taught me more about product design than the last year of my actual job. When you're responsible for everything, design, data, deployment, infrastructure, you see the full picture in a way that's impossible when you're only touching one layer. You feel the pain of a bad data model. You understand why that loading state matters. You learn that the hard part is almost never the pixels.</p>
-    <p>I think every designer should build something real at least once. Not a Figma prototype. A real thing that real people can use and break. It changes the way you think about your work. You stop designing screens and start designing systems that have to survive contact with reality.</p>
+    <p>I think every designer should build something real at least once. Not a Figma prototype. A real thing that real people can use and break. It changes how you think about your work. You stop designing screens and start designing systems that have to survive contact with reality.</p>
+    <p>AI made this possible in a way it wasn't before. Designers can actually build functioning apps now, not just mock them up. The gap between "I designed this" and "I shipped this" is basically gone if you're willing to sit with the tools and figure it out.</p>
+    <p>When you're responsible for everything, design, structure, deployment, infrastructure, you feel it all. You understand why that loading state matters. You learn where things actually break. Your day job doesn't teach you that. Building the whole thing does. I recently built a searchable gear database just for fun (<a href="https://carrydex.com">CarryDex</a>) and it reinforced all of this.</p>
+    <p>Side projects don't need to be startups. They don't need a pitch deck or a monetization strategy. Sometimes the best reason to build something is that you're curious whether you can.</p>
   </article>
 
   <script>
