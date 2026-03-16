@@ -1,18 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The AI Prompt Is the New Brief - Sanzone</title>
-<meta name="description" content="How you talk to AI tools matters more than which tools you use.">
+<title>AI Won't Replace Designers. Taste Will. - Sanzone</title>
+<meta name="description" content="Every designer now has access to the same generative tools. The differentiator was never speed.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
 
-<script>
-(function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.setAttribute('data-theme',t)}else if(window.matchMedia('(prefers-color-scheme:dark)').matches){document.documentElement.setAttribute('data-theme','dark')}else{document.documentElement.setAttribute('data-theme','light')}}catch(e){document.documentElement.setAttribute('data-theme','light')}})();
-</script>
 <style>
   *, *::before, *::after {
     margin: 0;
@@ -24,7 +21,7 @@
     --bg: #efefef;
     --text: #222222;
     --text-body: rgba(34, 34, 34, 0.78);
-    --text-muted: rgba(34, 34, 34, 0.65);
+    --text-muted: rgba(34, 34, 34, 0.3);
     --accent: #b84400;
   }
 
@@ -32,7 +29,7 @@
     --bg: #141414;
     --text: #e0e0e0;
     --text-body: rgba(224, 224, 224, 0.78);
-    --text-muted: rgba(224, 224, 224, 0.53);
+    --text-muted: rgba(224, 224, 224, 0.3);
     --accent: #e8943a;
   }
 
@@ -66,7 +63,7 @@
     border: none;
     cursor: pointer;
     color: var(--text);
-    opacity: 0.5;
+    opacity: 0.3;
     transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     padding: 8px;
     display: flex;
@@ -98,26 +95,18 @@
     margin: 0 auto;
   }
 
-  .breadcrumb {
+  .back-link {
     font-family: 'Space Mono', monospace;
     font-size: 12px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--text-muted);
-  }
-
-  .breadcrumb a {
-    color: var(--text-muted);
     text-decoration: none;
     transition: color 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .breadcrumb a:hover {
+  .back-link:hover {
     color: var(--text);
-  }
-
-  .breadcrumb .sep {
-    margin: 0 6px;
   }
 
   .post-title {
@@ -163,7 +152,7 @@
 
   @media (max-width: 600px) {
     .post-header { padding: 40px 24px 0; }
-    .post-title { margin-top: 40px; }
+    .post-title { margin-top: 40px; max-width: none; }
     .post-body { padding: 36px 24px 64px; }
     .post-body p { font-size: 16px; }
   }
@@ -181,15 +170,15 @@
   </button>
 
   <header class="post-header">
-    <nav class="breadcrumb"><a href="../../">Sanzone</a><span class="sep">/</span><a href="../">Journal</a></nav>
-    <h1 class="post-title">The AI Prompt Is the New Brief</h1>
-    <time class="post-date" datetime="2026-02-09">February 9, 2026</time>
+    <a href="../" class="back-link">&larr; Journal</a>
+    <h1 class="post-title">AI Won't Replace Designers. Taste Will.</h1>
+    <time class="post-date" datetime="2026-01-29">January 29, 2026</time>
   </header>
 
   <article class="post-body">
-    <p>I spend a weird amount of my day writing prompts. Not code, not copy, not design specs. Prompts. Instructions for AI tools that generate the first draft of whatever I need. And I've realized that writing a good prompt is basically the same skill as writing a good creative brief.</p>
-    <p>A vague brief gets you vague work. Same with prompts. "Make me a landing page" gets you something generic. But "I need a landing page for a solo design practice. Minimal, monospace headings, no gradients, dark mode. The tone should feel confident but not corporate." That gets you somewhere useful.</p>
-    <p>The designers who are going to thrive with AI aren't the ones who learn the most tools. They're the ones who can clearly articulate what they want and why. That's always been the core skill of design leadership. The medium just changed.</p>
+    <p>Here's what happened when generative AI tools became good enough to produce passable UI in seconds: everyone got access to the same median. Midjourney renders the same lush gradients for every prompt. ChatGPT scaffolds the same card-based layouts for every brief. The tools are extraordinary, and they've made the average dramatically better. But they've also made the average dramatically more common.</p>
+    <p>The designers who thrive in this landscape aren't the ones who prompt fastest. They're the ones who can look at four AI-generated options and know, immediately, why three of them are wrong, and articulate exactly what's missing from the fourth. That instinct isn't prompt engineering. It's taste. It's the accumulated residue of a thousand deliberate decisions about type, space, rhythm, and restraint. You can't generate taste. You develop it, slowly, by caring about things most people don't notice.</p>
+    <p>I've watched junior designers produce stunning mockups in minutes with generative tools, then struggle to explain why the layout breaks on mobile or why the hierarchy falls apart when real content replaces placeholder text. The tool did the rendering. But rendering was never the hard part. The hard part is knowing what to render, and more importantly, what to leave out. AI is a powerful instrument. But an instrument without judgment is just noise.</p>
   </article>
 
   <script>
@@ -197,9 +186,13 @@
       const html = document.documentElement;
       const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       html.setAttribute('data-theme', next);
-      try{localStorage.setItem('theme',next)}catch(e){}
+      try { localStorage.setItem('theme', next); } catch(e) {}
     }
-    // Theme already set by blocking head script
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+      else if (window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.setAttribute('data-theme', 'dark');
+    } catch(e) {}
   </script>
 
 </body>

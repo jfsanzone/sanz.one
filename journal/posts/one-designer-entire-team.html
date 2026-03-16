@@ -1,174 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>One Designer, Entire Team - Sanzone</title>
-  <meta name="description" content="What it actually looks like to use AI as a solo design org.">
-  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700&display=swap" rel="stylesheet">
-  <script>
-    (function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.setAttribute('data-theme',t)}else{document.documentElement.setAttribute('data-theme','dark')}}catch(e){document.documentElement.setAttribute('data-theme','dark')}})();
-  </script>
-  <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Designer, Entire Team - Sanzone</title>
+<meta name="description" content="What it actually looks like to use AI as a solo design org.">
 
-    :root {
-      --font-body: 'Satoshi', -apple-system, system-ui, sans-serif;
-    }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
 
-    [data-theme="dark"] {
-      --bg: #0B1D22;
-      --text: #C8C8C8;
-      --text-body: rgba(200, 200, 200, 0.82);
-      --text-muted: #6B7F85;
-      --text-faint: #3D5A62;
-      --accent: #E5512A;
-      --accent-hover: #F06A47;
-      --teal: #3D6B73;
-      --border: #1A3038;
-    }
+<script>
+(function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.setAttribute('data-theme',t)}else if(window.matchMedia('(prefers-color-scheme:dark)').matches){document.documentElement.setAttribute('data-theme','dark')}else{document.documentElement.setAttribute('data-theme','light')}}catch(e){document.documentElement.setAttribute('data-theme','light')}})();
+</script>
+<style>
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-    [data-theme="light"] {
-      --bg: #F2F0EC;
-      --text: #1A2A2F;
-      --text-body: rgba(26, 42, 47, 0.82);
-      --text-muted: #6B7A7F;
-      --text-faint: #A0AEAD;
-      --accent: #D94420;
-      --accent-hover: #C03A1A;
-      --teal: #3D6B73;
-      --border: #D4D0CA;
-    }
+  :root {
+    --bg: #efefef;
+    --text: #222222;
+    --text-body: rgba(34, 34, 34, 0.78);
+    --text-muted: rgba(34, 34, 34, 0.65);
+    --accent: #b84400;
+  }
 
-    html {
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
+  [data-theme="dark"] {
+    --bg: #141414;
+    --text: #e0e0e0;
+    --text-body: rgba(224, 224, 224, 0.78);
+    --text-muted: rgba(224, 224, 224, 0.53);
+    --accent: #e8943a;
+  }
 
-    body {
-      font-family: var(--font-body);
-      font-size: 17px;
-      line-height: 1.65;
-      background-color: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      transition: background-color 0.4s ease, color 0.4s ease;
-    }
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-    a { color: inherit; text-decoration: none; }
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-size: 17px;
+    line-height: 1.65;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
 
-    .theme-toggle {
-      position: fixed;
-      top: 24px;
-      right: 24px;
-      z-index: 100;
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--text-faint);
-      padding: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: color 0.3s ease;
-    }
-    .theme-toggle:hover { color: var(--text-muted); }
-    .theme-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-    .icon-sun { display: none; }
-    .icon-moon { display: block; }
-    [data-theme="dark"] .icon-sun { display: block; }
-    [data-theme="dark"] .icon-moon { display: none; }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 
-    .post-header {
-      padding: 56px 32px 0;
-      max-width: 680px;
-      width: 100%;
-      margin: 0 auto;
-    }
+  .theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    opacity: 0.5;
+    transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-    .breadcrumb {
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
+  .theme-toggle:hover { opacity: 1; }
 
-    .breadcrumb a {
-      color: var(--text-muted);
-      transition: color 0.2s ease;
-    }
-    .breadcrumb a:hover { color: var(--text); }
+  .theme-toggle svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
 
-    .breadcrumb .sep {
-      margin: 0 6px;
-      color: var(--text-faint);
-    }
+  .icon-sun { display: none; }
+  .icon-moon { display: block; }
+  [data-theme="dark"] .icon-sun { display: block; }
+  [data-theme="dark"] .icon-moon { display: none; }
 
-    .post-title {
-      font-family: var(--font-body);
-      font-weight: 700;
-      font-size: clamp(20px, 4vw, 28px);
-      line-height: 1.25;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-      color: var(--text);
-      margin-top: 56px;
-    }
+  .post-header {
+    padding: 56px 32px 0;
+    max-width: 680px;
+    width: 100%;
+    margin: 0 auto;
+  }
 
-    .post-date {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-top: 20px;
-    }
+  .breadcrumb {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
 
-    .post-body {
-      max-width: 680px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 48px 32px 96px;
-      flex: 1;
-    }
+  .breadcrumb a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
 
-    .post-body p {
-      max-width: 60ch;
-      margin-bottom: 1.6em;
-      font-size: 17px;
-      line-height: 1.75;
-      color: var(--text-body);
-    }
+  .breadcrumb a:hover {
+    color: var(--text);
+  }
 
-    .post-body p:last-child {
-      margin-bottom: 0;
-    }
+  .breadcrumb .sep {
+    margin: 0 6px;
+  }
 
-    .post-body img {
-      display: block;
-      max-width: 100%;
-      height: auto;
-      margin: 2em 0;
-      border-radius: 4px;
-    }
+  .post-title {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: clamp(20px, 4vw, 28px);
+    line-height: 1.25;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-top: 56px;
+  }
 
-    @media (max-width: 600px) {
-      .post-header { padding: 40px 24px 0; }
-      .post-title { margin-top: 40px; }
-      .post-body { padding: 36px 24px 64px; }
-      .post-body p { font-size: 16px; }
-      .theme-toggle { top: 16px; right: 16px; }
-    }
+  .post-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 20px;
+  }
 
-    @media (prefers-reduced-motion: reduce) {
-      * { transition-duration: 0.01ms !important; }
-    }
-  </style>
+  .post-body {
+    max-width: 680px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 48px 32px 96px;
+    flex: 1;
+  }
+
+  .post-body p {
+    max-width: 60ch;
+    margin-bottom: 1.6em;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--text-body);
+  }
+
+  .post-body p:last-child {
+    margin-bottom: 0;
+  }
+
+
+  .post-image {
+    width: 100%;
+    margin: 40px 0 8px;
+    border-radius: 6px;
+    display: block;
+  }
+
+  .post-image-caption {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+  }
+
+  @media (max-width: 600px) {
+    .post-header { padding: 40px 24px 0; }
+    .post-title { margin-top: 40px; }
+    .post-body { padding: 36px 24px 64px; }
+    .post-body p { font-size: 16px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: 0.01ms !important; }
+  }
+</style>
 </head>
 <body>
+
   <button class="theme-toggle" aria-label="Toggle dark mode" onclick="toggleTheme()">
     <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
     <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -192,8 +214,10 @@
       const html = document.documentElement;
       const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       html.setAttribute('data-theme', next);
-      try { localStorage.setItem('theme', next); } catch(e) {}
+      try{localStorage.setItem('theme',next)}catch(e){}
     }
+    // Theme already set by blocking head script
   </script>
+
 </body>
 </html>
