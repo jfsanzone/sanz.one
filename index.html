@@ -81,37 +81,42 @@
 
   /* ---- Header ---- */
   .site-header {
-    padding-top: 72px;
-    padding-bottom: 64px;
+    padding-top: 64px;
+    padding-bottom: 48px;
     animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
+  /* Tier 1: Identity row — name + toggle */
   .header-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin-bottom: 10px;
   }
 
   .wordmark-link {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     text-decoration: none;
   }
 
+  /* Icon matches social icon size exactly */
   .wordmark-icon {
-    width: 14px;
-    height: 14px;
+    width: 17px;
+    height: 17px;
     color: var(--text-muted);
     flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
     transition: color 0.18s ease;
   }
 
   .wordmark-text {
     font-family: 'Space Mono', monospace;
     font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 0.1em;
+    font-size: clamp(18px, 3vw, 24px);
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text);
     line-height: 1;
@@ -143,8 +148,8 @@
   }
 
   .theme-toggle svg {
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
     stroke: currentColor;
     fill: none;
     stroke-width: 2;
@@ -152,22 +157,23 @@
     stroke-linejoin: round;
   }
 
+  /* Tier 2: Role tagline — secondary, smaller, muted */
   .tagline {
-    font-family: 'Space Mono', monospace;
+    font-family: 'DM Sans', system-ui, sans-serif;
     font-weight: 400;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-top: 16px;
-    line-height: 1.6;
+    font-size: 14px;
+    letter-spacing: 0.01em;
+    color: var(--text-body);
+    margin-top: 6px;
+    line-height: 1.5;
   }
 
+  /* Tier 3: Social links — tertiary, tightest */
   .socials {
     display: flex;
     align-items: center;
     gap: 0;
-    margin-top: 20px;
+    margin-top: 14px;
     margin-left: -10px;
   }
 
@@ -191,7 +197,8 @@
 
   /* ---- Bio ---- */
   .bio {
-    padding-bottom: 52px;
+    padding-top: 0;
+    padding-bottom: 26px;
     border-bottom: 1px solid var(--border);
     animation: fadeUp 0.55s 0.07s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
@@ -319,7 +326,7 @@
   @media (max-width: 600px) {
     .page { padding: 0 24px; }
     .site-header { padding-top: 52px; padding-bottom: 48px; }
-    .bio { padding-bottom: 36px; }
+    .bio { padding-bottom: 18px; }
     .bio p { font-size: 16px; }
     .section { padding: 32px 0; }
     .site-footer { padding: 32px 0 52px; }
