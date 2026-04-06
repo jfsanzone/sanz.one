@@ -27,8 +27,6 @@
     --text-body: rgba(240, 240, 240, 0.72);
     --text-muted: rgba(240, 240, 240, 0.38);
     --border: rgba(240, 240, 240, 0.07);
-    --logo-filter: none; /* SVG is already near-white */
-    --toggle-icon: "☀";
   }
 
   /* Light mode */
@@ -38,8 +36,6 @@
     --text-body: rgba(17, 17, 17, 0.70);
     --text-muted: rgba(17, 17, 17, 0.38);
     --border: rgba(17, 17, 17, 0.08);
-    --logo-filter: invert(1); /* flip near-white SVG to near-black */
-    --toggle-icon: "◑";
   }
 
   html {
@@ -97,18 +93,32 @@
   }
 
   .wordmark-link {
-    display: inline-block;
-    line-height: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
   }
 
-  .wordmark-img {
-    height: clamp(24px, 3.5vw, 34px);
-    width: auto;
-    display: block;
-    filter: var(--logo-filter);
-    opacity: 0.92;
-    transition: filter 0.25s ease, opacity 0.25s ease;
+  .wordmark-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    transition: color 0.18s ease;
   }
+
+  .wordmark-text {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text);
+    line-height: 1;
+    transition: color 0.18s ease;
+  }
+
+  .wordmark-link:hover .wordmark-icon { color: var(--text); }
 
   /* Theme toggle button */
   .theme-toggle {
@@ -116,16 +126,14 @@
     border: 1px solid var(--border);
     color: var(--text-muted);
     cursor: pointer;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 6px 10px;
-    border-radius: 3px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 10px;
     transition: color 0.18s ease, border-color 0.18s ease, background-color 0.25s ease;
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
     flex-shrink: 0;
   }
 
@@ -333,7 +341,8 @@
     <header class="site-header">
       <div class="header-top">
         <a href="/" class="wordmark-link">
-          <img src="sanzone.svg" alt="Sanzone" class="wordmark-img">
+          <svg class="wordmark-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 7 8.7 2.7a2.41 2.41 0 0 0-3.4 0L2.7 5.3a2.41 2.41 0 0 0 0 3.4L7 13"/><path d="m8 6 2-2"/><path d="m18 16 2-2"/><path d="m17 11 4.3 4.3c.94.94.94 2.46 0 3.4l-2.6 2.6c-.94.94-2.46.94-3.4 0L11 17"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
+          <span class="wordmark-text">Sanzone</span>
         </a>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
           <!-- Sun icon (shown in dark mode) -->
