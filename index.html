@@ -200,24 +200,6 @@
     fill: currentColor;
   }
 
-  /* ---- Bio ---- */
-  .bio {
-    padding-top: 0;
-    padding-bottom: 26px;
-    border-bottom: 1px solid var(--border);
-    animation: fadeUp 0.55s 0.07s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  .bio p {
-    font-family: 'DM Sans', system-ui, sans-serif;
-    font-size: 17px;
-    line-height: 1.78;
-    color: var(--text-body);
-    max-width: 52ch;
-  }
-
-  .bio p + p { margin-top: 1.3em; }
-
   /* ---- Journal section ---- */
   .section {
     padding: 44px 0;
@@ -331,8 +313,6 @@
   @media (max-width: 600px) {
     .page { padding: 0 24px; }
     .site-header { padding-top: 52px; padding-bottom: 48px; }
-    .bio { padding-bottom: 18px; }
-    .bio p { font-size: 16px; }
     .section { padding: 32px 0; }
     .site-footer { padding: 32px 0 52px; }
     .post-link { flex-direction: column; gap: 4px; }
@@ -388,10 +368,6 @@
         </a>
       </nav>
     </header>
-
-    <section class="bio">
-      <p>Design leader focused on product, growth, and building with AI.</p>
-    </section>
 
     <section class="section">
       <p class="section-label">Journal</p>
