@@ -58,7 +58,7 @@
     transition: background-color 0.25s ease, color 0.25s ease;
   }
 
-  /* CRT shader canvas — fixed full-screen background */
+  /* Topo shader canvas — fixed full-screen background */
   #crt-canvas {
     position: fixed;
     inset: 0;
@@ -70,9 +70,9 @@
     transition: opacity 0.4s ease;
   }
 
-  /* Dim the shader in light mode so it doesn't fight the warm background */
+  /* Slightly more visible in light mode — topo lines read well on warm paper */
   [data-theme="light"] #crt-canvas {
-    opacity: 0.06;
+    opacity: 0.08;
   }
 
   /* Grain overlay on top of shader — keeps the existing texture */
@@ -391,7 +391,7 @@
 </head>
 <body>
 
-  <!-- CRT Bands WebGL shader canvas (background layer) -->
+  <!-- Topo Mesh WebGL shader canvas (background layer) -->
   <canvas id="crt-canvas" aria-hidden="true"></canvas>
 
   <div class="page">
@@ -522,11 +522,14 @@
       });
     })();
 
-    // ─── CRT Bands WebGL Shader ─────────────────────────────────────────────────
-    // Shader #04 from @stfnco — retro CRT scan lines, warm amber/red tones
-    // Parameters matched to the article's preset:
-    //   Colors: #0D0000, #1A0500, #2E0C00, #5C2000, #8B3A00, #C46000, #E8A020
-    //   Speed: 0.18 | Scale: 1.2 | Bands: 6 | Noise: Grain | Amount: 0.06
+    // ─── Topo Mesh WebGL Shader ──────────────────────────────────────────────────
+    // Shader #05 from @stfnco — topographic contour lines, minimal/editorial
+    // Mesh type: layered FBM noise contoured into iso-lines, seamlessly tiling.
+    // The key to seamless tiling: UV coords are computed from pixel position
+    // divided by a fixed world-space tile size (in pixels), then fract()'d so
+    // the noise domain wraps perfectly at tile boundaries regardless of viewport.
+    // Colors: near-black bg, single-weight off-white lines (dark mono palette)
+    // Speed: 0.06 (very slow drift) | Tile: 400px world units | Lines: 8
     (function() {
       var canvas = document.getElementById('crt-canvas');
       if (!canvas) return;
@@ -545,80 +548,97 @@
         '}'
       ].join('\n');
 
-      // ── Fragment shader — CRT Bands ──
-      // Vertical scan-line bands with slow horizontal drift and warm amber/red palette.
-      // Framer preset #04 CRT: Bands shader, warm amber/red tones on dark background.
-      // Colors: #0D0000 #1A0500 #2E0C00 #5C2000 #8B3A00 #C46000 #E8A020
-      // Speed: 0.18 | Scale: 1.2 | Bands: 6 | Noise: Grain 0.06
+      // ── Fragment shader — Topo Mesh ──
+      // Topographic iso-contour lines drawn on a seamlessly tiling FBM noise field.
+      //
+      // SEAMLESS TILING STRATEGY:
+      //   - Work in "world pixels" (gl_FragCoord / dpr) so tile size is screen-independent
+      //   - Tile size T = 400px. UV = fract(worldPx / T) → always [0,1) per tile
+      //   - The noise function uses a domain-warped periodic basis:
+      //     noise(uv) = sum of sin/cos harmonics whose periods are integer divisors of 1.0
+      //     This guarantees the field is exactly periodic at uv=0 and uv=1 in both axes
+      //   - No stretching: tile size is fixed in screen pixels, not normalized to viewport
       var fsSource = [
-        'precision mediump float;',
+        '#extension GL_OES_standard_derivatives : enable',
+        'precision highp float;',
         'uniform float u_time;',
         'uniform vec2  u_resolution;',
+        'uniform float u_dpr;',
 
-        // CRT palette: deep black → near-black red → dark amber → warm amber → bright amber
-        'vec3 palette(float t) {',
-        '  vec3 c0 = vec3(0.051, 0.000, 0.000);',
-        '  vec3 c1 = vec3(0.102, 0.020, 0.000);',
-        '  vec3 c2 = vec3(0.180, 0.047, 0.000);',
-        '  vec3 c3 = vec3(0.361, 0.125, 0.000);',
-        '  vec3 c4 = vec3(0.545, 0.227, 0.000);',
-        '  vec3 c5 = vec3(0.769, 0.376, 0.000);',
-        '  vec3 c6 = vec3(0.910, 0.627, 0.125);',
-        '  t = clamp(t, 0.0, 1.0);',
-        '  if (t < 0.1667) return mix(c0, c1, t / 0.1667);',
-        '  if (t < 0.3333) return mix(c1, c2, (t - 0.1667) / 0.1667);',
-        '  if (t < 0.5000) return mix(c2, c3, (t - 0.3333) / 0.1667);',
-        '  if (t < 0.6667) return mix(c3, c4, (t - 0.5000) / 0.1667);',
-        '  if (t < 0.8333) return mix(c4, c5, (t - 0.6667) / 0.1667);',
-        '  return mix(c5, c6, (t - 0.8333) / 0.1667);',
+        // ── Seamlessly tiling smooth noise ──
+        // Built from integer-period sin/cos harmonics so it tiles at period 1.0
+        'float tilingNoise(vec2 p) {',
+        '  const float TAU = 6.28318530718;',
+        // Layer 1: fundamental + 3 harmonics, all integer multiples of TAU → period 1.0
+        '  float v = 0.0;',
+        '  v += sin(p.x * TAU       ) * cos(p.y * TAU       ) * 0.500;',
+        '  v += sin(p.x * TAU * 2.0 ) * cos(p.y * TAU * 2.0 ) * 0.250;',
+        '  v += sin(p.x * TAU * 3.0 ) * cos(p.y * TAU * 3.0 ) * 0.125;',
+        '  v += sin(p.x * TAU * 5.0 ) * cos(p.y * TAU * 5.0 ) * 0.063;',
+        // Cross terms for diagonal variation
+        '  v += sin(p.x * TAU + p.y * TAU * 2.0) * 0.125;',
+        '  v += sin(p.x * TAU * 2.0 - p.y * TAU) * 0.063;',
+        '  return v;', // range approx [-1, 1]
         '}',
 
-        'float hash(float n) { return fract(sin(n) * 43758.5453); }',
-
-        'float noise(float x) {',
-        '  float i = floor(x);',
-        '  float f = fract(x);',
-        '  float u = f * f * (3.0 - 2.0 * f);',
-        '  return mix(hash(i), hash(i + 1.0), u);',
+        // ── Domain-warped tiling FBM ──
+        // Warp the input coords by a second tiling noise field for organic contours
+        'float topoField(vec2 p, float t) {',
+        '  const float TAU = 6.28318530718;',
+        // Slow time drift — both axes drift at slightly different rates to avoid
+        // the pattern feeling like a simple scroll
+        '  vec2 drift = vec2(t * 0.031, t * 0.019);',
+        // Domain warp: offset p by a second noise field (also tiling)
+        '  float wx = sin((p.x + drift.x) * TAU) * cos((p.y + drift.y) * TAU * 1.3) * 0.18;',
+        '  float wy = sin((p.x + drift.x) * TAU * 1.7) * cos((p.y + drift.y) * TAU) * 0.18;',
+        '  vec2 warped = p + vec2(wx, wy);',
+        // Main field: layered harmonics on warped coords
+        '  float f = 0.0;',
+        '  f += sin(warped.x * TAU + drift.x * TAU) * cos(warped.y * TAU + drift.y * TAU) * 0.500;',
+        '  f += sin(warped.x * TAU * 2.0 - drift.x * TAU * 0.7) * cos(warped.y * TAU * 2.0 + drift.y * TAU * 0.5) * 0.250;',
+        '  f += sin(warped.x * TAU * 3.5 + drift.x * TAU * 1.1) * cos(warped.y * TAU * 3.5 - drift.y * TAU * 0.9) * 0.125;',
+        '  f += sin(warped.x * TAU * 5.0 ) * cos(warped.y * TAU * 4.0 ) * 0.063;',
+        '  return f;', // range approx [-1, 1]
         '}',
 
         'void main() {',
-        '  vec2 uv = gl_FragCoord.xy / u_resolution;',
+        // World-space pixel coords (DPR-corrected so tile is always 400 CSS px)
+        '  vec2 worldPx = gl_FragCoord.xy / u_dpr;',
 
-        // Speed: 0.18 — slow, cozy drift
-        '  float t = u_time * 0.18;',
+        // Tile size in CSS pixels — pattern repeats every 400px, no stretching
+        '  float tileSize = 400.0;',
+        '  vec2 uv = fract(worldPx / tileSize);',
 
-        // Bands: 6, Scale: 1.2 — tighter bands, more scan-line character
-        // Use a higher frequency so bands are narrow like real CRT scan lines
-        '  float x = uv.x * 18.0;',
+        '  float t = u_time;',
 
-        // Primary band: sharp sine for the CRT stripe look
-        '  float band  = sin(x * 3.14159 + t * 0.9) * 0.5 + 0.5;',
-        // Secondary band: slower, wider modulation for the "bleeding" glow
-        '  float band2 = sin(x * 0.52360 - t * 0.3) * 0.5 + 0.5;',
-        // Tertiary: very slow large-scale variation
-        '  float band3 = sin(uv.x * 3.14159 * 2.0 + t * 0.15) * 0.5 + 0.5;',
+        // Sample the topo field
+        '  float field = topoField(uv, t);',
 
-        // Soften the primary band — atmospheric, not harsh
-        '  band = pow(band, 1.6);',
+        // Normalize field to [0, 1]
+        '  float h = field * 0.5 + 0.5;',
 
-        // Combine: primary drives the stripe, secondary/tertiary add warmth variation
-        '  float combined = band * 0.55 + band2 * 0.28 + band3 * 0.17;',
+        // ── Iso-contour extraction ──
+        // Draw thin lines at evenly-spaced height levels.
+        // fract(h * numLines) gives a sawtooth; we threshold near 0 and 1 for the line.
+        '  float numLines = 8.0;',
+        '  float f = fract(h * numLines);',
 
-        // Vertical gradient: slightly brighter at bottom (CRT phosphor glow tends downward)
-        '  float vGrad = 0.75 + uv.y * 0.25;',
-        '  combined *= vGrad;',
+        // Line width: use fwidth for screen-space anti-aliasing
+        // This keeps lines exactly 1px wide regardless of zoom or DPR
+        '  float fw = fwidth(h * numLines);',
+        '  float lineWidth = 0.8;',  // fraction of a pixel
+        '  float line = 1.0 - smoothstep(fw * lineWidth, fw * (lineWidth + 1.5), min(f, 1.0 - f));',
 
-        // Slow noise for organic warmth bleed between bands
-        '  float n = noise(uv.x * 12.0 + t * 0.4) * 0.08;',
-        '  combined = clamp(combined + n, 0.0, 1.0);',
+        // Every 4th line is slightly brighter (index contour, like real topo maps)
+        '  float hIndex = fract(h * (numLines / 4.0));',
+        '  float isIndex = 1.0 - smoothstep(fw * lineWidth, fw * (lineWidth + 1.5), min(hIndex, 1.0 - hIndex));',
+        '  line = max(line, isIndex * 0.6);',
 
-        // Grain: Amount 0.06
-        '  float grain = (hash(uv.x * 1337.0 + uv.y * 5731.0 + t * 999.0) - 0.5) * 0.06;',
-        '  combined = clamp(combined + grain, 0.0, 1.0);',
+        // Line color: off-white, matches --text in dark mode
+        '  vec3 lineColor = vec3(0.94, 0.94, 0.94);',
 
-        '  vec3 color = palette(combined);',
-        '  gl_FragColor = vec4(color, 1.0);',
+        // Background is fully transparent — the body background-color shows through
+        '  gl_FragColor = vec4(lineColor, line);',
         '}'
       ].join('\n');
 
@@ -662,11 +682,18 @@
 
       var uTime = gl.getUniformLocation(program, 'u_time');
       var uRes  = gl.getUniformLocation(program, 'u_resolution');
+      var uDpr  = gl.getUniformLocation(program, 'u_dpr');
+
+      // Enable alpha blending so transparent background shows body bg-color
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+      var currentDpr = Math.min(window.devicePixelRatio || 1, 2);
 
       function resize() {
-        var dpr = Math.min(window.devicePixelRatio || 1, 2);
-        canvas.width  = window.innerWidth  * dpr;
-        canvas.height = window.innerHeight * dpr;
+        currentDpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width  = window.innerWidth  * currentDpr;
+        canvas.height = window.innerHeight * currentDpr;
         gl.viewport(0, 0, canvas.width, canvas.height);
       }
       resize();
@@ -677,8 +704,11 @@
 
       function render() {
         var elapsed = (performance.now() - startTime) / 1000;
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
         gl.uniform1f(uTime, elapsed);
         gl.uniform2f(uRes, canvas.width, canvas.height);
+        gl.uniform1f(uDpr, currentDpr);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
         rafId = requestAnimationFrame(render);
       }
