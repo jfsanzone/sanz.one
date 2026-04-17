@@ -58,12 +58,30 @@
     transition: background-color 0.25s ease, color 0.25s ease;
   }
 
+  /* CRT shader canvas — fixed full-screen background */
+  #crt-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.14;
+    transition: opacity 0.4s ease;
+  }
+
+  /* Dim the shader in light mode so it doesn't fight the warm background */
+  [data-theme="light"] #crt-canvas {
+    opacity: 0.06;
+  }
+
+  /* Grain overlay on top of shader — keeps the existing texture */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 0;
+    z-index: 1;
     opacity: 0.04;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 180px 180px;
@@ -73,7 +91,7 @@
 
   .page {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     max-width: 640px;
     width: 100%;
     margin: 0 auto;
@@ -367,10 +385,14 @@
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
     }
+    #crt-canvas { display: none; }
   }
 </style>
 </head>
 <body>
+
+  <!-- CRT Bands WebGL shader canvas (background layer) -->
+  <canvas id="crt-canvas" aria-hidden="true"></canvas>
 
   <div class="page">
 
@@ -410,7 +432,7 @@
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678a6.162 6.162 0 100 12.324 6.162 6.162 0 100-12.324zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405a1.441 1.441 0 11-2.88 0 1.441 1.441 0 012.88 0z"/></svg>
         </a>
         <a href="https://www.linkedin.com/in/jasonsanzone" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="social-link">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 23.2 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
         </a>
       </nav>
     </header>
@@ -449,13 +471,13 @@
   </div>
 
   <script>
+    // ─── Theme toggle ───────────────────────────────────────────────────────────
     (function() {
       var html = document.documentElement;
       var btn = document.getElementById('themeToggle');
       var iconSun = document.getElementById('iconSun');
       var iconMoon = document.getElementById('iconMoon');
 
-      // Restore saved preference
       var saved = localStorage.getItem('theme') || 'dark';
       html.setAttribute('data-theme', saved);
       updateIcons(saved);
@@ -479,7 +501,7 @@
       }
     })();
 
-    // Wordmark write-on animation
+    // ─── Wordmark write-on animation ────────────────────────────────────────────
     (function() {
       var wrap = document.querySelector('.wordmark-logo-wrap');
       if (!wrap) return;
@@ -488,20 +510,188 @@
       document.querySelector('.wordmark-link').addEventListener('mouseenter', function() {
         if (animating) return;
         animating = true;
-        // Step 1: instantly cover the logo
         wrap.classList.remove('writing');
         wrap.classList.add('covered');
-        // Step 2: on next frame, trigger the reveal animation
         requestAnimationFrame(function() {
           requestAnimationFrame(function() {
             wrap.classList.remove('covered');
             wrap.classList.add('writing');
           });
         });
-        // Allow re-trigger after animation completes
-        setTimeout(function() {
-          animating = false;
-        }, 750);
+        setTimeout(function() { animating = false; }, 750);
+      });
+    })();
+
+    // ─── CRT Bands WebGL Shader ─────────────────────────────────────────────────
+    // Shader #04 from @stfnco — retro CRT scan lines, warm amber/red tones
+    // Parameters matched to the article's preset:
+    //   Colors: #0D0000, #1A0500, #2E0C00, #5C2000, #8B3A00, #C46000, #E8A020
+    //   Speed: 0.18 | Scale: 1.2 | Bands: 6 | Noise: Grain | Amount: 0.06
+    (function() {
+      var canvas = document.getElementById('crt-canvas');
+      if (!canvas) return;
+
+      // Skip if user prefers reduced motion
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) return;
+
+      // ── Vertex shader (full-screen quad) ──
+      var vsSource = [
+        'attribute vec2 a_position;',
+        'void main() {',
+        '  gl_Position = vec4(a_position, 0.0, 1.0);',
+        '}'
+      ].join('\n');
+
+      // ── Fragment shader — CRT Bands ──
+      // Vertical scan-line bands with slow horizontal drift and warm amber/red palette.
+      // Framer preset #04 CRT: Bands shader, warm amber/red tones on dark background.
+      // Colors: #0D0000 #1A0500 #2E0C00 #5C2000 #8B3A00 #C46000 #E8A020
+      // Speed: 0.18 | Scale: 1.2 | Bands: 6 | Noise: Grain 0.06
+      var fsSource = [
+        'precision mediump float;',
+        'uniform float u_time;',
+        'uniform vec2  u_resolution;',
+
+        // CRT palette: deep black → near-black red → dark amber → warm amber → bright amber
+        'vec3 palette(float t) {',
+        '  vec3 c0 = vec3(0.051, 0.000, 0.000);',
+        '  vec3 c1 = vec3(0.102, 0.020, 0.000);',
+        '  vec3 c2 = vec3(0.180, 0.047, 0.000);',
+        '  vec3 c3 = vec3(0.361, 0.125, 0.000);',
+        '  vec3 c4 = vec3(0.545, 0.227, 0.000);',
+        '  vec3 c5 = vec3(0.769, 0.376, 0.000);',
+        '  vec3 c6 = vec3(0.910, 0.627, 0.125);',
+        '  t = clamp(t, 0.0, 1.0);',
+        '  if (t < 0.1667) return mix(c0, c1, t / 0.1667);',
+        '  if (t < 0.3333) return mix(c1, c2, (t - 0.1667) / 0.1667);',
+        '  if (t < 0.5000) return mix(c2, c3, (t - 0.3333) / 0.1667);',
+        '  if (t < 0.6667) return mix(c3, c4, (t - 0.5000) / 0.1667);',
+        '  if (t < 0.8333) return mix(c4, c5, (t - 0.6667) / 0.1667);',
+        '  return mix(c5, c6, (t - 0.8333) / 0.1667);',
+        '}',
+
+        'float hash(float n) { return fract(sin(n) * 43758.5453); }',
+
+        'float noise(float x) {',
+        '  float i = floor(x);',
+        '  float f = fract(x);',
+        '  float u = f * f * (3.0 - 2.0 * f);',
+        '  return mix(hash(i), hash(i + 1.0), u);',
+        '}',
+
+        'void main() {',
+        '  vec2 uv = gl_FragCoord.xy / u_resolution;',
+
+        // Speed: 0.18 — slow, cozy drift
+        '  float t = u_time * 0.18;',
+
+        // Bands: 6, Scale: 1.2 — tighter bands, more scan-line character
+        // Use a higher frequency so bands are narrow like real CRT scan lines
+        '  float x = uv.x * 18.0;',
+
+        // Primary band: sharp sine for the CRT stripe look
+        '  float band  = sin(x * 3.14159 + t * 0.9) * 0.5 + 0.5;',
+        // Secondary band: slower, wider modulation for the "bleeding" glow
+        '  float band2 = sin(x * 0.52360 - t * 0.3) * 0.5 + 0.5;',
+        // Tertiary: very slow large-scale variation
+        '  float band3 = sin(uv.x * 3.14159 * 2.0 + t * 0.15) * 0.5 + 0.5;',
+
+        // Soften the primary band — atmospheric, not harsh
+        '  band = pow(band, 1.6);',
+
+        // Combine: primary drives the stripe, secondary/tertiary add warmth variation
+        '  float combined = band * 0.55 + band2 * 0.28 + band3 * 0.17;',
+
+        // Vertical gradient: slightly brighter at bottom (CRT phosphor glow tends downward)
+        '  float vGrad = 0.75 + uv.y * 0.25;',
+        '  combined *= vGrad;',
+
+        // Slow noise for organic warmth bleed between bands
+        '  float n = noise(uv.x * 12.0 + t * 0.4) * 0.08;',
+        '  combined = clamp(combined + n, 0.0, 1.0);',
+
+        // Grain: Amount 0.06
+        '  float grain = (hash(uv.x * 1337.0 + uv.y * 5731.0 + t * 999.0) - 0.5) * 0.06;',
+        '  combined = clamp(combined + grain, 0.0, 1.0);',
+
+        '  vec3 color = palette(combined);',
+        '  gl_FragColor = vec4(color, 1.0);',
+        '}'
+      ].join('\n');
+
+      function compileShader(type, source) {
+        var shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          console.warn('Shader compile error:', gl.getShaderInfoLog(shader));
+          gl.deleteShader(shader);
+          return null;
+        }
+        return shader;
+      }
+
+      var vs = compileShader(gl.VERTEX_SHADER, vsSource);
+      var fs = compileShader(gl.FRAGMENT_SHADER, fsSource);
+      if (!vs || !fs) return;
+
+      var program = gl.createProgram();
+      gl.attachShader(program, vs);
+      gl.attachShader(program, fs);
+      gl.linkProgram(program);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.warn('Shader link error:', gl.getProgramInfoLog(program));
+        return;
+      }
+      gl.useProgram(program);
+
+      // Full-screen quad
+      var posBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        -1, -1,  1, -1,  -1, 1,
+        -1,  1,  1, -1,   1, 1
+      ]), gl.STATIC_DRAW);
+
+      var posAttr = gl.getAttribLocation(program, 'a_position');
+      gl.enableVertexAttribArray(posAttr);
+      gl.vertexAttribPointer(posAttr, 2, gl.FLOAT, false, 0, 0);
+
+      var uTime = gl.getUniformLocation(program, 'u_time');
+      var uRes  = gl.getUniformLocation(program, 'u_resolution');
+
+      function resize() {
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width  = window.innerWidth  * dpr;
+        canvas.height = window.innerHeight * dpr;
+        gl.viewport(0, 0, canvas.width, canvas.height);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      var startTime = performance.now();
+      var rafId;
+
+      function render() {
+        var elapsed = (performance.now() - startTime) / 1000;
+        gl.uniform1f(uTime, elapsed);
+        gl.uniform2f(uRes, canvas.width, canvas.height);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        rafId = requestAnimationFrame(render);
+      }
+      render();
+
+      // Pause when tab is hidden to save resources
+      document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+          cancelAnimationFrame(rafId);
+        } else {
+          startTime = performance.now() - (startTime < 0 ? 0 : 0);
+          render();
+        }
       });
     })();
   </script>
