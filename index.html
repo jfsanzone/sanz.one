@@ -540,6 +540,9 @@
       var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
       if (!gl) return;
 
+      // Must call getExtension BEFORE compiling shaders that use fwidth
+      gl.getExtension('OES_standard_derivatives');
+
       // ── Vertex shader (full-screen quad) ──
       var vsSource = [
         'attribute vec2 a_position;',
