@@ -66,13 +66,13 @@
     height: 100%;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.14;
+    opacity: 0.28;
     transition: opacity 0.4s ease;
   }
 
   /* Slightly more visible in light mode — topo lines read well on warm paper */
   [data-theme="light"] #crt-canvas {
-    opacity: 0.08;
+    opacity: 0.12;
   }
 
   /* Grain overlay on top of shader — keeps the existing texture */
@@ -629,13 +629,13 @@
         // Line width: use fwidth for screen-space anti-aliasing
         // This keeps lines exactly 1px wide regardless of zoom or DPR
         '  float fw = fwidth(h * numLines);',
-        '  float lineWidth = 0.8;',  // fraction of a pixel
-        '  float line = 1.0 - smoothstep(fw * lineWidth, fw * (lineWidth + 1.5), min(f, 1.0 - f));',
+        '  float lineWidth = 0.5;',  // thin lines — 0.5px
+        '  float line = 1.0 - smoothstep(fw * lineWidth, fw * (lineWidth + 1.2), min(f, 1.0 - f));',
 
         // Every 4th line is slightly brighter (index contour, like real topo maps)
         '  float hIndex = fract(h * (numLines / 4.0));',
-        '  float isIndex = 1.0 - smoothstep(fw * lineWidth, fw * (lineWidth + 1.5), min(hIndex, 1.0 - hIndex));',
-        '  line = max(line, isIndex * 0.6);',
+        '  float isIndex = 1.0 - smoothstep(fw * lineWidth, fw * (lineWidth + 1.2), min(hIndex, 1.0 - hIndex));',
+        '  line = max(line, isIndex * 0.5);',
 
         // Line color: off-white, matches --text in dark mode
         '  vec3 lineColor = vec3(0.94, 0.94, 0.94);',
