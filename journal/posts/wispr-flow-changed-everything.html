@@ -9,7 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
 <style>
-
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
   :root {
@@ -35,10 +34,13 @@
     transition: background-color 0.3s ease, color 0.3s ease;
   }
   body::before {
-    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.04;
+    content: ''; position: fixed; inset: 0;
+    pointer-events: none; z-index: 0; opacity: 0.04;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 180px 180px;
   }
+
+  /* Camera bg */
   #camera-bg { position: fixed; inset: 0; z-index: -1; opacity: 0; transition: opacity 0.5s ease; overflow: hidden; }
   #camera-bg video { width: 100%; height: 100%; object-fit: cover; }
   html.glass #camera-bg { opacity: 1; }
@@ -47,6 +49,8 @@
     background: linear-gradient(160deg,rgba(8,8,8,.70) 0%,rgba(14,14,14,.58) 45%,rgba(10,10,10,.66) 100%);
   }
   html.glass #camera-overlay { display: block; }
+
+  /* Permission overlay */
   #cam-permission {
     display: none; position: fixed; inset: 0; z-index: 200;
     background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -62,47 +66,101 @@
   .perm-btn-allow { background: #f0f0f0; color: #080808; }
   .perm-btn-deny { background: transparent; border: 1px solid rgba(240,240,240,.15); color: rgba(240,240,240,.5); }
   .perm-btn:hover { opacity: .8; }
+
   a { color: inherit; text-decoration: none; }
-  .page { position: relative; z-index: 1; max-width: 640px; width: 100%; margin: 0 auto; padding: 0 32px; flex: 1; display: flex; flex-direction: column; }
-  .site-header { padding-top: 64px; animation: fadeUp .55s cubic-bezier(.16,1,.3,1) both; }
-  .header-top { display: flex; align-items: center; justify-content: space-between; }
+
+  /* Layout — matches main page px-5 py-12 max-w-640 */
+  .page {
+    position: relative; z-index: 1;
+    max-width: 640px; width: 100%; margin: 0 auto;
+    padding: 0 20px; /* px-5 = 20px matches main page */
+    flex: 1; display: flex; flex-direction: column;
+  }
+
+  /* Header — matches main page: pt-12 (48px), flex items-start justify-between mb-14 (56px) */
+  .site-header {
+    padding-top: 48px;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 56px;
+    animation: fadeUp .55s cubic-bezier(.16,1,.3,1) both;
+  }
+
+  /* Back link — left side */
   .back-link {
     font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px;
-    letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted);
+    letter-spacing: .08em; text-transform: uppercase;
+    color: var(--text-muted);
     display: inline-flex; align-items: center; gap: 6px;
-    transition: color .18s ease;
+    transition: color .18s ease; padding-top: 6px; /* optical align with buttons */
   }
   .back-link:hover { color: var(--text); }
   .back-link:hover .back-arrow { transform: translateX(-2px); }
-  .back-arrow { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; transition: transform .18s ease; }
-  .mode-toggle { background: none; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; width: 36px; height: 36px; padding: 0; border-radius: 10px; transition: color .18s ease, border-color .18s ease, background .25s ease; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; }
-  .mode-toggle:hover { color: var(--text); border-color: var(--text-muted); }
-  html.glass .mode-toggle { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.14); }
-  .mode-toggle svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; position: absolute; transition: opacity .18s, transform .18s; }
-  .icon-sun    { opacity: 0; transform: scale(.7); }
-  .icon-moon   { opacity: 1; transform: scale(1);  }
-  .icon-camera { opacity: 0; transform: scale(.7); }
-  html.light .icon-sun    { opacity: 1; transform: scale(1);  }
-  html.light .icon-moon   { opacity: 0; transform: scale(.7); }
-  html.light .icon-camera { opacity: 0; transform: scale(.7); }
-  html.glass .icon-sun    { opacity: 0; transform: scale(.7); }
-  html.glass .icon-moon   { opacity: 0; transform: scale(.7); }
-  html.glass .icon-camera { opacity: 1; transform: scale(1);  }
+  .back-arrow {
+    width: 14px; height: 14px; stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0;
+    transition: transform .18s ease;
+  }
+
+  /* ── 3 distinct mode buttons — matches PD component exactly ── */
+  .theme-selector { display: flex; align-items: center; gap: 6px; }
+  .theme-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border: 1px solid transparent; outline: none; padding: 0;
+    transition: background .2s, box-shadow .2s, transform .15s;
+    flex-shrink: 0;
+  }
+  .theme-btn:hover { transform: scale(1.1); }
+  /* default dark mode colours */
+  .theme-btn-light { background: rgba(255,255,255,0.04); }
+  .theme-btn-dark  { background: rgba(255,255,255,0.08); } /* active in dark */
+  .theme-btn-glass { background: rgba(255,255,255,0.04); }
+
+  html.light .theme-btn-light { background: rgba(0,0,0,0.06); }        /* active */
+  html.light .theme-btn-dark  { background: rgba(0,0,0,0.04); }
+  html.light .theme-btn-glass { background: rgba(0,0,0,0.04); }
+
+  html.glass .theme-btn-light { background: rgba(255,255,255,0.05); }
+  html.glass .theme-btn-dark  { background: rgba(255,255,255,0.05); }
+  html.glass .theme-btn-glass {
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: rgba(255,255,255,.22) 0 .5px 0 inset, rgba(0,0,0,.2) 0 2px 8px;
+  }
+
+  /* SVG icon colours by mode */
+  :root .theme-btn svg { stroke: rgba(255,255,255,0.65); }
+  :root .theme-btn-dark svg  { stroke: rgba(255,255,255,0.95); } /* active */
+  html.light .theme-btn svg  { stroke: rgba(0,0,0,0.6); }
+  html.light .theme-btn-light svg { stroke: rgba(0,0,0,0.9); }  /* active */
+  html.glass .theme-btn svg  { stroke: rgba(255,255,255,0.75); }
+  html.glass .theme-btn-glass svg { stroke: rgba(255,255,255,1); } /* active */
+  /* aperture dot fill */
+  :root .theme-btn-glass .aperture-dot { fill: rgba(255,255,255,0.65); }
+  html.glass .theme-btn-glass .aperture-dot { fill: rgba(255,255,255,1); }
+  html.light .theme-btn-glass .aperture-dot { fill: rgba(0,0,0,0.6); }
+
   @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  @media (max-width: 600px) { .page { padding: 0 24px; } .site-header { padding-top: 48px; } }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 
+  @media (max-width: 600px) {
+    .page { padding: 0 20px; }
+    .site-header { padding-top: 40px; margin-bottom: 44px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
 
-  .post-header {{ padding-top: 64px; animation: fadeUp .55s cubic-bezier(.16,1,.3,1) both; }}
-  .post-title {{ font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(20px,4vw,28px); line-height: 1.25; letter-spacing: .03em; text-transform: uppercase; color: var(--text); margin-top: 48px; }}
-  .post-date {{ font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-top: 18px; display: block; }}
-  .post-body {{ flex: 1; padding: 44px 0 88px; animation: fadeUp .55s .07s cubic-bezier(.16,1,.3,1) both; }}
-  html.glass .post-body-inner {{ backdrop-filter: blur(56px) saturate(180%) brightness(1.08); -webkit-backdrop-filter: blur(56px) saturate(180%) brightness(1.08); background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.10); box-shadow: inset 0 .5px rgba(255,255,255,.13), 0 6px 28px rgba(0,0,0,.40); border-radius: 16px; padding: 32px; }}
-  .post-body p {{ max-width: 58ch; margin-bottom: 1.6em; font-size: 17px; line-height: 1.8; color: var(--text-body); }}
-  .post-body p:last-child {{ margin-bottom: 0; }}
-  .post-body a {{ color: var(--text); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; text-decoration-color: rgba(128,128,128,.4); transition: text-decoration-color .18s ease; }}
-  .post-body a:hover {{ text-decoration-color: var(--text); }}
-  @media (max-width:600px) {{ .post-header {{ padding-top: 48px; }} .post-title {{ margin-top: 36px; font-size: 20px; }} .post-body {{ padding: 32px 0 64px; }} .post-body p {{ font-size: 16px; }} html.glass .post-body-inner {{ padding: 20px; }} }}
+  .post-eyebrow { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px; display: block; }
+  .post-title { font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(20px,4vw,28px); line-height: 1.25; letter-spacing: .03em; text-transform: uppercase; color: var(--text); margin-bottom: 8px; }
+  .post-date { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 40px; }
+  .post-body { flex: 1; padding-bottom: 88px; animation: fadeUp .55s .07s cubic-bezier(.16,1,.3,1) both; }
+  html.glass .post-body-inner { backdrop-filter: blur(56px) saturate(180%) brightness(1.08); -webkit-backdrop-filter: blur(56px) saturate(180%) brightness(1.08); background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.10); box-shadow: inset 0 .5px rgba(255,255,255,.13), 0 6px 28px rgba(0,0,0,.40); border-radius: 16px; padding: 32px; }
+  .post-body p { max-width: 58ch; margin-bottom: 1.6em; font-size: 17px; line-height: 1.8; color: var(--text-body); }
+  .post-body p:last-child { margin-bottom: 0; }
+  .post-body a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; text-decoration-color: rgba(128,128,128,.4); transition: text-decoration-color .18s ease; }
+  .post-body a:hover { text-decoration-color: var(--text); }
+  @media (max-width:600px) { .post-title { font-size: 20px; } .post-body { padding-bottom: 64px; } .post-body p { font-size: 16px; } html.glass .post-body-inner { padding: 20px; } }
 
 </style>
 </head>
@@ -110,7 +168,7 @@
   <div id="camera-bg"><video id="camera-video" autoplay playsinline muted></video></div>
   <div id="camera-overlay"></div>
   <div id="cam-permission">
-    <div class="perm-icon"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+    <div class="perm-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>
     <p class="perm-title">Camera Access</p>
     <p class="perm-desc">Glass mode uses your camera as a live background. No video is recorded or stored.</p>
     <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
@@ -119,23 +177,40 @@
     </div>
   </div>
   <div class="page">
-    <header class="post-header">
-      <div class="header-top">
-        <nav>
-          <a href="../" class="back-link">
-            <svg class="back-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-            Journal
-          </a>
-        </nav>
-        <button class="mode-toggle" id="modeToggle" aria-label="Cycle display mode">
-          <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          <svg class="icon-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        </button>
-      </div>
-      <h1 class="post-title">I Stopped Typing</h1>
-      <time class="post-date" datetime="2026-02-27">February 27, 2026</time>
+    <header class="site-header">
+      <a href="../" class="back-link">
+        <svg class="back-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        Journal
+      </a>
+        <div class="theme-selector" role="group" aria-label="Theme selector">
+          <!-- Light -->
+          <button class="theme-btn theme-btn-light" id="btn-light" aria-label="Light mode">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+          </button>
+          <!-- Dark -->
+          <button class="theme-btn theme-btn-dark" id="btn-dark" aria-label="Dark mode">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+          <!-- Glass (aperture) -->
+          <button class="theme-btn theme-btn-glass" id="btn-glass" aria-label="Glass mode — live camera background">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"/>
+              <circle cx="12" cy="12" r="4"/>
+              <circle class="aperture-dot" cx="10" cy="10" r="1" stroke="none"/>
+            </svg>
+          </button>
+        </div>
     </header>
+    <h1 class="post-title">I Stopped Typing</h1>
+    <time class="post-date" datetime="2026-02-27">February 27, 2026</time>
     <article class="post-body">
       <div class="post-body-inner">
         <p>I didn&#8217;t expect a voice app to change how I work as a designer. But <a href="https://wisprflow.ai/" target="_blank" rel="noopener noreferrer">Wispr Flow</a> genuinely rewired my process.</p>
@@ -146,17 +221,18 @@
       </div>
     </article>
   </div>
-<script>
-(function(){
+<script>(function(){
   'use strict';
-  var html=document.documentElement,
-      camVideo=document.getElementById('camera-video'),
-      permOverlay=document.getElementById('cam-permission'),
-      permAllow=document.getElementById('perm-allow'),
-      permDeny=document.getElementById('perm-deny'),
-      modeBtn=document.getElementById('modeToggle'),
-      stream=null,
-      camPerm=localStorage.getItem('sanz-cam-permission');
+  var html=document.documentElement;
+  var camVideo=document.getElementById('camera-video');
+  var permOverlay=document.getElementById('cam-permission');
+  var permAllow=document.getElementById('perm-allow');
+  var permDeny=document.getElementById('perm-deny');
+  var btnLight=document.getElementById('btn-light');
+  var btnDark=document.getElementById('btn-dark');
+  var btnGlass=document.getElementById('btn-glass');
+  var stream=null;
+  var camPerm=localStorage.getItem('sanz-cam-permission');
 
   function applyMode(m){
     html.classList.remove('light','dark','glass');
@@ -173,24 +249,25 @@
     stream.getTracks().forEach(function(t){t.stop();});
     stream=null;camVideo.srcObject=null;
   }
-  var CYCLE={dark:'glass',glass:'light',light:'dark'};
-  function setMode(m){localStorage.setItem('sanz-theme',m);applyMode(m);if(m==='glass'){startCamera();}else{stopCamera();}}
+  function setMode(m){
+    localStorage.setItem('sanz-theme',m);
+    applyMode(m);
+    if(m==='glass'){startCamera();}else{stopCamera();}
+  }
   function requestGlass(){
     if(camPerm==='denied'){setMode('dark');return;}
     if(camPerm==='granted'){setMode('glass');return;}
     permOverlay.classList.add('visible');
   }
-  modeBtn.addEventListener('click',function(){
-    var cur=localStorage.getItem('sanz-theme')||'dark';
-    var next=CYCLE[cur]||'dark';
-    if(next==='glass'){requestGlass();}else{setMode(next);}
-  });
+  btnLight.addEventListener('click',function(){setMode('light');});
+  btnDark.addEventListener('click',function(){setMode('dark');});
+  btnGlass.addEventListener('click',function(){requestGlass();});
   permAllow.addEventListener('click',function(){permOverlay.classList.remove('visible');camPerm='granted';setMode('glass');});
   permDeny.addEventListener('click',function(){permOverlay.classList.remove('visible');localStorage.setItem('sanz-cam-permission','denied');camPerm='denied';setMode('dark');});
+  // Init
   var saved=localStorage.getItem('sanz-theme')||'dark';
   applyMode(saved);
   if(saved==='glass'){camPerm=localStorage.getItem('sanz-cam-permission');if(camPerm==='granted'){startCamera();}else{setMode('dark');}}
-}());
-</script>
+}());</script>
 </body>
 </html>
