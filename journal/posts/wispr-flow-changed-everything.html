@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>I Stopped Typing / Sanzone</title>
+<meta name="description" content="How voice dictation became the most important tool in my design workflow.">
+<meta property="og:title" content="I Stopped Typing / Sanzone">
+<meta property="og:description" content="How voice dictation became the most important tool in my design workflow.">
+<meta property="og:type" content="article">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* ─── Design tokens ─── */
+  :root {
+    --bg: #080808;
+    --text: #f0f0f0;
+    --text-body: rgba(240, 240, 240, 0.72);
+    --text-muted: rgba(240, 240, 240, 0.55);
+    --border: rgba(240, 240, 240, 0.07);
+    --camera-active: 0;
+  }
+
+  html.light {
+    --bg: #f2f0eb;
+    --text: #111111;
+    --text-body: rgba(17, 17, 17, 0.70);
+    --text-muted: rgba(17, 17, 17, 0.60);
+    --border: rgba(17, 17, 17, 0.08);
+    --camera-active: 0;
+  }
+
+  html.glass {
+    --text: #fffffff2;
+    --text-body: rgba(255, 255, 255, 0.72);
+    --text-muted: #ffffff6b;
+    --border: rgba(255, 255, 255, 0.08);
+    --camera-active: 1;
+  }
+
+  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+
+  #camera-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    overflow: hidden;
+  }
+
+  #camera-bg video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  html.glass #camera-bg { opacity: 1; }
+
+  #cam-permission {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 32px;
+    text-align: center;
+  }
+
+  #cam-permission.visible { display: flex; }
+
+  .perm-title {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #f0f0f0;
+  }
+
+  .perm-desc {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(240, 240, 240, 0.6);
+    max-width: 280px;
+  }
+
+  .perm-btn {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.18s;
+  }
+
+  .perm-btn-allow { background: #f0f0f0; color: #080808; }
+  .perm-btn-deny { background: transparent; border: 1px solid rgba(240,240,240,0.15); color: rgba(240,240,240,0.5); }
+  .perm-btn:hover { opacity: 0.8; }
+
+  a { color: inherit; text-decoration: none; }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 640px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 32px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .post-header {
+    padding-top: 64px;
+    animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .breadcrumb { display: flex; align-items: center; gap: 6px; }
+
+  .back-link {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .back-link:hover { color: var(--text); }
+
+  .back-link svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .back-link:hover svg { transform: translateX(-2px); }
+
+  .mode-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 10px;
+    transition: color 0.18s ease, border-color 0.18s ease, background 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .mode-toggle:hover { color: var(--text); border-color: var(--text-muted); }
+
+  html.glass .mode-toggle {
+    background: #ffffff12;
+    border-color: #ffffff14;
+  }
+
+  .mode-toggle svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    position: absolute;
+    transition: opacity 0.18s, transform 0.18s;
+  }
+
+  .icon-sun    { opacity: 0; transform: scale(0.7); }
+  .icon-moon   { opacity: 1; transform: scale(1); }
+  .icon-camera { opacity: 0; transform: scale(0.7); }
+
+  html.light .icon-sun    { opacity: 1; transform: scale(1); }
+  html.light .icon-moon   { opacity: 0; transform: scale(0.7); }
+  html.light .icon-camera { opacity: 0; transform: scale(0.7); }
+
+  html.glass .icon-sun    { opacity: 0; transform: scale(0.7); }
+  html.glass .icon-moon   { opacity: 0; transform: scale(0.7); }
+  html.glass .icon-camera { opacity: 1; transform: scale(1); }
+
+  .post-title {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: clamp(20px, 4vw, 28px);
+    line-height: 1.25;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-top: 48px;
+  }
+
+  .post-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 18px;
+    display: block;
+  }
+
+  .post-body {
+    flex: 1;
+    padding: 44px 0 88px;
+    animation: fadeUp 0.55s 0.07s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  html.glass .post-body-inner {
+    backdrop-filter: blur(56px) saturate(180%) brightness(1.08);
+    -webkit-backdrop-filter: blur(56px) saturate(180%) brightness(1.08);
+    background: #ffffff12;
+    border: 1px solid #ffffff14;
+    box-shadow: inset 0 0.5px #ffffff21, 0 6px 28px #00000040;
+    border-radius: 16px;
+    padding: 32px;
+  }
+
+  .post-body p {
+    max-width: 58ch;
+    margin-bottom: 1.6em;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.8;
+    color: var(--text-body);
+  }
+
+  .post-body p:last-child { margin-bottom: 0; }
+
+  .post-body a {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: rgba(128, 128, 128, 0.4);
+    transition: text-decoration-color 0.18s ease;
+  }
+
+  .post-body a:hover { text-decoration-color: var(--text); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 600px) {
+    .page { padding: 0 24px; }
+    .post-header { padding-top: 48px; }
+    .post-title { margin-top: 36px; font-size: 20px; }
+    .post-body { padding: 32px 0 64px; }
+    .post-body p { font-size: 16px; }
+    html.glass .post-body-inner { padding: 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+  <div id="camera-bg"><video id="camera-video" autoplay playsinline muted></video></div>
+
+  <div id="cam-permission">
+    <p class="perm-title">Camera Access</p>
+    <p class="perm-desc">Glass mode uses your camera as a live background. No video is recorded or stored.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+      <button class="perm-btn perm-btn-allow" id="perm-allow">Allow Camera</button>
+      <button class="perm-btn perm-btn-deny" id="perm-deny">Not Now</button>
+    </div>
+  </div>
+
+  <div class="page">
+    <header class="post-header">
+      <div class="header-top">
+        <nav class="breadcrumb">
+          <a href="../" class="back-link">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            Journal
+          </a>
+        </nav>
+        <button class="mode-toggle" id="modeToggle" aria-label="Toggle display mode">
+          <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="icon-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </button>
+      </div>
+      <h1 class="post-title">I Stopped Typing</h1>
+      <time class="post-date" datetime="2026-02-27">February 27, 2026</time>
+    </header>
+
+    <article class="post-body">
+      <div class="post-body-inner">
+        <p>I didn't expect a voice app to change how I work as a designer. But <a href="https://wisprflow.ai/" target="_blank" rel="noopener noreferrer">Wispr Flow</a> genuinely rewired my process.</p>
+        <p>Here's what was happening before: I'd have a clear idea in my head, sit down to write it out in a doc or a Slack message, and by the time I finished typing it, the energy was gone. The idea was still there, but the sharpness had faded. Typing is slow. My brain moves at conversation speed, not keyboard speed.</p>
+        <p>With Flow, I just talk. I hold the key, say what I'm thinking, and it comes out clean. No filler words, punctuation handled, tone adjusted depending on whether I'm in Slack or a Google Doc. I use it for everything now. Design rationale, project briefs, feedback, even prompts for AI tools. I dictated most of this post with it.</p>
+        <p>The thing that surprised me most is how it changed my thinking. When you can capture ideas at the speed you have them, you stop filtering yourself. You get the rough version out fast, then edit from there. It's a completely different creative rhythm than staring at a blinking cursor trying to find the right opening sentence.</p>
+        <p>I'm a solo designer using AI to do the work of an entire team. Speed matters. And the bottleneck was never the design tool or the AI. It was me, typing 90 words a minute when my brain was running at 200. Flow fixed that.</p>
+      </div>
+    </article>
+  </div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var html = document.documentElement;
+    var btn = document.getElementById('modeToggle');
+    var camVideo = document.getElementById('camera-video');
+    var permOverlay = document.getElementById('cam-permission');
+    var permAllow = document.getElementById('perm-allow');
+    var permDeny = document.getElementById('perm-deny');
+
+    var cameraStream = null;
+    var camPermission = localStorage.getItem('sanz-cam-permission');
+
+    function applyMode(mode) {
+      html.classList.remove('light', 'dark', 'glass');
+      if (mode === 'glass') {
+        html.classList.add('dark', 'glass');
+      } else {
+        html.classList.add(mode);
+      }
+    }
+
+    function startCamera() {
+      if (cameraStream) return;
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+        .then(function (stream) {
+          cameraStream = stream;
+          camVideo.srcObject = stream;
+          localStorage.setItem('sanz-cam-permission', 'granted');
+          camPermission = 'granted';
+        })
+        .catch(function () {
+          localStorage.setItem('sanz-cam-permission', 'denied');
+          camPermission = 'denied';
+          setMode('dark');
+        });
+    }
+
+    function stopCamera() {
+      if (!cameraStream) return;
+      cameraStream.getTracks().forEach(function (t) { t.stop(); });
+      cameraStream = null;
+      camVideo.srcObject = null;
+    }
+
+    var CYCLE = { dark: 'glass', glass: 'light', light: 'dark' };
+
+    function setMode(mode) {
+      localStorage.setItem('sanz-theme', mode);
+      applyMode(mode);
+      if (mode === 'glass') { startCamera(); } else { stopCamera(); }
+    }
+
+    function handleGlassRequest() {
+      if (camPermission === 'denied') { setMode('dark'); return; }
+      if (camPermission === 'granted') { setMode('glass'); return; }
+      permOverlay.classList.add('visible');
+    }
+
+    btn.addEventListener('click', function () {
+      var current = localStorage.getItem('sanz-theme') || 'dark';
+      var next = CYCLE[current] || 'dark';
+      if (next === 'glass') { handleGlassRequest(); } else { setMode(next); }
+    });
+
+    permAllow.addEventListener('click', function () {
+      permOverlay.classList.remove('visible');
+      camPermission = 'granted';
+      setMode('glass');
+    });
+
+    permDeny.addEventListener('click', function () {
+      permOverlay.classList.remove('visible');
+      localStorage.setItem('sanz-cam-permission', 'denied');
+      camPermission = 'denied';
+      setMode('dark');
+    });
+
+    var saved = localStorage.getItem('sanz-theme') || 'dark';
+    applyMode(saved);
+    if (saved === 'glass') {
+      if (camPermission === 'granted') { startCamera(); }
+      else { setMode('dark'); }
+    }
+  })();
+  </script>
+
+</body>
+</html>
