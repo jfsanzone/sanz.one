@@ -5,332 +5,107 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Niche Is the Only Moat / Sanzone</title>
 <meta name="description" content="Why the wrapper era is over, and how going narrower is the only defensible move left in AI app production.">
-<meta property="og:title" content="Niche Is the Only Moat / Sanzone">
-<meta property="og:description" content="Why the wrapper era is over, and how going narrower is the only defensible move left in AI app production.">
-<meta property="og:type" content="article">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet">
-
 <style>
+
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-  /* ─── Design tokens ─── */
   :root {
-    --bg: #080808;
-    --text: #f0f0f0;
-    --text-body: rgba(240, 240, 240, 0.72);
-    --text-muted: rgba(240, 240, 240, 0.55);
-    --border: rgba(240, 240, 240, 0.07);
-    --camera-active: 0;
+    --bg: #080808; --text: #f0f0f0;
+    --text-body: rgba(240,240,240,0.72); --text-muted: rgba(240,240,240,0.55);
+    --border: rgba(240,240,240,0.07);
   }
-
   html.light {
-    --bg: #f2f0eb;
-    --text: #111111;
-    --text-body: rgba(17, 17, 17, 0.70);
-    --text-muted: rgba(17, 17, 17, 0.60);
-    --border: rgba(17, 17, 17, 0.08);
-    --camera-active: 0;
+    --bg: #f2f0eb; --text: #111111;
+    --text-body: rgba(17,17,17,0.70); --text-muted: rgba(17,17,17,0.60);
+    --border: rgba(17,17,17,0.08);
   }
-
   html.glass {
-    --text: #fffffff2;
-    --text-body: rgba(255, 255, 255, 0.72);
-    --text-muted: #ffffff6b;
-    --border: rgba(255, 255, 255, 0.08);
-    --camera-active: 1;
+    --text: rgba(255,255,255,0.95); --text-body: rgba(255,255,255,0.72);
+    --text-muted: rgba(255,255,255,0.42); --border: rgba(255,255,255,0.08);
   }
-
   html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-
   body {
-    background-color: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    position: relative;
+    background-color: var(--bg); color: var(--text);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    min-height: 100dvh; display: flex; flex-direction: column;
+    position: relative; overflow-x: hidden;
     transition: background-color 0.3s ease, color 0.3s ease;
-    overflow-x: hidden;
   }
-
-  /* ─── Noise grain ─── */
   body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.04;
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.04;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 180px 180px;
   }
-
-  /* ─── Camera background ─── */
-  #camera-bg {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    overflow: hidden;
-  }
-
-  #camera-bg video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
+  #camera-bg { position: fixed; inset: 0; z-index: -1; opacity: 0; transition: opacity 0.5s ease; overflow: hidden; }
+  #camera-bg video { width: 100%; height: 100%; object-fit: cover; }
   html.glass #camera-bg { opacity: 1; }
-
-  /* ─── Camera permission overlay ─── */
+  #camera-overlay {
+    display: none; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: linear-gradient(160deg,rgba(8,8,8,.70) 0%,rgba(14,14,14,.58) 45%,rgba(10,10,10,.66) 100%);
+  }
+  html.glass #camera-overlay { display: block; }
   #cam-permission {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    padding: 32px;
-    text-align: center;
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 20px; padding: 32px; text-align: center;
   }
-
   #cam-permission.visible { display: flex; }
-
-  .perm-title {
-    font-family: 'Space Mono', monospace;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #f0f0f0;
-  }
-
-  .perm-desc {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    line-height: 1.6;
-    color: rgba(240, 240, 240, 0.6);
-    max-width: 280px;
-  }
-
-  .perm-btn {
-    font-family: 'Space Mono', monospace;
-    font-weight: 700;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 10px 24px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    transition: opacity 0.18s;
-  }
-
+  .perm-icon { width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+  .perm-icon svg { width: 28px; height: 28px; stroke: rgba(255,255,255,.8); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .perm-title { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: #f0f0f0; }
+  .perm-desc { font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.6; color: rgba(240,240,240,.6); max-width: 280px; }
+  .perm-btn { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 10px 24px; border-radius: 10px; border: none; cursor: pointer; transition: opacity .18s; }
   .perm-btn-allow { background: #f0f0f0; color: #080808; }
-  .perm-btn-deny { background: transparent; border: 1px solid rgba(240,240,240,0.15); color: rgba(240,240,240,0.5); }
-  .perm-btn:hover { opacity: 0.8; }
-
+  .perm-btn-deny { background: transparent; border: 1px solid rgba(240,240,240,.15); color: rgba(240,240,240,.5); }
+  .perm-btn:hover { opacity: .8; }
   a { color: inherit; text-decoration: none; }
-
-  /* ─── Layout ─── */
-  .page {
-    position: relative;
-    z-index: 1;
-    max-width: 640px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 0 32px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .post-header {
-    padding-top: 64px;
-    animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  .header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .breadcrumb { display: flex; align-items: center; gap: 6px; }
-
-  .back-link {
-    font-family: 'Space Mono', monospace;
-    font-weight: 700;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: color 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
+  .page { position: relative; z-index: 1; max-width: 640px; width: 100%; margin: 0 auto; padding: 0 32px; flex: 1; display: flex; flex-direction: column; }
+  .site-header { padding-top: 64px; animation: fadeUp .55s cubic-bezier(.16,1,.3,1) both; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; }
+  .back-link { display: inline-flex; align-items: center; gap: 8px; color: var(--text-muted); transition: color .18s ease; }
   .back-link:hover { color: var(--text); }
-
-  .back-link svg {
-    width: 14px;
-    height: 14px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    flex-shrink: 0;
-    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .back-link:hover svg { transform: translateX(-2px); }
-
-  /* ─── Mode toggle ─── */
-  .mode-toggle {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    cursor: pointer;
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    border-radius: 10px;
-    transition: color 0.18s ease, border-color 0.18s ease, background 0.25s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    position: relative;
-  }
-
+  .back-link:hover .back-arrow { transform: translateX(-2px); }
+  .back-arrow { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; transition: transform .18s ease; }
+  .mode-toggle { background: none; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; width: 36px; height: 36px; padding: 0; border-radius: 10px; transition: color .18s ease, border-color .18s ease, background .25s ease; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; }
   .mode-toggle:hover { color: var(--text); border-color: var(--text-muted); }
+  html.glass .mode-toggle { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.14); }
+  .mode-toggle svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; position: absolute; transition: opacity .18s, transform .18s; }
+  .icon-sun    { opacity: 0; transform: scale(.7); }
+  .icon-moon   { opacity: 1; transform: scale(1);  }
+  .icon-camera { opacity: 0; transform: scale(.7); }
+  html.light .icon-sun    { opacity: 1; transform: scale(1);  }
+  html.light .icon-moon   { opacity: 0; transform: scale(.7); }
+  html.light .icon-camera { opacity: 0; transform: scale(.7); }
+  html.glass .icon-sun    { opacity: 0; transform: scale(.7); }
+  html.glass .icon-moon   { opacity: 0; transform: scale(.7); }
+  html.glass .icon-camera { opacity: 1; transform: scale(1);  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 600px) { .page { padding: 0 24px; } .site-header { padding-top: 48px; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 
-  html.glass .mode-toggle {
-    background: #ffffff12;
-    border-color: #ffffff14;
-  }
 
-  .mode-toggle svg {
-    width: 13px;
-    height: 13px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    position: absolute;
-    transition: opacity 0.18s, transform 0.18s;
-  }
+  .post-header {{ padding-top: 64px; animation: fadeUp .55s cubic-bezier(.16,1,.3,1) both; }}
+  .post-title {{ font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(20px,4vw,28px); line-height: 1.25; letter-spacing: .03em; text-transform: uppercase; color: var(--text); margin-top: 48px; }}
+  .post-date {{ font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-top: 18px; display: block; }}
+  .post-body {{ flex: 1; padding: 44px 0 88px; animation: fadeUp .55s .07s cubic-bezier(.16,1,.3,1) both; }}
+  html.glass .post-body-inner {{ backdrop-filter: blur(56px) saturate(180%) brightness(1.08); -webkit-backdrop-filter: blur(56px) saturate(180%) brightness(1.08); background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.10); box-shadow: inset 0 .5px rgba(255,255,255,.13), 0 6px 28px rgba(0,0,0,.40); border-radius: 16px; padding: 32px; }}
+  .post-body p {{ max-width: 58ch; margin-bottom: 1.6em; font-size: 17px; line-height: 1.8; color: var(--text-body); }}
+  .post-body p:last-child {{ margin-bottom: 0; }}
+  .post-body a {{ color: var(--text); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; text-decoration-color: rgba(128,128,128,.4); transition: text-decoration-color .18s ease; }}
+  .post-body a:hover {{ text-decoration-color: var(--text); }}
+  @media (max-width:600px) {{ .post-header {{ padding-top: 48px; }} .post-title {{ margin-top: 36px; font-size: 20px; }} .post-body {{ padding: 32px 0 64px; }} .post-body p {{ font-size: 16px; }} html.glass .post-body-inner {{ padding: 20px; }} }}
 
-  .icon-sun    { opacity: 0; transform: scale(0.7); }
-  .icon-moon   { opacity: 1; transform: scale(1); }
-  .icon-camera { opacity: 0; transform: scale(0.7); }
-
-  html.light .icon-sun    { opacity: 1; transform: scale(1); }
-  html.light .icon-moon   { opacity: 0; transform: scale(0.7); }
-  html.light .icon-camera { opacity: 0; transform: scale(0.7); }
-
-  html.glass .icon-sun    { opacity: 0; transform: scale(0.7); }
-  html.glass .icon-moon   { opacity: 0; transform: scale(0.7); }
-  html.glass .icon-camera { opacity: 1; transform: scale(1); }
-
-  /* ─── Post content ─── */
-  .post-title {
-    font-family: 'Space Mono', monospace;
-    font-weight: 700;
-    font-size: clamp(20px, 4vw, 28px);
-    line-height: 1.25;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: var(--text);
-    margin-top: 48px;
-  }
-
-  .post-date {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-top: 18px;
-    display: block;
-  }
-
-  /* Glass surface card behind article in glass mode */
-  .post-body {
-    flex: 1;
-    padding: 44px 0 88px;
-    animation: fadeUp 0.55s 0.07s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  html.glass .post-body-inner {
-    backdrop-filter: blur(56px) saturate(180%) brightness(1.08);
-    -webkit-backdrop-filter: blur(56px) saturate(180%) brightness(1.08);
-    background: #ffffff12;
-    border: 1px solid #ffffff14;
-    box-shadow: inset 0 0.5px #ffffff21, 0 6px 28px #00000040;
-    border-radius: 16px;
-    padding: 32px;
-  }
-
-  .post-body p {
-    max-width: 58ch;
-    margin-bottom: 1.6em;
-    font-family: 'DM Sans', system-ui, sans-serif;
-    font-size: 17px;
-    line-height: 1.8;
-    color: var(--text-body);
-  }
-
-  .post-body p:last-child { margin-bottom: 0; }
-
-  .post-body a {
-    color: var(--text);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    text-decoration-thickness: 1px;
-    text-decoration-color: rgba(128, 128, 128, 0.4);
-    transition: text-decoration-color 0.18s ease;
-  }
-
-  .post-body a:hover { text-decoration-color: var(--text); }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  @media (max-width: 600px) {
-    .page { padding: 0 24px; }
-    .post-header { padding-top: 48px; }
-    .post-title { margin-top: 36px; font-size: 20px; }
-    .post-body { padding: 32px 0 64px; }
-    .post-body p { font-size: 16px; }
-    html.glass .post-body-inner { padding: 20px; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  }
 </style>
 </head>
 <body>
-
   <div id="camera-bg"><video id="camera-video" autoplay playsinline muted></video></div>
-
+  <div id="camera-overlay"></div>
   <div id="cam-permission">
+    <div class="perm-icon"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
     <p class="perm-title">Camera Access</p>
     <p class="perm-desc">Glass mode uses your camera as a live background. No video is recorded or stored.</p>
     <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
@@ -338,17 +113,16 @@
       <button class="perm-btn perm-btn-deny" id="perm-deny">Not Now</button>
     </div>
   </div>
-
   <div class="page">
     <header class="post-header">
       <div class="header-top">
-        <nav class="breadcrumb">
+        <nav>
           <a href="../" class="back-link">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-            Journal
+            <svg class="back-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 701 312" fill="none" style="height:18px;width:auto;display:block"><path d="M377.531 177.07C388.171 176.02 406.501 170.04 414.541 180.69C421.691 190.16 412.941 207.21 406.431 218.25L528.091 212.39C567.551 210.49 650.751 213.1 687.591 223.33C689.961 223.99 693.411 226.73 691.941 229.35C690.651 231.64 686.121 232.8 682.831 232.52C629.701 227.95 577.251 226.77 523.821 227.59C480.191 228.26 437.391 230.9 394.121 235.14C377.381 256.81 342.201 297.75 319.751 310.41C318.191 311.29 314.141 311.2 312.491 310.68C310.841 310.16 308.571 307.35 308.591 305.29C308.651 299.74 311.391 294.54 315.591 290.79C334.011 274.6 353.871 259.67 371.531 242.84C355.261 244.74 338.931 247.04 322.641 249.56C296.201 253.65 269.851 258.58 243.301 261.87C208.171 266.2 172.871 268.73 137.461 269.87C208.771 211.2 272.011 211.35 267.631 211.35C262.131 211.54 257.311 209.76 255.061 204.27C246.351 210.91 233.851 218.11 223.951 211.35C220.741 209.16 218.641 204.59 217.321 199.33C207.461 207.37 196.061 219.18 182.191 219.03C173.511 218.94 167.421 213.15 166.751 204.75C165.261 186.04 174.881 172.42 184.511 156.23L152.561 166.41C165.201 193.43 149.151 217.99 128.761 234.69C108.341 251.41 84.6512 263.59 58.9512 269.89C46.2812 273 33.7712 274.49 21.2612 272.33C5.43118 269.59 -3.39882 255.52 1.22118 240.38C4.05118 231.11 9.51118 223.41 16.8312 216.79C46.0212 190.37 85.6312 175.12 122.351 160.01C107.661 143.97 86.2612 134 72.7512 119.64C49.7612 95.2 64.8412 65.21 87.2112 45.79C112.561 23.73 143.451 8.86995 176.341 1.93995C186.851 -0.280046 197.041 -0.710046 207.181 1.22995C221.341 3.92995 229.971 16.36 227.751 30.66C224.531 51.46 203.501 69.68 187.191 81.56C179.741 86.98 153.571 107.21 146.621 97.51C141.751 90.71 150.941 82.55 157.091 78.54C172.841 68.28 202.971 47.66 208.771 29.91C210.531 24.53 207.741 19.64 202.201 18.48C170.291 11.84 100.501 48.31 84.1612 80.02C78.7112 90.59 81.2512 102.19 90.3312 109.63C109.721 125.51 126.681 134.01 144.341 152.14L179.391 141.58C188.351 138.88 198.111 137.66 206.581 134.12C216.331 130.04 237.271 113.23 254.611 124.42C258.471 126.91 260.951 132.5 259.211 136.4C256.621 142.2 246.631 130.5 229.661 141.05C212.081 151.98 198.121 167.88 189.011 186.6C187.161 190.4 185.971 196.04 187.561 199.51C190.841 200.95 194.851 198.25 197.441 196.18C214.181 182.79 225.881 165.5 236.001 146.71C238.121 142.77 242.421 140.53 246.101 140.52C249.241 140.52 256.441 143.54 255.361 147.61L238.671 185C237.421 187.81 236.201 193.06 238.001 195.33C242.591 201.12 264.071 177.6 267.661 170.72C275.391 155.91 281.301 140.77 288.251 125.64C290.741 120.22 294.791 117.44 301.151 117.93C302.941 118.07 306.141 119.36 307.321 120.74C308.501 122.12 308.671 125.88 307.951 127.65L295.821 157.46C307.101 145.08 318.251 132.1 331.511 120.55C336.831 115.92 343.181 114.09 349.221 117.28C353.291 119.43 354.831 123.6 352.611 127.93C344.831 143.07 337.351 157.94 330.841 173.68C328.771 178.69 327.531 183.27 327.461 188.92C335.191 186.47 340.971 183.55 347.001 179.13C369.221 162.85 389.981 145.61 410.801 126.31L375.811 129.36C372.411 129.66 368.131 128.39 366.311 125.47C364.111 121.93 366.601 113.77 371.451 113.15L438.471 104.65C442.051 104.2 444.641 108.97 445.161 111.46C445.841 114.75 444.091 118.67 441.261 121.15L377.531 177.06V177.07ZM114.171 222.74C128.111 212.16 144.651 191.38 133.161 172.86C104.851 182.34 31.7212 215.49 21.0012 242.73C19.0612 247.67 21.7512 252.71 26.8312 253.56C52.8912 257.93 93.0712 238.75 114.171 222.74Z" fill="currentColor"/><path d="M507.442 132.91C504.722 157.16 483.912 185.69 461.952 196.14C453.072 200.37 442.402 200.6 434.912 193.71C429.632 188.86 428.081 181.17 428.241 174C428.501 162.09 433.292 151.36 438.652 140.96C445.672 127.33 455.721 117.13 468.211 108.6C476.591 102.88 486.222 99.5701 496.012 104.84C500.872 107.46 503.661 112.07 506.081 117.76C513.901 115.72 521.312 113.37 528.622 110.66C533.492 108.85 535.101 105.25 538.041 101.31C541.241 97.0101 550.362 97.1901 554.462 100.53C556.852 102.48 556.312 107.33 555.152 110.03L542.601 139.26C552.491 129.92 578.421 96.0101 590.801 97.2701C594.281 97.6201 598.961 99.6301 600.101 103.42C601.241 107.21 599.112 111.71 597.382 115.11L579.671 150.01C578.101 153.11 571.902 168.84 574.872 170.72C578.842 173.23 593.342 163.96 597.432 161.19C598.752 132.95 629.922 88.6501 659.012 88.8201C664.162 88.8501 669.611 90.8201 672.471 94.4001C680.991 105.04 671.931 121.66 664.361 131.18C652.391 146.21 636.892 157.11 619.642 166.08C618.852 178.77 639.542 176.5 647.942 174.49C664.612 170.5 679.381 163.32 694.171 154.73C695.241 154.11 697.661 153.94 698.601 154.47C702.851 156.89 697.442 165.42 692.762 168.96C669.882 186.28 619.672 210.79 600.382 176.44C589.582 183.14 567.612 197.46 557.402 184.84C547.512 172.62 562.261 150.23 566.301 135.97C559.401 141.74 553.822 148.53 548.382 155.84L525.202 186.94C520.732 192.94 512.311 195.44 505.801 190.52C503.561 188.82 503.302 183.56 504.372 180.59C510.902 162.33 518.302 144.99 526.382 127.01L507.432 132.91H507.442ZM658.671 105.75C646.961 101.41 620.862 137.68 620.142 148.21C633.752 141.57 657.301 120.11 658.671 105.75ZM459.852 179.12C474.422 168.34 484.442 152.87 489.012 135.31C481.222 134.88 475.081 132.71 469.581 128.15C459.821 137.15 441.821 170.67 449.551 179.82C452.071 182.81 456.772 181.4 459.852 179.12Z" fill="currentColor"/></svg>
           </a>
         </nav>
-        <button class="mode-toggle" id="modeToggle" aria-label="Toggle display mode">
+        <button class="mode-toggle" id="modeToggle" aria-label="Cycle display mode">
           <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           <svg class="icon-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -357,105 +131,57 @@
       <h1 class="post-title">Niche Is the Only Moat</h1>
       <time class="post-date" datetime="2026-04-06">April 6, 2026</time>
     </header>
-
     <article class="post-body">
       <div class="post-body-inner">
-        <p>I built a thing today, <a href="https://niche.sanz.one" target="_blank" rel="noopener noreferrer">The Niche AI Playbook</a>. It's an intelligence report and interactive tool that makes the case for going vertical in AI. The short version: horizontal AI apps are in a race they can't win. The same labs powering your product are also your biggest competitive threat, and every model update commoditizes another layer of wrappers overnight. The data is pretty clear, vertical SaaS is growing 2.5x faster, CAC runs 40-60% lower, and churn is dramatically better because you're embedded in workflows people actually depend on. The hard problem in AI has shifted from how do I build it to what do I build, and the answer is always narrower than you think. Go run the niche positioning tool and find out if you're building a moat or a wrapper.</p>
+        <p>I built a thing today, <a href="https://niche.sanz.one" target="_blank" rel="noopener noreferrer">The Niche AI Playbook</a>. It&#8217;s an intelligence report and interactive tool that makes the case for going vertical in AI. The short version: horizontal AI apps are in a race they can&#8217;t win. The same labs powering your product are also your biggest competitive threat, and every model update commoditizes another layer of wrappers overnight. The data is pretty clear&#8202;&#8212;&#8202;vertical SaaS is growing 2.5&#215; faster, CAC runs 40&#8211;60% lower, and churn is dramatically better because you&#8217;re embedded in workflows people actually depend on. The hard problem in AI has shifted from <em>how do I build it</em> to <em>what do I build</em>, and the answer is always narrower than you think. Go run the niche positioning tool and find out if you&#8217;re building a moat or a wrapper.</p>
       </div>
     </article>
   </div>
+<script>
+(function(){
+  'use strict';
+  var html=document.documentElement,
+      camVideo=document.getElementById('camera-video'),
+      permOverlay=document.getElementById('cam-permission'),
+      permAllow=document.getElementById('perm-allow'),
+      permDeny=document.getElementById('perm-deny'),
+      modeBtn=document.getElementById('modeToggle'),
+      stream=null,
+      camPerm=localStorage.getItem('sanz-cam-permission');
 
-  <script>
-  (function () {
-    'use strict';
-
-    var html = document.documentElement;
-    var btn = document.getElementById('modeToggle');
-    var camVideo = document.getElementById('camera-video');
-    var permOverlay = document.getElementById('cam-permission');
-    var permAllow = document.getElementById('perm-allow');
-    var permDeny = document.getElementById('perm-deny');
-
-    var cameraStream = null;
-    var camPermission = localStorage.getItem('sanz-cam-permission');
-
-    function applyMode(mode) {
-      html.classList.remove('light', 'dark', 'glass');
-      if (mode === 'glass') {
-        html.classList.add('dark', 'glass');
-      } else {
-        html.classList.add(mode);
-      }
-    }
-
-    function startCamera() {
-      if (cameraStream) return;
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
-        .then(function (stream) {
-          cameraStream = stream;
-          camVideo.srcObject = stream;
-          localStorage.setItem('sanz-cam-permission', 'granted');
-          camPermission = 'granted';
-        })
-        .catch(function () {
-          localStorage.setItem('sanz-cam-permission', 'denied');
-          camPermission = 'denied';
-          setMode('dark');
-        });
-    }
-
-    function stopCamera() {
-      if (!cameraStream) return;
-      cameraStream.getTracks().forEach(function (t) { t.stop(); });
-      cameraStream = null;
-      camVideo.srcObject = null;
-    }
-
-    var CYCLE = { dark: 'glass', glass: 'light', light: 'dark' };
-
-    function setMode(mode) {
-      localStorage.setItem('sanz-theme', mode);
-      applyMode(mode);
-      if (mode === 'glass') {
-        startCamera();
-      } else {
-        stopCamera();
-      }
-    }
-
-    function handleGlassRequest() {
-      if (camPermission === 'denied') { setMode('dark'); return; }
-      if (camPermission === 'granted') { setMode('glass'); return; }
-      permOverlay.classList.add('visible');
-    }
-
-    btn.addEventListener('click', function () {
-      var current = localStorage.getItem('sanz-theme') || 'dark';
-      var next = CYCLE[current] || 'dark';
-      if (next === 'glass') { handleGlassRequest(); } else { setMode(next); }
-    });
-
-    permAllow.addEventListener('click', function () {
-      permOverlay.classList.remove('visible');
-      camPermission = 'granted';
-      setMode('glass');
-    });
-
-    permDeny.addEventListener('click', function () {
-      permOverlay.classList.remove('visible');
-      localStorage.setItem('sanz-cam-permission', 'denied');
-      camPermission = 'denied';
-      setMode('dark');
-    });
-
-    var saved = localStorage.getItem('sanz-theme') || 'dark';
-    applyMode(saved);
-    if (saved === 'glass') {
-      if (camPermission === 'granted') { startCamera(); }
-      else { setMode('dark'); }
-    }
-  })();
-  </script>
-
+  function applyMode(m){
+    html.classList.remove('light','dark','glass');
+    if(m==='glass'){html.classList.add('dark','glass');}else{html.classList.add(m);}
+  }
+  function startCamera(){
+    if(stream)return;
+    navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
+      .then(function(s){stream=s;camVideo.srcObject=s;localStorage.setItem('sanz-cam-permission','granted');camPerm='granted';})
+      .catch(function(){localStorage.setItem('sanz-cam-permission','denied');camPerm='denied';setMode('dark');});
+  }
+  function stopCamera(){
+    if(!stream)return;
+    stream.getTracks().forEach(function(t){t.stop();});
+    stream=null;camVideo.srcObject=null;
+  }
+  var CYCLE={dark:'glass',glass:'light',light:'dark'};
+  function setMode(m){localStorage.setItem('sanz-theme',m);applyMode(m);if(m==='glass'){startCamera();}else{stopCamera();}}
+  function requestGlass(){
+    if(camPerm==='denied'){setMode('dark');return;}
+    if(camPerm==='granted'){setMode('glass');return;}
+    permOverlay.classList.add('visible');
+  }
+  modeBtn.addEventListener('click',function(){
+    var cur=localStorage.getItem('sanz-theme')||'dark';
+    var next=CYCLE[cur]||'dark';
+    if(next==='glass'){requestGlass();}else{setMode(next);}
+  });
+  permAllow.addEventListener('click',function(){permOverlay.classList.remove('visible');camPerm='granted';setMode('glass');});
+  permDeny.addEventListener('click',function(){permOverlay.classList.remove('visible');localStorage.setItem('sanz-cam-permission','denied');camPerm='denied';setMode('dark');});
+  var saved=localStorage.getItem('sanz-theme')||'dark';
+  applyMode(saved);
+  if(saved==='glass'){camPerm=localStorage.getItem('sanz-cam-permission');if(camPerm==='granted'){startCamera();}else{setMode('dark');}}
+}());
+</script>
 </body>
 </html>
