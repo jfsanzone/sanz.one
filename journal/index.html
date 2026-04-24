@@ -170,6 +170,15 @@
   .post-excerpt { font-size: 15px; line-height: 1.65; color: var(--text-body); margin-top: 10px; max-width: 50ch; opacity: .8; }
   @media (max-width:600px) { .post-item { padding: 24px 0; } .post-excerpt { font-size: 14px; } }
 </style>
+<script>
+/* Apply saved mode instantly before first paint — no flash */
+(function(){
+  var m=localStorage.getItem('sanz-theme')||'dark';
+  var h=document.documentElement;
+  h.classList.remove('light','dark','glass');
+  if(m==='glass'){h.classList.add('dark','glass');}else{h.classList.add(m);}
+})();
+</script>
 </head>
 <body>
   <div id="camera-bg"><video id="camera-video" autoplay playsinline muted></video></div>
@@ -278,10 +287,12 @@
   btnGlass.addEventListener('click',function(){requestGlass();});
   permAllow.addEventListener('click',function(){permOverlay.classList.remove('visible');camPerm='granted';setMode('glass');});
   permDeny.addEventListener('click',function(){permOverlay.classList.remove('visible');localStorage.setItem('sanz-cam-permission','denied');camPerm='denied';setMode('dark');});
-  // Init
+  // Init — mode already applied by head script, just restore camera if needed
   var saved=localStorage.getItem('sanz-theme')||'dark';
-  applyMode(saved);
-  if(saved==='glass'){camPerm=localStorage.getItem('sanz-cam-permission');if(camPerm==='granted'){startCamera();}else{setMode('dark');}}
+  if(saved==='glass'){
+    camPerm=localStorage.getItem('sanz-cam-permission');
+    if(camPerm==='granted'){startCamera();}else{setMode('dark');}
+  }
 }());</script>
 </body>
 </html>
