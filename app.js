@@ -5,6 +5,8 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matc
 const width = 100;
 const height = 100;
 const spacing = 3.9;
+const repulsionForce = 11.7;
+const repulsionEase = 0.12;
 const dots = [];
 const pointer = {
   active: false,
@@ -85,14 +87,14 @@ function updateDots(tick) {
 
       if (influence > 0) {
         const safeDistance = Math.max(distance, 0.001);
-        const force = influence * influence * 13;
+        const force = influence * influence * repulsionForce;
         targetOffsetX = (dx / safeDistance) * force;
         targetOffsetY = (dy / safeDistance) * force;
       }
     }
 
-    const offsetX = currentOffsetX + (targetOffsetX - currentOffsetX) * 0.22;
-    const offsetY = currentOffsetY + (targetOffsetY - currentOffsetY) * 0.22;
+    const offsetX = currentOffsetX + (targetOffsetX - currentOffsetX) * repulsionEase;
+    const offsetY = currentOffsetY + (targetOffsetY - currentOffsetY) * repulsionEase;
 
     dot.setAttribute('transform', `translate(${offsetX.toFixed(2)} ${offsetY.toFixed(2)})`);
     dot.dataset.offsetX = offsetX;
