@@ -82,7 +82,7 @@
 .logo-stage {
   position: relative;
   grid-row: 2;
-  width: 300px;
+  width: 150px;
   max-width: 78vw;
   aspect-ratio: 1;
   overflow: visible;
@@ -195,7 +195,7 @@
   }
 
   .logo-stage {
-    width: min(300px, 78vw);
+    width: min(150px, 78vw);
   }
 
 }
