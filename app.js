@@ -2,10 +2,9 @@ const dotLogo = document.querySelector('[data-dot-logo]');
 const root = document.documentElement;
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const frameInterval = 84;
-const width = 499;
-const height = 68;
-const spacing = 6.5;
+const width = 100;
+const height = 100;
+const spacing = 3.9;
 const dots = [];
 const pointer = {
   active: false,
@@ -13,7 +12,6 @@ const pointer = {
   y: height / 2,
 };
 let lastFrame = 0;
-let frame = 0;
 let theme = 'dark';
 
 root.setAttribute('data-theme', theme);
@@ -34,14 +32,14 @@ function createDots() {
       const circle = document.createElementNS(namespace, 'circle');
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', y);
-      circle.setAttribute('r', 1.28);
+      circle.setAttribute('r', 0.84);
       circle.dataset.row = row;
       circle.dataset.col = col;
       circle.dataset.homeX = x;
       circle.dataset.homeY = y;
       circle.dataset.offsetX = 0;
       circle.dataset.offsetY = 0;
-      circle.style.opacity = '0.72';
+      circle.style.opacity = '0.84';
       fragment.appendChild(circle);
       dots.push(circle);
     }
@@ -72,16 +70,10 @@ function bindPointer() {
 
 function updateDots(tick) {
   for (const dot of dots) {
-    const row = Number(dot.dataset.row);
-    const col = Number(dot.dataset.col);
     const homeX = Number(dot.dataset.homeX);
     const homeY = Number(dot.dataset.homeY);
     const currentOffsetX = Number(dot.dataset.offsetX);
     const currentOffsetY = Number(dot.dataset.offsetY);
-    const flicker = seeded(row, col, Math.floor(tick / 2), 0.61);
-    const wave = (Math.sin((col * 0.22) + (row * 0.42) + tick * 0.18) + 1) / 2;
-    const opacity = 0.3 + flicker * 0.34 + wave * 0.42;
-    const radius = 1.02 + seeded(row, col, tick, 1.37) * 0.58;
     let targetOffsetX = 0;
     let targetOffsetY = 0;
 
@@ -89,11 +81,11 @@ function updateDots(tick) {
       const dx = homeX - pointer.x;
       const dy = homeY - pointer.y;
       const distance = Math.hypot(dx, dy);
-      const influence = Math.max(0, 1 - distance / 96);
+      const influence = Math.max(0, 1 - distance / 26);
 
       if (influence > 0) {
         const safeDistance = Math.max(distance, 0.001);
-        const force = influence * influence * 42;
+        const force = influence * influence * 13;
         targetOffsetX = (dx / safeDistance) * force;
         targetOffsetY = (dy / safeDistance) * force;
       }
@@ -102,8 +94,6 @@ function updateDots(tick) {
     const offsetX = currentOffsetX + (targetOffsetX - currentOffsetX) * 0.22;
     const offsetY = currentOffsetY + (targetOffsetY - currentOffsetY) * 0.22;
 
-    dot.style.opacity = opacity.toFixed(3);
-    dot.setAttribute('r', radius.toFixed(2));
     dot.setAttribute('transform', `translate(${offsetX.toFixed(2)} ${offsetY.toFixed(2)})`);
     dot.dataset.offsetX = offsetX;
     dot.dataset.offsetY = offsetY;
@@ -113,11 +103,8 @@ function updateDots(tick) {
 function animate(time) {
   if (!dotLogo || reducedMotion) return;
 
-  if (time - lastFrame >= frameInterval) {
-    updateDots(frame);
-    frame += 1;
-    lastFrame = time;
-  }
+  if (time - lastFrame >= 16) lastFrame = time;
+  updateDots();
 
   window.requestAnimationFrame(animate);
 }
