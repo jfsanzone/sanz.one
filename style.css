@@ -84,7 +84,7 @@
   grid-row: 2;
   width: 150px;
   max-width: 78vw;
-  aspect-ratio: 1;
+  aspect-ratio: 88 / 145;
   overflow: visible;
   color: var(--color-code);
   transform: translateZ(0);
@@ -162,6 +162,7 @@
   object-fit: contain;
   opacity: 0;
   pointer-events: none;
+  filter: invert(1);
 }
 
 @keyframes stage-enter {

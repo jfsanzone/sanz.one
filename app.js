@@ -2,8 +2,8 @@ const dotLogo = document.querySelector('[data-dot-logo]');
 const root = document.documentElement;
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const width = 100;
-const height = 100;
+const width = 88;
+const height = 145;
 const spacing = 3.9;
 const repulsionForce = 11.7;
 const repulsionEase = 0.12;
