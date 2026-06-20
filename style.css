@@ -82,25 +82,29 @@
 .logo-stage {
   position: relative;
   grid-row: 2;
-  width: 150px;
-  max-width: 78vw;
-  aspect-ratio: 88 / 145;
+  width: min(1400px, 92vw);
+  aspect-ratio: 7028 / 764;
   overflow: visible;
   color: var(--color-code);
   transform: translateZ(0);
   animation: stage-enter 900ms var(--ease-out) both;
 }
 
-.masked-logo {
+.hero-logo {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  overflow: visible;
+  object-fit: contain;
+  pointer-events: none;
 }
 
-.dot-field circle {
-  fill: var(--color-code);
-  transform-box: fill-box;
-  transform-origin: center;
+.g_canvas_distortion {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
 .status-indicator {
@@ -154,17 +158,6 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
-.logo-fallback {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  opacity: 0;
-  pointer-events: none;
-  filter: invert(1);
-}
-
 @keyframes stage-enter {
   from {
     opacity: 0;
@@ -196,17 +189,12 @@
   }
 
   .logo-stage {
-    width: min(150px, 78vw);
+    width: 92vw;
   }
-
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dot-field {
-    opacity: 0;
-  }
-
-  .logo-fallback {
+  .hero-logo {
     opacity: 1;
   }
 

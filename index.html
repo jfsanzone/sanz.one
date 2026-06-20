@@ -12,27 +12,24 @@
     <title>Sanzone</title>
     <link rel="stylesheet" href="./base.css" />
     <link rel="stylesheet" href="./style.css" />
-    <script src="./app.js" defer></script>
+    <script type="module" src="./app.js"></script>
   </head>
   <body>
     <main id="main" class="landing" aria-labelledby="page-title">
       <section class="hero" aria-label="Animated logo preview">
         <h1 id="page-title" class="sr-only">Sanzone</h1>
 
-        <div class="logo-stage" aria-hidden="true">
-          <svg class="masked-logo" viewBox="0 0 88 145" role="img" aria-label="Sanzone logo">
-            <defs>
-              <mask id="logo-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse">
-                <rect width="88" height="145" fill="black" />
-                <g fill="white">
-                  <path d="M73.0044 10.3711C96.9729 30.9845 82.3541 70.205 50.705 70.205L-1.52588e-05 70.2049L-1.24818e-05 38.4395L50.705 38.4395C51.4983 38.4395 51.8501 38.2333 52.0442 38.0901C52.3231 37.8863 52.6458 37.5079 52.8544 36.9499C53.063 36.3919 53.0655 35.8946 52.9878 35.5598C52.932 35.3245 52.8035 34.9412 52.2018 34.4245L12.9547 1.26892C12.5859 0.958406 12.8067 0.356767 13.2895 0.351915L60.7485 0.000150475C60.8746 -0.00227566 60.9984 0.0438212 61.093 0.126303L73.0044 10.3711Z" />
-                  <path d="M11.9142 134.629C-12.0543 114.016 2.56457 74.7952 34.2136 74.7952H84.9187V106.561H34.2136C33.4203 106.561 33.0686 106.767 32.8745 106.91C32.5955 107.114 32.2729 107.492 32.0642 108.05C31.8556 108.608 31.8532 109.105 31.9308 109.44C31.9866 109.676 32.1152 110.059 32.7168 110.576L71.964 143.731C72.3327 144.042 72.1119 144.643 71.6292 144.648L24.1702 145C24.044 145.002 23.9203 144.956 23.8257 144.874L11.9142 134.629Z" />
-                </g>
-              </mask>
-            </defs>
-            <g class="dot-field" data-dot-logo mask="url(#logo-mask)"></g>
-          </svg>
-          <img class="logo-fallback" src="./assets/frame-3378.svg" alt="" width="88" height="145" />
+        <div class="logo-stage" data-webgl-container aria-hidden="true">
+          <img
+            id="distorted-image"
+            class="hero-logo"
+            src="./assets/sanzone-wordmark.png"
+            alt="Sanzone"
+            width="7028"
+            height="764"
+            loading="eager"
+            decoding="async"
+          />
         </div>
 
         <div class="status-indicator" aria-label="Status: building">
