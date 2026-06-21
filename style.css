@@ -1,11 +1,4 @@
 :root {
-  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
-  --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
-  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
-  --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
-  --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
-  --text-2xl: clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
-
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -16,189 +9,438 @@
   --space-10: 2.5rem;
   --space-12: 3rem;
   --space-16: 4rem;
-  --space-20: 5rem;
-  --space-24: 6rem;
 
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-full: 9999px;
+  --radius-card: 28px;
 
-  --font-body: system-ui, sans-serif;
-  --transition-interactive: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  --font-body: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', 'Menlo', monospace;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ---------- Brand colors (info-card hover morph) ---------- */
+:root {
+  --brand-clickfunnels: #389dd7;
+  --brand-overskill: #45e760;
+  --brand-x: #1da1f2;
+  --brand-instagram: #e1306c;
+  --brand-linkedin: #0a66c2;
+}
+
+/* ---------- Light theme (default) ---------- */
 :root,
 [data-theme='light'] {
-  --color-bg: #f4f2ed;
-  --color-surface: #ece8df;
-  --color-surface-soft: #fbfaf7;
-  --color-text: #171614;
-  --color-text-muted: #68645c;
-  --color-text-faint: #9b968d;
-  --color-border: color-mix(in oklab, var(--color-text), transparent 86%);
-  --color-accent: #1b1a17;
-  --color-stage: #fffcf6;
-  --color-code: #171614;
-  --shadow-stage:
-    0 1px 2px oklch(0.2 0.01 80 / 0.06),
-    0 20px 60px oklch(0.2 0.01 80 / 0.08);
+  --color-bg: #f5f4f0;
+  --color-card-dark: #232427;
+  --color-card-blue: #0a84ff;
+  --color-text: #fafaf7;
+  --ui-fg: #232427; /* UI chrome (toggle) — dark on light bg */
+  --grain-blend: multiply;
+  --grain-opacity: 0.45;
 }
 
+/* ---------- Dark theme ---------- */
 [data-theme='dark'] {
-  --color-bg: #111110;
-  --color-surface: #1d1c1a;
-  --color-surface-soft: #22211f;
-  --color-text: #fffefa;
-  --color-text-muted: #9c9991;
-  --color-text-faint: #64625d;
-  --color-border: color-mix(in oklab, var(--color-text), transparent 86%);
-  --color-accent: #fffefa;
-  --color-stage: #111110;
-  --color-code: #ffffff;
-  --shadow-stage:
-    0 1px 2px oklch(0 0 0 / 0.28),
-    0 24px 90px oklch(0 0 0 / 0.44);
+  --color-bg: #0c0c0e;
+  --color-card-dark: #d6d4cf; /* light grey wordmark card */
+  --color-card-blue: #0a4fb0;
+  --color-text: #fafaf7;
+  --ui-fg: #fafaf7; /* UI chrome (toggle) — light on dark bg */
+  --wordmark-invert: 1; /* flip white wordmark texture -> black */
+  --grain-blend: screen;
+  --grain-opacity: 0.07;
 }
 
+/* Honor the OS preference when no explicit theme is set */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-bg: #0c0c0e;
+    --color-card-dark: #d6d4cf;
+    --color-card-blue: #0a4fb0;
+    --color-text: #fafaf7;
+    --ui-fg: #fafaf7;
+    --wordmark-invert: 1;
+    --grain-blend: screen;
+    --grain-opacity: 0.07;
+  }
+}
+
+/* ---------- Layout ---------- */
 .landing {
   position: relative;
   min-height: 100dvh;
-  overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding: clamp(var(--space-6), 5vw, var(--space-16));
   background: var(--color-bg);
 }
 
-.hero {
+.cards {
   display: grid;
-  min-height: 100dvh;
-  grid-template-rows: 1fr auto auto auto 1fr;
-  align-items: center;
-  justify-items: center;
-  row-gap: 1rem;
-  padding: clamp(var(--space-8), 5vw, var(--space-16)) var(--space-5);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(var(--space-4), 2.5vw, var(--space-8));
+  width: min(960px, 100%);
 }
 
-.logo-stage {
-  position: relative;
-  grid-row: 2;
-  width: min(1400px, 92vw);
-  aspect-ratio: 7028 / 764;
-  overflow: visible;
-  color: var(--color-code);
-  transform: translateZ(0);
-  animation: stage-enter 900ms var(--ease-out) both;
-}
-
-.hero-logo {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  pointer-events: none;
-}
-
-.g_canvas_distortion {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.status-indicator {
-  grid-row: 3;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: rgba(255, 255, 255, 0.62);
-  font-family: ui-monospace, 'SFMono-Regular', 'Cascadia Mono', 'Roboto Mono', Menlo, Consolas, monospace;
-  font-size: 0.78rem;
-  letter-spacing: 0.02em;
-  line-height: 1;
-  animation: stage-enter 900ms var(--ease-out) 90ms both;
-}
-
-.status-light {
-  width: 0.48rem;
-  height: 0.48rem;
-  border-radius: 999px;
-  background: #4ade80;
-  box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5);
-  animation: status-pulse 1.5s ease-in-out infinite;
-}
-
-.social-links {
-  grid-row: 4;
+/* ---------- Cards ---------- */
+.card {
+  border-radius: var(--radius-card);
+  aspect-ratio: 16 / 11;
+  padding: clamp(var(--space-6), 3vw, var(--space-10));
   display: flex;
+  animation: rise 800ms var(--ease-out) both;
+}
+
+.card--mark {
+  background: var(--color-card-dark);
   align-items: center;
   justify-content: center;
-  gap: 0.9rem;
-  animation: stage-enter 900ms var(--ease-out) 120ms both;
+}
+
+.card--info {
+  --info-bg: var(--color-card-blue);
+  --info-text: #ffffff;
+  /* the brand color the shimmer resolves onto */
+  --info-target: var(--color-card-blue);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--info-bg);
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-6);
+  animation-delay: 90ms;
+  transition: background-color 700ms var(--ease-out);
+}
+
+/* Keep all content above the shimmer layers */
+.card--info > * { position: relative; z-index: 3; }
+
+/* ---------- Chromatic shimmer layers ----------
+   Two soft RGB-split gradient sheets (echoing the left card's aberration)
+   drift continuously across the card while a link is hovered, melting into
+   each other for a smooth liquid shimmer over the solid brand color.
+   Idle: faded out via a gentle opacity transition. */
+.card--info::before,
+.card--info::after {
+  content: '';
+  position: absolute;
+  inset: -60% -80%;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+  /* fade in/out smoothly rather than cutting */
+  transition: opacity 600ms var(--ease-out);
+  mix-blend-mode: screen;
+}
+
+/* Layer 1 — wide warm→cool sweep, soft low-alpha stops (no banding) */
+.card--info::before {
+  z-index: 1;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 80, 80, 0) 0%,
+    rgba(255, 80, 80, 0.28) 22%,
+    rgba(120, 255, 180, 0.30) 46%,
+    rgba(90, 150, 255, 0.30) 70%,
+    rgba(200, 90, 255, 0) 100%
+  );
+  background-size: 220% 220%;
+  filter: blur(26px) saturate(1.25);
+}
+
+/* Layer 2 — narrower bright streak drifting the other way for depth */
+.card--info::after {
+  z-index: 2;
+  background: linear-gradient(
+    255deg,
+    rgba(120, 220, 255, 0) 0%,
+    rgba(120, 220, 255, 0.22) 30%,
+    rgba(255, 120, 200, 0.22) 55%,
+    rgba(255, 230, 130, 0) 85%
+  );
+  background-size: 200% 200%;
+  filter: blur(34px) saturate(1.15);
+}
+
+/* On hover: fade the sheets in and drift them continuously (smooth & slow) */
+.card--info:has(.brand-link:hover)::before,
+.card--info:has(.social-link:hover)::before {
+  opacity: 0.9;
+  animation: shimmer-drift-a 5.5s linear infinite;
+}
+.card--info:has(.brand-link:hover)::after,
+.card--info:has(.social-link:hover)::after {
+  opacity: 0.8;
+  animation: shimmer-drift-b 7s linear infinite;
+}
+
+@keyframes shimmer-drift-a {
+  0%   { background-position: 0% 50%;   transform: translateX(-3%) rotate(0.001deg); }
+  50%  { background-position: 100% 50%; transform: translateX(3%)  rotate(0.001deg); }
+  100% { background-position: 0% 50%;   transform: translateX(-3%) rotate(0.001deg); }
+}
+@keyframes shimmer-drift-b {
+  0%   { background-position: 100% 50%; transform: translateY(-3%); }
+  50%  { background-position: 0% 50%;   transform: translateY(3%); }
+  100% { background-position: 100% 50%; transform: translateY(-3%); }
+}
+
+/* Morph the whole info card to the hovered brand's primary color.
+   --info-target colors the shimmer gradient's resolve-to stops too. */
+.card--info:has(.brand-link.is-clickfunnels:hover) { --info-bg: var(--brand-clickfunnels); --info-target: var(--brand-clickfunnels); }
+.card--info:has(.brand-link.is-overskill:hover)    { --info-bg: var(--brand-overskill);    --info-target: var(--brand-overskill); }
+.card--info:has(.social-link.is-x:hover)           { --info-bg: var(--brand-x);            --info-target: var(--brand-x); }
+.card--info:has(.social-link.is-instagram:hover)   { --info-bg: var(--brand-instagram);    --info-target: var(--brand-instagram); }
+.card--info:has(.social-link.is-linkedin:hover)    { --info-bg: var(--brand-linkedin);     --info-target: var(--brand-linkedin); }
+
+/* Overskill green is light — flip text to dark for contrast */
+.card--info:has(.brand-link.is-overskill:hover) { --info-text: #0c0c0e; }
+
+/* ---------- Wordmark (WebGL stage) ---------- */
+.card--mark {
+  overflow: hidden;
+}
+
+.wordmark-stage {
+  position: relative;
+  width: min(72%, 320px);
+  aspect-ratio: 3288 / 311;
+  /* inversion now handled in-shader (uInvert reads --wordmark-invert) so the
+     live canvas keeps its colored fringes; only the fallback img is filtered. */
+}
+
+.wordmark-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: invert(var(--wordmark-invert, 0));
+  transition: filter 300ms var(--ease-out);
+}
+
+.wordmark-stage .g_canvas_distortion {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---------- Info card content ---------- */
+/* Tier 1 — the anchor */
+.name {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(1.35rem, 1.05rem + 1.1vw, 1.75rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--info-text);
+  transition: color 450ms var(--ease-out);
+}
+
+/* Tier 2 — supporting meta */
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.meta-line {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: clamp(0.82rem, 0.74rem + 0.4vw, 0.95rem);
+  font-weight: 400;
+  line-height: 1.5;
+  /* prefix text is quieter so the brand names carry the line */
+  color: color-mix(in srgb, var(--info-text) 60%, transparent);
+  transition: color 450ms var(--ease-out);
+}
+
+.brand-link {
+  display: inline-flex;
+  align-items: baseline;
+  /* full-strength color so brand names pop above the dimmed prefix */
+  color: var(--info-text);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    opacity 180ms var(--ease-out),
+    color 450ms var(--ease-out);
+}
+
+.brand-link span {
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.brand-icon {
+  width: 0.95em;
+  height: 0.95em;
+  flex: none;
+  fill: currentColor;
+  align-self: center;
+  margin-right: 0.35em;
+}
+
+.brand-link:hover,
+.brand-link:focus-visible {
+  opacity: 0.7;
+}
+
+/* ---------- Social links (Tier 3 — footer group) ---------- */
+.social-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  margin-top: var(--space-3);
 }
 
 .social-links a {
-  display: grid;
-  width: 1.95rem;
-  height: 1.95rem;
-  place-items: center;
-  color: rgba(255, 255, 255, 0.52);
+  display: inline-flex;
+  color: var(--info-text);
+  opacity: 0.7;
   text-decoration: none;
+  transition:
+    color 450ms var(--ease-out),
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
 }
 
 .social-links svg {
-  width: 1.08rem;
-  height: 1.08rem;
+  width: 1.2rem;
+  height: 1.2rem;
   fill: currentColor;
 }
 
 .social-links a:hover,
 .social-links a:focus-visible {
-  color: rgba(255, 255, 255, 0.9);
+  opacity: 1;
+  transform: translateY(-2px);
 }
 
-@keyframes stage-enter {
+/* ---------- Theme toggle ---------- */
+.theme-toggle {
+  position: fixed;
+  top: clamp(var(--space-4), 3vw, var(--space-8));
+  right: clamp(var(--space-4), 3vw, var(--space-8));
+  z-index: 50;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--ui-fg) 22%, transparent);
+  background: color-mix(in srgb, var(--ui-fg) 8%, transparent);
+  color: var(--ui-fg);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition:
+    background-color 200ms var(--ease-out),
+    transform 200ms var(--ease-out),
+    border-color 200ms var(--ease-out);
+}
+
+.theme-toggle:hover {
+  background: color-mix(in srgb, var(--ui-fg) 16%, transparent);
+  transform: translateY(-1px);
+}
+
+.theme-toggle svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Show sun in dark mode (to switch to light), moon in light mode */
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-moon { display: block; }
+[data-theme='dark'] .theme-toggle .icon-sun { display: block; }
+[data-theme='dark'] .theme-toggle .icon-moon { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .theme-toggle .icon-sun { display: block; }
+  :root:not([data-theme]) .theme-toggle .icon-moon { display: none; }
+}
+
+/* ---------- Grain overlay ---------- */
+.grain {
+  position: fixed;
+  inset: -50% 0 0 -50%;
+  width: 200%;
+  height: 200vh;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: var(--grain-opacity, 0.45);
+  mix-blend-mode: var(--grain-blend, multiply);
+  background-image: url('./assets/noise.png');
+  background-repeat: repeat;
+  background-size: 180px 180px;
+  will-change: transform;
+  animation: grain-animation 0.5s steps(6) infinite;
+}
+
+@keyframes grain-animation {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  17% {
+    transform: translate(-5%, -10%);
+  }
+  33% {
+    transform: translate(3%, -15%);
+  }
+  50% {
+    transform: translate(12%, 9%);
+  }
+  67% {
+    transform: translate(9%, 4%);
+  }
+  83% {
+    transform: translate(-1%, 7%);
+  }
+}
+
+/* ---------- Entrance ---------- */
+@keyframes rise {
   from {
     opacity: 0;
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@keyframes status-pulse {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: scale(0.88);
-    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.38);
+/* ---------- Responsive ---------- */
+@media (width <= 720px) {
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+    width: min(440px, 100%);
   }
-
-  50% {
-    opacity: 1;
-    transform: scale(1);
-    box-shadow: 0 0 0 0.32rem rgba(74, 222, 128, 0);
+  .card {
+    aspect-ratio: auto;
   }
-}
-
-@media (width <= 640px) {
-  .hero {
-    grid-template-rows: 1fr auto auto auto 1fr;
-    padding-inline: var(--space-4);
+  .card--mark {
+    aspect-ratio: 16 / 9;
   }
-
-  .logo-stage {
-    width: 92vw;
+  .card--info {
+    padding: var(--space-8);
+  }
+  .wordmark-img {
+    width: min(60%, 240px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-logo {
-    opacity: 1;
+  .card {
+    animation: none;
   }
-
-  .status-light {
+  .grain {
     animation: none;
   }
 }

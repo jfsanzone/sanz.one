@@ -1,0 +1,188 @@
+/* =========================================================================
+   SANZONE — minimal wordmark page.
+   Pure white background, the wordmark centered at ~4x scale, with the same
+   WebGL flowmap distortion + chromatic aberration animation. Nothing else.
+   ========================================================================= */
+
+:root {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --font-body: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Light theme (default) */
+  --bg: #ffffff;
+  --ink: #0c0c0e;
+  --wordmark-invert: 1;     /* white asset -> black on light bg */
+  --grain-blend: multiply;
+  --grain-opacity: 0.66;    /* ~10% more apparent than the prior 0.6 */
+
+  /* overskill green: AA-readable on white, as close to brand #45e760 as WCAG allows */
+  --os-green: #128926;      /* 4.53:1 on #fff, same hue as brand */
+  --cf-blue: #1f7fb8;       /* AA-readable ClickFunnels blue on white */
+}
+
+/* Dark theme follows the system setting */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #090909;
+    --ink: #fafaf7;
+    --wordmark-invert: 0;   /* keep the asset white on dark bg */
+    --grain-blend: screen;
+    --grain-opacity: 0.12;
+
+    /* on the dark bg the true brand colors are already legible */
+    --os-green: #45e760;
+    --cf-blue: #389dd7;
+  }
+}
+
+.mark-page {
+  margin: 0;
+  background: var(--bg);
+  min-height: 100dvh;
+}
+
+.mark-stage {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(2rem, 5vh, 4rem);
+  padding: clamp(1.5rem, 5vw, 4rem);
+  background: var(--bg);
+}
+
+/* ~4x the original wordmark (was capped at 320px) */
+.wordmark-stage {
+  position: relative;
+  width: min(90vw, 1280px);
+  aspect-ratio: 3288 / 311;
+  /* inversion now happens inside the WebGL shader (uInvert) so dark mode keeps
+     the same vivid fringe colors as light — no CSS filter needed here. */
+}
+
+.wordmark-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  /* fallback only (before WebGL boots / reduced-motion): the asset is white,
+     so invert it on light themes so the static image stays visible. The live
+     canvas handles its own inversion in-shader and is unaffected. */
+  filter: invert(var(--wordmark-invert, 1));
+}
+
+.wordmark-stage .g_canvas_distortion {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---------- Minimal info beneath the mark ---------- */
+.mark-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  font-family: var(--font-body);
+  color: var(--ink);
+  animation: mark-fade 900ms var(--ease-out) both;
+  animation-delay: 400ms;
+}
+
+.mark-role {
+  margin: 0;
+  font-size: clamp(0.78rem, 0.72rem + 0.3vw, 0.92rem);
+  font-weight: 400;
+  /* lowest opacity that still clears WCAG AA (4.5:1) in both themes:
+     light ink #0c0c0e on #fff -> 4.64:1; dark ink on #090909 -> 6.42:1 */
+  color: color-mix(in srgb, var(--ink) 57%, transparent);
+  letter-spacing: 0.005em;
+}
+
+/* ClickFunnels / overskill links — fuller weight so they stand out */
+.mark-brand {
+  color: var(--ink);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 200ms var(--ease-out);
+}
+
+/* brand-colored hover: ClickFunnels blue, overskill green */
+.mark-brand--clickfunnels:hover,
+.mark-brand--clickfunnels:focus-visible {
+  color: var(--cf-blue);
+}
+
+.mark-brand--overskill:hover,
+.mark-brand--overskill:focus-visible {
+  color: var(--os-green);
+}
+
+.mark-links {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  margin-top: 0.5rem;
+}
+
+.mark-links a {
+  display: inline-flex;
+  color: var(--ink);
+  opacity: 0.7;
+  text-decoration: none;
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+}
+
+.mark-links svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: currentColor;
+}
+
+.mark-links a:hover,
+.mark-links a:focus-visible {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+@keyframes mark-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark-info { animation: none; }
+  .grain { animation: none; }
+}
+
+/* ---------- Grain / static overlay (slightly more apparent than home) ---------- */
+.grain {
+  position: fixed;
+  inset: -50% 0 0 -50%;
+  width: 200%;
+  height: 200vh;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: var(--grain-opacity, 0.66); /* home is 0.45 */
+  mix-blend-mode: var(--grain-blend, multiply);
+  background-image: url('./assets/noise.png');
+  background-repeat: repeat;
+  background-size: 160px 160px;
+  will-change: transform;
+  animation: grain-animation 0.5s steps(6) infinite;
+}
+
+@keyframes grain-animation {
+  0%, 100% { transform: translate(0, 0); }
+  17% { transform: translate(-5%, -10%); }
+  33% { transform: translate(3%, -15%); }
+  50% { transform: translate(12%, 9%); }
+  67% { transform: translate(9%, 4%); }
+  83% { transform: translate(-1%, 7%); }
+}

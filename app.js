@@ -1,10 +1,10 @@
 import * as THREE from 'https://unpkg.com/three@0.160.1/build/three.module.js';
 
 /* =========================================================================
-   SANZONE — WebGL flowmap distortion + chromatic aberration wordmark
-   Inspired by supersolid.agency: a single wordmark image is sampled with
-   distorted UVs driven by a velocity flowmap, with RGB channel splitting
-   and motion blur. The distortion dissipates when the cursor stops.
+   SANZONE — WebGL flowmap distortion + chromatic aberration wordmark.
+   Modeled on supersolid.agency: a single wordmark image is sampled with
+   distorted UVs driven by a velocity flowmap, with RGB channel splitting.
+   The distortion dissipates smoothly when the cursor stops.
    ========================================================================= */
 
 const container = document.querySelector('[data-webgl-container]');
@@ -12,20 +12,22 @@ const imgEl = document.querySelector('#distorted-image');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const CONFIG = {
-  falloff: 0.18,
-  alpha: 0.97,
-  dissipation: 0.965,
-  distortionStrength: 0.12,
+  falloff: 0.36,           // larger = wider, softer smear
+  alpha: 1.0,
+  dissipation: 0.955,      // recovers faster so the wordmark stays readable
+  distortionStrength: 0.10, // gentler warp — legible most of the time
   chromaticAberration: 0.006,
   chromaticSpread: 1.0,
-  velocityScale: 0.6,
-  velocityDamping: 0.85,
-  motionBlurStrength: 0.35,
-  motionBlurDecay: 0.88,
-  motionBlurThreshold: 0.5,
+  velocityScale: 0.7,      // softer kick per movement
+  velocityDamping: 0.88,   // velocity settles sooner
+  autoplay: true,          // continuously animate as if a cursor were hovering
+  autoSpeed: 0.5,          // pace of the virtual cursor (higher = faster)
+  sideBlurMax: 0.014,      // peak blur radius applied at the L/R edges (UV units)
+  sideBlurPeriod: 9.0,     // seconds per side-blur pulse cycle ("from time to time")
+  sideBlurEdge: 0.28,      // how far in from each edge the blur reaches (0 = edge only)
 };
 
-const FLOW_SIZE = 256;
+const FLOW_SIZE = 512;
 
 function boot() {
   if (!container || !imgEl || reducedMotion) {
@@ -33,18 +35,16 @@ function boot() {
     return;
   }
 
-  new THREE.TextureLoader().load(
-    imgEl.currentSrc || imgEl.src,
-    (tex) => {
-      tex.minFilter = THREE.LinearFilter;
-      tex.magFilter = THREE.LinearFilter;
-      tex.generateMipmaps = false;
-      const aspect = tex.image.width / tex.image.height;
-      init(tex, aspect);
-    },
-    undefined,
-    () => { imgEl.style.opacity = '1'; }
-  );
+  const start = (tex) => {
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.generateMipmaps = false;
+    const aspect = tex.image.width / tex.image.height;
+    init(tex, aspect);
+  };
+
+  const src = imgEl.currentSrc || imgEl.src;
+  new THREE.TextureLoader().load(src, start, undefined, () => { imgEl.style.opacity = '1'; });
 }
 
 function init(logoTex, imageAspect) {
@@ -66,18 +66,11 @@ function init(logoTex, imageAspect) {
   let flowA = new THREE.WebGLRenderTarget(FLOW_SIZE, FLOW_SIZE, rtOpts);
   let flowB = new THREE.WebGLRenderTarget(FLOW_SIZE, FLOW_SIZE, rtOpts);
 
-  // Clear flow targets to zero — uninitialized float RTs contain garbage
-  // that would otherwise produce extreme distortion on the first frames.
+  // Clear flow targets — uninitialized float RTs contain garbage that would
+  // otherwise produce extreme distortion on the first frames.
   renderer.setRenderTarget(flowA); renderer.setClearColor(0x000000, 0); renderer.clear();
   renderer.setRenderTarget(flowB); renderer.clear();
   renderer.setRenderTarget(null);
-
-  /* ---- Motion-blur frame buffers ---- */
-  let frameA = makeFrameRT();
-  let frameB = makeFrameRT();
-  function makeFrameRT() {
-    return new THREE.WebGLRenderTarget(1, 1, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: false, stencilBuffer: false });
-  }
 
   /* ===================== Pass 1: flowmap update ===================== */
   const flowMat = new THREE.ShaderMaterial({
@@ -107,7 +100,8 @@ function init(logoTex, imageAspect) {
         vec2 d = vUv - uMouse;
         d.x *= uAspect;                       // correct for wide aspect
         float dist = length(d);
-        float influence = 1.0 - smoothstep(0.0, uFalloff, dist);
+        // soft gaussian-ish splat for a smoother smear
+        float influence = exp(-dist*dist / (uFalloff*uFalloff));
         prev.rg += uVelocity * influence * uAlpha;
         prev.b = length(prev.rg) * 2.0;
         gl_FragColor = prev;
@@ -122,13 +116,15 @@ function init(logoTex, imageAspect) {
     uniforms: {
       uImage: { value: logoTex },
       uFlow: { value: flowA.texture },
-      uPrevFrame: { value: frameA.texture },
       uDistortion: { value: CONFIG.distortionStrength },
       uAberration: { value: CONFIG.chromaticAberration },
       uSpread: { value: CONFIG.chromaticSpread },
-      uBlurStrength: { value: CONFIG.motionBlurStrength },
-      uBlurDecay: { value: CONFIG.motionBlurDecay },
-      uBlurThreshold: { value: CONFIG.motionBlurThreshold },
+      uTexel: { value: new THREE.Vector2(1 / FLOW_SIZE, 1 / FLOW_SIZE) },
+      uSideBlur: { value: 0.0 },   // 0..1 strength of the periodic edge blur
+      uSideEdge: { value: CONFIG.sideBlurEdge },
+      uBlurMax: { value: CONFIG.sideBlurMax },
+      uInvert: { value: 1.0 },     // 1 = invert (light theme), 0 = keep light letters (dark)
+      uDispAspect: { value: imageAspect }, // wordmark is very wide -> round the blur
     },
     vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy*2.0,0.0,1.0); }`,
     fragmentShader: `
@@ -136,59 +132,105 @@ function init(logoTex, imageAspect) {
       varying vec2 vUv;
       uniform sampler2D uImage;
       uniform sampler2D uFlow;
-      uniform sampler2D uPrevFrame;
       uniform float uDistortion;
       uniform float uAberration;
       uniform float uSpread;
-      uniform float uBlurStrength;
-      uniform float uBlurDecay;
-      uniform float uBlurThreshold;
+      uniform vec2 uTexel;
+      uniform float uSideBlur;   // 0..1 pulse strength
+      uniform float uSideEdge;   // reach in from each edge
+      uniform float uBlurMax;    // peak blur radius in UV units
+      uniform float uInvert;     // 1 = invert RGB (light theme look)
+      uniform float uDispAspect; // image width/height (UV is normalized per-axis)
+
+      // Resolve a single image sample into the final themed color (same invert
+      // logic used for the main pixel) so blur taps blend in the right space.
+      vec4 resolveColor(vec2 uv){
+        vec4 s = texture2D(uImage, uv);
+        vec3 rgb = s.rgb;
+        vec3 inv = 1.0 - rgb;
+        float luma = dot(rgb, vec3(0.299, 0.587, 0.114));
+        vec3 chroma = rgb - vec3(luma);
+        vec3 darkCol = vec3(luma) - chroma;
+        vec3 outRgb = mix(darkCol, inv, uInvert);
+        return vec4(outRgb, s.a);
+      }
+
+      // 9-tap blurred flow read -> smoother smear
+      vec2 sampleFlow(vec2 uv){
+        vec2 sum = vec2(0.0);
+        sum += texture2D(uFlow, uv).rg * 0.25;
+        sum += texture2D(uFlow, uv + vec2(uTexel.x, 0.0)).rg * 0.125;
+        sum += texture2D(uFlow, uv - vec2(uTexel.x, 0.0)).rg * 0.125;
+        sum += texture2D(uFlow, uv + vec2(0.0, uTexel.y)).rg * 0.125;
+        sum += texture2D(uFlow, uv - vec2(0.0, uTexel.y)).rg * 0.125;
+        sum += texture2D(uFlow, uv + uTexel).rg * 0.0625;
+        sum += texture2D(uFlow, uv - uTexel).rg * 0.0625;
+        sum += texture2D(uFlow, uv + vec2(uTexel.x, -uTexel.y)).rg * 0.0625;
+        sum += texture2D(uFlow, uv + vec2(-uTexel.x, uTexel.y)).rg * 0.0625;
+        return sum;
+      }
 
       void main(){
-        vec3 flow = texture2D(uFlow, vUv).rgb;
-        vec2 flowDir = flow.rg;
+        vec2 flowDir = sampleFlow(vUv);
         float mag = length(flowDir);
 
-        vec2 baseUv = vUv + flowDir * uDistortion * 0.5;
+        vec2 baseUv = vUv + flowDir * uDistortion;
 
-        // chromatic aberration: split RGB along/against/perp to flow
         vec2 dir = mag > 0.0001 ? normalize(flowDir) : vec2(0.0);
         vec2 perp = vec2(-dir.y, dir.x);
-        float ab = uAberration * uSpread * (0.4 + mag * 6.0);
+        float ab = uAberration * uSpread * (0.4 + mag * 7.0);
 
         vec2 rUv = baseUv + dir * ab;
         vec2 bUv = baseUv - dir * ab;
         vec2 gUv = baseUv + perp * ab * 0.8;
 
-        float r = texture2D(uImage, rUv).r;
-        float g = texture2D(uImage, gUv).g;
-        float b = texture2D(uImage, bUv).b;
-        // alpha from the most-displaced sample average to keep edges soft
-        float a = (texture2D(uImage, rUv).a + texture2D(uImage, gUv).a + texture2D(uImage, bUv).a) / 3.0;
+        vec4 col = resolveColor(rUv);
+        col.r = resolveColor(rUv).r;
+        col.g = resolveColor(gUv).g;
+        col.b = resolveColor(bUv).b;
+        col.a = (resolveColor(rUv).a + resolveColor(gUv).a + resolveColor(bUv).a) / 3.0;
 
-        vec4 cur = vec4(r, g, b, a);
+        // ---- Periodic edge blur ----
+        // A smooth, even Gaussian (color + alpha together) that fades in from the
+        // left and right edges, leaving the readable center crisp. Enough taps
+        // along a 2D ring that it reads as one creamy blur, not layered ghosts.
+        // uSideBlur pulses over time on the JS side ("from time to time").
+        float edge = 1.0 - smoothstep(0.0, max(uSideEdge, 0.001), min(vUv.x, 1.0 - vUv.x));
+        float blurAmt = edge * uSideBlur;
+        if (blurAmt > 0.001) {
+          float radius = uBlurMax * blurAmt;
+          // Dense, tightly-spaced Gaussian so it reads as one creamy blur with no
+          // ring/echo artifacts. The wordmark UV is very wide, so we scale the v
+          // step by the aspect ratio to keep the kernel round on screen. We run a
+          // 13-tap horizontal Gaussian for several vertical offsets (a separable
+          // approximation in a single pass).
+          // Precomputed 1D Gaussian weights (sigma ~ N/3), normalized per axis.
+          const int H = 8;   // horizontal half-width (taps: -8..8 = 17)
+          const int V = 2;   // vertical half-width (taps: -2..2 = 5)
+          float vy = radius * uDispAspect;   // round the kernel
+          vec4 acc = vec4(0.0);
+          float wsum = 0.0;
+          for (int j = -V; j <= V; j++) {
+            float fy = float(j) / float(V + 1);
+            float wy = exp(-3.0 * fy * fy);
+            for (int i = -H; i <= H; i++) {
+              float fx = float(i) / float(H + 1);
+              float wx = exp(-3.0 * fx * fx);
+              float w = wx * wy;
+              vec2 o = vec2(fx * radius, fy * vy);
+              acc += resolveColor(baseUv + o) * w;
+              wsum += w;
+            }
+          }
+          acc /= wsum;
+          col = mix(col, acc, blurAmt);
+        }
 
-        // motion blur: blend with previous frame when flow is strong
-        vec4 prev = texture2D(uPrevFrame, vUv);
-        float blur = smoothstep(uBlurThreshold, 1.0, mag) * uBlurStrength;
-        vec4 outc = mix(cur, prev * uBlurDecay, blur);
-        outc.a = max(cur.a, outc.a);
-
-        gl_FragColor = outc;
+        gl_FragColor = col;
       }`,
   });
   const dispMesh = new THREE.Mesh(quad, dispMat);
   dispMesh.frustumCulled = false;
-
-  /* ===================== Copy material (for frame feedback) ===================== */
-  const copyMat = new THREE.ShaderMaterial({
-    transparent: true,
-    uniforms: { uTex: { value: null } },
-    vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy*2.0,0.0,1.0); }`,
-    fragmentShader: `precision highp float; varying vec2 vUv; uniform sampler2D uTex; void main(){ gl_FragColor = texture2D(uTex, vUv); }`,
-  });
-  const copyMesh = new THREE.Mesh(quad, copyMat);
-  copyMesh.frustumCulled = false;
 
   /* ===================== Mouse tracking ===================== */
   const cur = new THREE.Vector2(-1, -1);
@@ -198,13 +240,51 @@ function init(logoTex, imageAspect) {
   const smoothVel = new THREE.Vector2(0, 0);
   let hasMoved = false;
 
+  let lastRealMove = -Infinity;   // timestamp of last real pointer movement
+  const REAL_TIMEOUT = 1200;      // ms after real cursor leaves before autoplay resumes
+
   function setTargetFromEvent(clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
     target.set((clientX - rect.left) / rect.width, 1.0 - (clientY - rect.top) / rect.height);
     if (!hasMoved) { cur.copy(target); last.copy(target); hasMoved = true; }
+    lastRealMove = performance.now();
   }
   container.addEventListener('pointermove', (e) => setTargetFromEvent(e.clientX, e.clientY));
-  container.addEventListener('pointerleave', () => { target.set(-1, -1); });
+  container.addEventListener('pointerleave', () => { lastRealMove = performance.now(); });
+
+  /* ---- Virtual cursor: a smooth wandering path so the logo animates on its
+     own as if hovered. Layered sines on each axis give an organic, non-looping
+     feel; it covers the full wordmark width and stays near the vertical middle. */
+  function autoTarget(t) {
+    const s = t * 0.001 * CONFIG.autoSpeed;
+    // x sweeps the full width with a couple of overlaid frequencies
+    const x = 0.5 + 0.46 * Math.sin(s * 1.7) * Math.cos(s * 0.6);
+    // y stays in the vertical band of the wordmark with gentle bob
+    const y = 0.5 + 0.22 * Math.sin(s * 2.3 + 1.1);
+    target.set(x, y);
+    if (!hasMoved) { cur.copy(target); last.copy(target); hasMoved = true; }
+  }
+
+  /* ===================== Theme -> shader invert ===================== */
+  // The invert that used to live in CSS (filter: invert(--wordmark-invert)) now
+  // happens in-shader so dark themes keep the vivid fringe colors. We read the
+  // SAME --wordmark-invert variable the page already defines, so every page's
+  // existing intent is respected automatically:
+  //   /mark  -> 1 on light (black letters), 0 on dark (white letters).
+  //   home   -> 0 on its dark card (white letters), 1 on its light card.
+  const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  function applyTheme() {
+    const v = getComputedStyle(container)
+      .getPropertyValue('--wordmark-invert').trim();
+    // default to 1 (invert) when unset, matching the light-mode look
+    dispMat.uniforms.uInvert.value = v === '0' ? 0.0 : 1.0;
+  }
+  applyTheme();
+  darkQuery.addEventListener('change', applyTheme);
+  // React to the home page's manual theme toggle (sets data-theme on <html>).
+  new MutationObserver(applyTheme).observe(document.documentElement, {
+    attributes: true, attributeFilter: ['data-theme'],
+  });
 
   /* ===================== Sizing ===================== */
   function resize() {
@@ -212,20 +292,20 @@ function init(logoTex, imageAspect) {
     const w = Math.max(1, Math.floor(rect.width));
     const h = Math.max(1, Math.floor(rect.height));
     renderer.setSize(w, h, false);
-    const pr = renderer.getPixelRatio();
-    const pw = Math.floor(w * pr), ph = Math.floor(h * pr);
-    frameA.setSize(pw, ph);
-    frameB.setSize(pw, ph);
-    renderer.setRenderTarget(frameA); renderer.setClearColor(0x000000, 0); renderer.clear();
-    renderer.setRenderTarget(frameB); renderer.clear();
-    renderer.setRenderTarget(null);
   }
   window.addEventListener('resize', resize);
   resize();
 
   /* ===================== Render loop ===================== */
-  function frame() {
-    // smooth mouse + velocity
+  function frame(now) {
+    const t = now || performance.now();
+
+    // If the real cursor hasn't moved recently, drive the virtual cursor.
+    const realActive = (t - lastRealMove) < REAL_TIMEOUT;
+    if (CONFIG.autoplay && !realActive) {
+      autoTarget(t);
+    }
+
     cur.lerp(target, 0.7);
     const nv = new THREE.Vector2((cur.x - last.x) * 80, (cur.y - last.y) * 80);
     velocity.lerp(nv, 0.6);
@@ -234,39 +314,37 @@ function init(logoTex, imageAspect) {
     last.copy(cur);
 
     const mouseActive = target.x >= 0 && target.y >= 0;
-    flowMat.uniforms.uMouse.value.copy(mouseActive ? cur : new THREE.Vector2(-1, -1));
+    flowMat.uniforms.uMouse.value.copy(mouseActive ? cur : new THREE.Vector2(-5, -5));
     flowMat.uniforms.uVelocity.value.copy(smoothVel).multiplyScalar(CONFIG.velocityScale);
+
+    // Periodic side blur: a slow swell that mostly rests at 0 and rises into a
+    // soft pulse "from time to time". sin^6 keeps the valleys long and flat.
+    const phase = (t * 0.001) * (Math.PI * 2 / CONFIG.sideBlurPeriod);
+    const swell = Math.pow(Math.max(0, Math.sin(phase)), 6.0);
+    dispMat.uniforms.uSideBlur.value = swell;
 
     // Pass 1: update flowmap (read flowA -> write flowB)
     flowMat.uniforms.uPrev.value = flowA.texture;
-    flowMesh.material = flowMat;
     scene.clear(); scene.add(flowMesh);
     renderer.setRenderTarget(flowB);
     renderer.render(scene, camera);
     [flowA, flowB] = [flowB, flowA];
 
-    // Pass 2: render distorted logo into frameB (read previous frameA)
+    // Pass 2: render distorted logo to screen
     dispMat.uniforms.uFlow.value = flowA.texture;
-    dispMat.uniforms.uPrevFrame.value = frameA.texture;
     scene.clear(); scene.add(dispMesh);
-    renderer.setRenderTarget(frameB);
+    renderer.setRenderTarget(null);
     renderer.setClearColor(0x000000, 0);
     renderer.clear();
     renderer.render(scene, camera);
 
-    // copy frameB to screen
-    copyMat.uniforms.uTex.value = frameB.texture;
-    scene.clear(); scene.add(copyMesh);
-    renderer.setRenderTarget(null);
-    renderer.clear();
-    renderer.render(scene, camera);
-
-    [frameA, frameB] = [frameB, frameA];
-
     requestAnimationFrame(frame);
   }
 
-  // reveal: hide raw img, show canvas
+  // Seed the virtual cursor immediately so motion starts on the first frame.
+  if (CONFIG.autoplay) autoTarget(performance.now());
+
+  // reveal: hide raw img, fade in canvas
   imgEl.style.opacity = '0';
   canvas.style.opacity = '0';
   requestAnimationFrame(() => {

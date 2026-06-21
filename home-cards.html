@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Jason Sanzone — VP, Design/Creative at ClickFunnels. Currently building Overskill." />
+    <meta property="og:title" content="Jason Sanzone — Sanzone" />
+    <meta
+      property="og:description"
+      content="VP, Design/Creative at ClickFunnels. Currently building Overskill."
+    />
+    <title>Jason Sanzone</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./base.css" />
+    <link rel="stylesheet" href="./style.css" />
+    <script>
+      // Apply saved theme before paint to avoid a flash of the wrong theme.
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          if (t === 'light' || t === 'dark') {
+            document.documentElement.setAttribute('data-theme', t);
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <button class="theme-toggle" type="button" aria-label="Toggle dark mode" data-theme-toggle>
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+      </svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+      </svg>
+    </button>
+    <main id="main" class="landing">
+      <div class="cards">
+        <!-- Card 1: wordmark with WebGL repulsion -->
+        <section class="card card--mark" aria-label="Sanzone">
+          <div class="wordmark-stage" data-webgl-container>
+            <img
+              id="distorted-image"
+              class="wordmark-img"
+              src="./assets/sanzone-vec.png"
+              alt="sanzone"
+              width="3288"
+              height="311"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+        </section>
+
+        <!-- Card 2: info -->
+        <section class="card card--info">
+          <h1 class="name">Jason Sanzone</h1>
+
+          <div class="meta">
+            <p class="meta-line">
+              VP, Design/Creative @
+              <a class="brand-link is-clickfunnels" href="https://www.clickfunnels.com" target="_blank" rel="noreferrer">
+                <svg class="brand-icon" viewBox="0 0 32 33" aria-hidden="true">
+                  <path d="M11.6301 26.75L7.17821 29.8652L5.33316 28.5263L7.24247 22.8315L6.79267 22.2245L0.697626 22.1799L0 20.0287L4.93847 16.5118V15.762L0.0458962 12.2005L0.77106 10.0493H6.23273L11.6301 26.75Z" />
+                  <path d="M13.1997 5.07795L14.9438 -0.000976541L17.2386 -0.000976562L19.0928 5.70278L19.8272 5.92593L24.8023 2.44477L26.6473 3.77477L24.7381 9.46959L25.1878 10.0676L31.2921 10.1212L31.9805 12.2724L27.5561 15.4233L13.1997 5.07795Z" />
+                  <path d="M7.36143 2.40039L5.49805 3.72146L14.7507 32.2938H17.0456L19.2211 26.0098L24.6369 29.8927L26.5003 28.5716L24.5084 22.2787L31.2276 22.243L31.9527 20.1008L7.36143 2.40039Z" />
+                </svg>
+                <span>ClickFunnels</span>
+              </a>
+            </p>
+            <p class="meta-line">
+              Currently building
+              <a class="brand-link is-overskill" href="https://overskill.com" target="_blank" rel="noreferrer">
+                <svg class="brand-icon" viewBox="0 0 36 36" aria-hidden="true">
+                  <path d="M21.8 15.3721H14.163C13.2907 15.3721 12.5835 16.0792 12.5835 16.9516V19.0508C12.5835 19.9231 13.2907 20.6303 14.163 20.6303H21.8C22.6723 20.6303 23.3794 19.9231 23.3794 19.0508V16.9516C23.3794 16.0792 22.6723 15.3721 21.8 15.3721Z" />
+                  <path d="M2.77188e-07 15.6584C2.77188e-07 15.6584 9.90099 8.29173 16.0252 3.01709C16.4898 3.01709 16.6343 3.01709 17.185 3.01709H25.8987C27.1731 3.01709 28.2054 4.05672 28.2054 5.3403V8.52018C28.2054 9.80379 27.1731 10.8434 25.8987 10.8434H12.4418C7.80103 10.8434 7.77073 14.2005 7.77073 14.8422V18.3053C7.77073 19.5889 6.73851 20.6284 5.46403 20.6284H1.7632C0.79005 20.6284 -8.5247e-08 19.8328 0 18.8527L2.77188e-07 15.6584Z" />
+                  <path d="M36.0013 20.3422C36.0013 20.3422 26.1003 27.7088 19.9761 32.9834C19.5114 32.9834 19.367 32.9834 18.8163 32.9834H10.1026C8.82812 32.9834 7.7959 31.9438 7.7959 30.6602V27.4803C7.7959 26.1967 8.82812 25.1571 10.1026 25.1571H23.5594C28.2002 25.1571 28.2305 21.8001 28.2305 21.1583V17.6953C28.2305 16.4117 29.2628 15.3721 30.5372 15.3721H34.238C35.2112 15.3721 36.0013 16.1678 36.0013 17.1478V20.3422Z" />
+                </svg>
+                <span>overskill</span>
+              </a>
+            </p>
+          </div>
+
+          <nav class="social-links" aria-label="Social links">
+            <a class="social-link is-x" href="https://x.com/jasonsanzone" target="_blank" rel="noreferrer" aria-label="X">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932L18.901 1.153Zm-1.293 19.491h2.039L6.486 3.24H4.298l13.31 17.404Z" />
+              </svg>
+            </a>
+            <a class="social-link is-instagram" href="https://instagram.com/jasonsanzone" target="_blank" rel="noreferrer" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3Z" />
+              </svg>
+            </a>
+            <a class="social-link is-linkedin" href="https://www.linkedin.com/in/jasonsanzone" target="_blank" rel="noreferrer" aria-label="LinkedIn">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.849-3.037-1.851 0-2.134 1.445-2.134 2.939v5.667H9.356V9h3.414v1.561h.049c.476-.9 1.637-1.849 3.37-1.849 3.602 0 4.267 2.371 4.267 5.455v6.285h-.009ZM5.337 7.433a2.062 2.062 0 1 1 0-4.124 2.062 2.062 0 0 1 0 4.124ZM7.119 20.452H3.555V9h3.564v11.452ZM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.226.792 24 1.771 24h20.451C23.2 24 24 23.226 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003Z" />
+              </svg>
+            </a>
+          </nav>
+        </section>
+      </div>
+    </main>
+    <script>
+      (function () {
+        var btn = document.querySelector('[data-theme-toggle]');
+        if (!btn) return;
+        var root = document.documentElement;
+        function current() {
+          var attr = root.getAttribute('data-theme');
+          if (attr) return attr;
+          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        btn.addEventListener('click', function () {
+          var next = current() === 'dark' ? 'light' : 'dark';
+          root.setAttribute('data-theme', next);
+          try { localStorage.setItem('theme', next); } catch (e) {}
+        });
+      })();
+    </script>
+  </body>
+</html>
