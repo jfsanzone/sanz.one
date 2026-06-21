@@ -56,7 +56,7 @@
 /* ~4x the original wordmark (was capped at 320px) */
 .wordmark-stage {
   position: relative;
-  width: min(90vw, 1280px);
+  width: min(72vw, 1024px);   /* 20% smaller than the prior min(90vw, 1280px) */
   aspect-ratio: 3288 / 311;
   /* inversion now happens inside the WebGL shader (uInvert) so dark mode keeps
      the same vivid fringe colors as light — no CSS filter needed here. */
