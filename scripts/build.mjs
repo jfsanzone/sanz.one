@@ -100,21 +100,20 @@ const FOOTER = `<footer class="sz-footer">
 
 const BACK_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>';
 
-// Small top-right icon nav shown on journal + about pages (the landing page is untouched).
-// Icons are drawn in a 30x40 box (viewBox "5 0 30 40") so they render at the logo's exact size (~30.7x40).
-const NAV_ICONS = {
-  // Document with a folded corner and text lines (lines are cut out with evenodd)
-  journal: '<path fill-rule="evenodd" d="M8 0H21V11A3 3 0 0 0 24 14H35V37A3 3 0 0 1 32 40H8A3 3 0 0 1 5 37V3A3 3 0 0 1 8 0ZM12.5 20H27.5A1.5 1.5 0 0 1 27.5 23H12.5A1.5 1.5 0 0 1 12.5 20ZM12.5 26H27.5A1.5 1.5 0 0 1 27.5 29H12.5A1.5 1.5 0 0 1 12.5 26ZM12.5 32H20.5A1.5 1.5 0 0 1 20.5 35H12.5A1.5 1.5 0 0 1 12.5 32Z"></path><path d="M24.5 0.6L34.4 10.5H25.5A1 1 0 0 1 24.5 9.5Z"></path>',
-  // Person: round head + rounded shoulders
-  about: '<circle cx="20" cy="9.5" r="9.5"></circle><path d="M5 40V37A13 13 0 0 1 18 24H22A13 13 0 0 1 35 37V40Z"></path>',
-};
+// Top-right segmented nav on journal + about pages (the landing page is untouched).
+// Two equal-width items with a highlight "thumb" behind the active one. When you switch
+// pages via the nav, the thumb slides from the previous item to the new one: the click
+// stores the page being left in sessionStorage, and a tiny inline script right after the
+// nav starts the thumb there before first paint, then flips data-active so CSS slides it.
+const NAV_ITEMS = [['about', '/about/', 'About'], ['journal', '/journal/', 'Journal']];
 function nav(current) {
-  const item = (key, href, label) => {
-    const on = current === key || (key === 'journal' && current === 'post');
-    const aria = current === key ? ' aria-current="page"' : on ? ' aria-current="true"' : '';
-    return `<a class="sz-nav-link${on ? ' is-current' : ''}" href="${href}" aria-label="${label}"${aria}><svg width="30" height="40" viewBox="5 0 30 40" fill="currentColor" aria-hidden="true" focusable="false">${NAV_ICONS[key]}</svg><span class="sz-tip" aria-hidden="true">${label}</span></a>`;
-  };
-  return `<nav class="sz-nav" aria-label="Site">${item('journal', '/journal/', 'Journal')}${item('about', '/about/', 'About')}</nav>`;
+  const active = current === 'post' ? 'journal' : current;
+  const items = NAV_ITEMS.map(([key, href, label]) => {
+    const aria = current === key ? ' aria-current="page"' : key === active ? ' aria-current="true"' : '';
+    return `<a class="sz-seg-item" data-key="${key}" href="${href}"${aria}>${label}</a>`;
+  }).join('');
+  const script = `(function(){var n=document.currentScript.previousElementSibling,c=n.getAttribute('data-active'),k='sz-seg-from',f=null;try{f=sessionStorage.getItem(k);sessionStorage.removeItem(k)}catch(e){}n.addEventListener('click',function(e){var a=e.target.closest('a');if(a&&a.getAttribute('data-key')!==c){try{sessionStorage.setItem(k,c)}catch(e){}}});if(f&&f!==c&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&n.querySelector('[data-key="'+f+'"]')){n.setAttribute('data-active',f);n.offsetWidth;requestAnimationFrame(function(){requestAnimationFrame(function(){n.setAttribute('data-active',c)})})}})();`;
+  return `<nav class="sz-seg" data-active="${active}" aria-label="Site"><span class="sz-seg-thumb" aria-hidden="true"></span>${items}</nav><script>${script}</script>`;
 }
 
 function layout({ title, description, url, ogType = 'website', image = '', card: cardType = '', current = '', extraHead = '', body }) {
