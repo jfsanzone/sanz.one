@@ -17,7 +17,8 @@ const SITE = {
   url: 'https://sanz.one',
   name: 'Jason Sanzone',
   blogTitle: 'Writing',
-  blogDescription: 'Notes on brands, products, and interfaces by Jason Sanzone.',
+  blogDescription: 'Jason Sanzone on design, AI, EDC and gear, and everything else.',
+  blogSubline: 'Notes on design, AI, gear, and everything else.',
   lang: 'en',
 };
 
@@ -136,14 +137,14 @@ function indexPage(posts) {
     ? `<ol class="sz-posts" reversed>
 ${posts.map((p) => `      <li><a class="sz-post-link" href="${p.url}"><span class="sz-post-title">${esc(p.title)}</span><time class="sz-post-date" datetime="${isoDate(p.date)}">${fmtDate(p.date)}</time>${p.description ? `<p class="sz-post-desc">${esc(p.description)}</p>` : ''}</a></li>`).join('\n')}
     </ol>`
-    : `<p class="sz-empty">Nothing here yet.</p>`;
+    : `<p class="sz-empty">First post coming soon.</p>`;
   return layout({
     title: `${SITE.blogTitle} — ${SITE.name}`,
     description: SITE.blogDescription,
     url: '/blog/',
     body: `<section class="sz-content">
     <h1 class="sz-h1">${esc(SITE.blogTitle)}</h1>
-    <p class="sz-sub">Notes on brands, products, and interfaces.</p>
+    <p class="sz-sub">${esc(SITE.blogSubline)}</p>
     ${list}
   </section>`,
   });
@@ -188,7 +189,6 @@ function feed(posts) {
 ${p.description ? `      <description>${esc(p.description)}</description>\n` : ''}      <content:encoded>${cdata(html)}</content:encoded>
     </item>`;
   }).join('\n');
-  const updated = posts.length ? posts[0].date.toUTCString() : new Date(0).toUTCString();
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
@@ -196,8 +196,7 @@ ${p.description ? `      <description>${esc(p.description)}</description>\n` : '
     <link>${SITE.url}/blog/</link>
     <description>${esc(SITE.blogDescription)}</description>
     <language>en-us</language>
-    <lastBuildDate>${updated}</lastBuildDate>
-    <atom:link href="${SITE.url}/blog/feed.xml" rel="self" type="application/rss+xml"/>
+${posts.length ? `    <lastBuildDate>${posts[0].date.toUTCString()}</lastBuildDate>\n` : ''}    <atom:link href="${SITE.url}/blog/feed.xml" rel="self" type="application/rss+xml"/>
 ${items}
   </channel>
 </rss>

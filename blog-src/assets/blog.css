@@ -60,7 +60,7 @@ a { color: var(--text); text-decoration: none; }
 .sz-post-link:hover .sz-post-title, .sz-post-link:focus-visible .sz-post-title { text-decoration-color: var(--text); }
 .sz-post-date { font-size: 14px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .sz-post-desc { grid-column: 1 / -1; margin: 0; font-size: 15px; line-height: 1.5; color: var(--muted); }
-.sz-empty { margin: 40px 0 0; color: var(--muted); font-size: 16px; }
+.sz-empty { margin: clamp(32px, 4vw, 56px) 0 0; max-width: 720px; padding: 22px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); color: var(--muted); font-size: 16px; line-height: 1.5; }
 
 /* ---------- Post ---------- */
 .sz-back { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); transition: color .2s; margin-bottom: clamp(28px, 4vw, 48px); }

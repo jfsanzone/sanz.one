@@ -2,7 +2,7 @@
 title: Hello world
 date: 2026-09-28
 description: Placeholder post to preview the blog layout. Edit or delete me in Pages CMS.
-draft: false
+draft: true
 ---
 This is a **placeholder post** so the blog has something to render. Edit it or delete it from Pages CMS (or delete `content/posts/2026-09-28-hello-world.md`) before writing the real first post.
 
