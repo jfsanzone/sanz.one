@@ -100,12 +100,19 @@ const FOOTER = `<footer class="sz-footer">
 
 const BACK_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>';
 
-// Small top-right nav shown on journal + about pages (the landing page is untouched).
+// Small top-right icon nav shown on journal + about pages (the landing page is untouched).
+// Icons are drawn in a 30x40 box (viewBox "5 0 30 40") so they render at the logo's exact size (~30.7x40).
+const NAV_ICONS = {
+  // Document with a folded corner and text lines (lines are cut out with evenodd)
+  journal: '<path fill-rule="evenodd" d="M8 0H21V11A3 3 0 0 0 24 14H35V37A3 3 0 0 1 32 40H8A3 3 0 0 1 5 37V3A3 3 0 0 1 8 0ZM12.5 20H27.5A1.5 1.5 0 0 1 27.5 23H12.5A1.5 1.5 0 0 1 12.5 20ZM12.5 26H27.5A1.5 1.5 0 0 1 27.5 29H12.5A1.5 1.5 0 0 1 12.5 26ZM12.5 32H20.5A1.5 1.5 0 0 1 20.5 35H12.5A1.5 1.5 0 0 1 12.5 32Z"></path><path d="M24.5 0.6L34.4 10.5H25.5A1 1 0 0 1 24.5 9.5Z"></path>',
+  // Person: round head + rounded shoulders
+  about: '<circle cx="20" cy="9.5" r="9.5"></circle><path d="M5 40V37A13 13 0 0 1 18 24H22A13 13 0 0 1 35 37V40Z"></path>',
+};
 function nav(current) {
   const item = (key, href, label) => {
     const on = current === key || (key === 'journal' && current === 'post');
     const aria = current === key ? ' aria-current="page"' : on ? ' aria-current="true"' : '';
-    return `<a class="sz-nav-link${on ? ' is-current' : ''}" href="${href}"${aria}>${label}</a>`;
+    return `<a class="sz-nav-link${on ? ' is-current' : ''}" href="${href}" aria-label="${label}"${aria}><svg width="30" height="40" viewBox="5 0 30 40" fill="currentColor" aria-hidden="true" focusable="false">${NAV_ICONS[key]}</svg><span class="sz-tip" aria-hidden="true">${label}</span></a>`;
   };
   return `<nav class="sz-nav" aria-label="Site">${item('journal', '/journal/', 'Journal')}${item('about', '/about/', 'About')}</nav>`;
 }

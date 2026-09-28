@@ -42,9 +42,22 @@ a { color: var(--text); text-decoration: none; }
 
 .sz-top { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .sz-logo { align-self: flex-start; display: block; line-height: 0; }
-.sz-nav { display: flex; align-items: center; gap: clamp(18px, 2vw, 28px); font-size: 15px; }
-.sz-nav-link { color: var(--muted); transition: color .2s; padding: 6px 0; }
-.sz-nav-link:hover, .sz-nav-link.is-current { color: var(--text); }
+.sz-nav { display: flex; align-items: center; gap: 18px; }
+.sz-nav-link { position: relative; display: block; line-height: 0; color: var(--muted); transition: color .25s ease; border-radius: 6px; }
+.sz-nav-link svg { display: block; width: 30px; height: 40px; }
+.sz-nav-link.is-current { color: var(--text); }
+.sz-nav-link:focus { outline: none; }
+.sz-nav-link:focus-visible { color: var(--text); outline: 2px solid var(--line); outline-offset: 4px; }
+/* Custom tooltip: small dark pill below the icon */
+.sz-tip { position: absolute; top: calc(100% + 10px); left: 50%; z-index: 10; padding: 6px 10px; border-radius: 999px; background: var(--tile); border: 1px solid var(--border); color: var(--text); font: 500 12.5px/1 Geist, system-ui, sans-serif; letter-spacing: 0; white-space: nowrap; pointer-events: none; opacity: 0; transform: translate(-50%, -3px); transition: opacity .15s ease, transform .15s ease; }
+.sz-nav-link:last-child .sz-tip { left: auto; right: 0; transform: translateY(-3px); } /* never clipped at the right edge */
+.sz-nav-link:focus-visible .sz-tip { opacity: 1; transform: translate(-50%, 0); }
+.sz-nav-link:last-child:focus-visible .sz-tip { transform: none; }
+@media (hover: hover) and (pointer: fine) {
+  .sz-nav-link:hover { color: var(--text); }
+  .sz-nav-link:hover .sz-tip { opacity: 1; transform: translate(-50%, 0); }
+  .sz-nav-link:last-child:hover .sz-tip { transform: none; }
+}
 .sz-logo img { height: 40px; width: auto; display: block; }
 
 .sz-content { flex: 1 0 auto; width: 100%; max-width: 1000px; animation: rise .9s cubic-bezier(.2,.8,.2,1) both; }
@@ -137,7 +150,6 @@ a { color: var(--text); text-decoration: none; }
   .sz-role { display: block; }
   .sz-sep { display: none; }
   .sz-post-link { grid-template-columns: 1fr; }
-  .sz-nav { font-size: 14px; }
   .sz-photo { width: 120px; height: 120px; }
   .sz-social { flex-basis: 100%; }
   .sz-tile { flex: 1 1 0; width: auto; }
