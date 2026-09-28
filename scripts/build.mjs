@@ -265,7 +265,7 @@ function aboutPage() {
       <img class="sz-photo" src="${photo}" alt="Jason Sanzone" width="144" height="144">
     </picture>
     <h1 class="sz-h1">About</h1>
-    <p class="sz-bio">I'm a designer based just north of Atlanta, Georgia. I've spent my career building brands, products, and interfaces, including work for some of the biggest names out there. Today I lead design and creative at <a class="sz-u" href="https://www.clickfunnels.com" target="_blank" rel="noopener noreferrer">ClickFunnels</a> and co-founded <a class="sz-u" href="https://www.overskill.com" target="_blank" rel="noopener noreferrer">Overskill</a>, where I head up design. Away from the screen, you'll find me outdoors, tinkering with new tech and AI, or hunting down gear that makes everyday life a little easier.</p>
+    <p class="sz-bio">I'm a designer based just north of Atlanta, Georgia. I've spent my career building brands, products, and interfaces, including work for some of the world's most recognizable brands. Today I lead design and creative at <a class="sz-u" href="https://www.clickfunnels.com" target="_blank" rel="noopener noreferrer">ClickFunnels</a> and co-founded <a class="sz-u" href="https://www.overskill.com" target="_blank" rel="noopener noreferrer">Overskill</a>, where I head up design. Away from the screen, you'll find me outdoors, tinkering with new tech and AI, or hunting down gear that makes everyday life a little easier.</p>
     <div class="sz-contact">
       <a class="sz-email" href="mailto:${SOCIAL.email}">${SOCIAL.email}</a>
       ${TILES}
