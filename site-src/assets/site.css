@@ -35,19 +35,20 @@ body { margin: 0; background: var(--bg); color: var(--text); font-family: Geist,
 a { color: var(--text); text-decoration: none; }
 ::selection { background: rgba(250, 67, 30, .35); }
 
-.sz-main { min-height: 100vh; min-height: 100dvh; box-sizing: border-box; padding: clamp(28px, 6vw, 80px); display: flex; flex-direction: column; gap: 64px; animation: sz-fade .25s ease-out backwards; }
+.sz-main { min-height: 100vh; min-height: 100dvh; box-sizing: border-box; padding: clamp(28px, 6vw, 80px); display: flex; flex-direction: column; gap: 64px; }
+/* Content fades in on load; the nav (.sz-top) does not, so it reads as persistent across pages. */
+.sz-main > :not(.sz-top) { animation: sz-fade .25s ease-out backwards; }
 @keyframes sz-fade { from { opacity: 0; } }
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .sz-main, .sz-content { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .sz-main > *, .sz-content { animation: none !important; } }
 
 .sz-top { display: flex; align-items: center; justify-content: flex-start; }
 /* Segmented nav [ logo | About | Journal ]: 40px tall like the landing logo, 12px radius like the tiles;
    the active thumb uses the landing CTA colors (#E8E8E8 / #0A0A0A). --l = logo segment width. */
-.sz-seg { --l: 38px; position: relative; display: inline-grid; grid-template-columns: var(--l) 1fr 1fr; height: 40px; padding: 3px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 12px; background: #111111; isolation: isolate; }
+.sz-seg { --l: 38px; --w: 81px; position: relative; display: inline-grid; grid-template-columns: var(--l) var(--w) var(--w); view-transition-name: sz-nav; height: 40px; padding: 3px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 12px; background: #111111; isolation: isolate; }
 .sz-seg-thumb { position: absolute; z-index: -1; top: 3px; bottom: 3px; left: calc(3px + var(--l)); width: calc((100% - 6px - var(--l)) / 2); border-radius: 9px; background: #E8E8E8; transition: left .45s var(--ease), width .45s var(--ease); }
 .sz-seg[data-active="journal"] .sz-seg-thumb { left: calc(3px + var(--l) + (100% - 6px - var(--l)) / 2); }
 .sz-seg[data-active="home"] .sz-seg-thumb { left: 3px; width: var(--l); }
-.sz-seg.is-leaving .sz-seg-thumb { transition-duration: .22s; }
 .sz-seg-item { display: flex; align-items: center; justify-content: center; padding: 0 16px; border-radius: 9px; font-size: 14px; font-weight: 500; letter-spacing: -.005em; line-height: 1; color: var(--muted); white-space: nowrap; transition: color .3s ease, background-color .2s ease; }
 .sz-seg-item:hover { color: var(--text); }
 .sz-seg[data-active="about"] .sz-seg-item[data-key="about"], .sz-seg[data-active="journal"] .sz-seg-item[data-key="journal"] { color: #0A0A0A; }
@@ -55,12 +56,18 @@ a { color: var(--text); text-decoration: none; }
 .sz-seg-home svg { display: block; height: 21px; width: auto; }
 /* Logo mark: brand orange, #0A0A0A (active text color) while the thumb sits behind it; color eases with the slide. */
 .sz-seg .sz-seg-home { color: #FA431E; transition: color .45s var(--ease), background-color .2s ease; }
-.sz-seg.is-leaving .sz-seg-home { transition-duration: .22s, .2s; }
 .sz-seg .sz-seg-home:hover { color: #FA431E; background: #1A1A1A; }
 .sz-seg[data-active="home"] .sz-seg-home { color: #0A0A0A; background: transparent; }
 .sz-seg-item:focus { outline: none; }
 .sz-seg-item:focus-visible { outline: 2px solid var(--line); outline-offset: 1px; }
 @media (prefers-reduced-motion: reduce) { .sz-seg-thumb, .sz-seg-item, .sz-seg .sz-seg-home { transition: none; } }
+/* Cross-document View Transitions (same-origin navigations): the nav is its own layer with no animation,
+   so it stays put (its live thumb slide shows through); only the page content crossfades. */
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .2s; }
+::view-transition-group(sz-nav), ::view-transition-new(sz-nav) { animation: none; }
+::view-transition-old(sz-nav) { display: none; }
+@media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }
 
 .sz-content { flex: 1 0 auto; width: 100%; max-width: 1000px; animation: rise .9s cubic-bezier(.2,.8,.2,1) both; }
 
