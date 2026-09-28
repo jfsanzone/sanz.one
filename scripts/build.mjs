@@ -100,12 +100,13 @@ const FOOTER = `<footer class="sz-footer">
 
 const BACK_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>';
 
-// Top-left segmented nav on journal + about pages (the landing page is untouched): [ logo | About | Journal ].
-// The logo segment links home (the landing page has no nav, so clicking it slides the thumb onto the
-// logo for ~220ms and then navigates). About/Journal: the click stores the page being left in
-// sessionStorage, and the inline script right after the nav starts the thumb there before first
-// paint, then flips data-active so CSS slides it to the current item. A bfcache restore (Back from
-// the landing page) slides the thumb back from the logo to the current item.
+// Top-left segmented nav on journal + about pages: [ logo | About | Journal ] (the landing page index.html
+// carries the same nav in its bundled template, with the logo segment active).
+// The logo segment links home; clicking it (like any item) slides the thumb onto the
+// target for ~220ms before navigating to the landing page. Every nav click stores the page being left in sessionStorage
+// ("sz-seg-from"); the inline script right after the nav (and the landing page's component logic)
+// starts the thumb there before first paint, then flips data-active so CSS slides it to the current
+// item. A bfcache restore (Back from the landing page) slides the thumb back to the current item.
 const NAV_ITEMS = [['about', '/about/', 'About'], ['journal', '/journal/', 'Journal']];
 function nav(current) {
   const active = current === 'post' ? 'journal' : current;
@@ -114,7 +115,7 @@ function nav(current) {
     const aria = current === key ? ' aria-current="page"' : key === active ? ' aria-current="true"' : '';
     return `<a class="sz-seg-item" data-key="${key}" href="${href}"${aria}>${label}</a>`;
   }).join('');
-  const script = `(function(){var n=document.currentScript.previousElementSibling,c=n.getAttribute('data-active'),k='sz-seg-from',f=null,rm=function(){return matchMedia('(prefers-reduced-motion: reduce)').matches};try{f=sessionStorage.getItem(k);sessionStorage.removeItem(k)}catch(e){}n.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var t=a.getAttribute('data-key');if(t===c)return;if(t==='home'){if(e.defaultPrevented||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||rm())return;e.preventDefault();n.classList.add('is-leaving');n.setAttribute('data-active','home');setTimeout(function(){location.href=a.href},230);return}try{sessionStorage.setItem(k,c)}catch(e){}});addEventListener('pageshow',function(e){if(e.persisted&&n.getAttribute('data-active')!==c){n.classList.remove('is-leaving');n.setAttribute('data-active',c)}});if(f&&f!==c&&!rm()&&n.querySelector('[data-key="'+f+'"]')){n.setAttribute('data-active',f);n.offsetWidth;requestAnimationFrame(function(){requestAnimationFrame(function(){n.setAttribute('data-active',c)})})}})();`;
+  const script = `(function(){var n=document.currentScript.previousElementSibling,c=n.getAttribute('data-active'),k='sz-seg-from',f=null,rm=function(){return matchMedia('(prefers-reduced-motion: reduce)').matches};try{f=sessionStorage.getItem(k);sessionStorage.removeItem(k)}catch(e){}n.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var t=a.getAttribute('data-key');if(t===c)return;if(t==='home'){if(e.defaultPrevented||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;try{sessionStorage.setItem(k,c)}catch(e){}if(rm())return;e.preventDefault();n.classList.add('is-leaving');n.setAttribute('data-active','home');setTimeout(function(){location.href=a.href},230);return}try{sessionStorage.setItem(k,c)}catch(e){}});addEventListener('pageshow',function(e){if(e.persisted&&n.getAttribute('data-active')!==c){n.classList.remove('is-leaving');n.setAttribute('data-active',c)}});if(f&&f!==c&&!rm()&&n.querySelector('[data-key="'+f+'"]')){n.setAttribute('data-active',f);n.offsetWidth;requestAnimationFrame(function(){requestAnimationFrame(function(){n.setAttribute('data-active',c)})})}})();`;
   return `<nav class="sz-seg" data-active="${active}" aria-label="Site"><span class="sz-seg-thumb" aria-hidden="true"></span>${home}${items}</nav><script>${script}</script>`;
 }
 
