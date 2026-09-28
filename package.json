@@ -1,0 +1,17 @@
+{
+  "name": "sanz.one",
+  "private": true,
+  "type": "module",
+  "description": "sanz.one landing page + static blog built from content/posts",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "preview": "node scripts/build.mjs && python3 -m http.server 8080 --directory _site"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "gray-matter": "4.0.3",
+    "marked": "18.0.14"
+  }
+}

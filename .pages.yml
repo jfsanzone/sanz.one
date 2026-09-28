@@ -1,0 +1,56 @@
+# Pages CMS configuration: https://pagescms.org/docs/configuration/
+# Edit at https://app.pagescms.org (sign in with GitHub, open jfsanzone/sanz.one).
+# Every save commits to the repo; commits to main trigger the GitHub Pages deploy.
+media:
+  input: media/blog
+  output: /media/blog
+  categories: [image]
+  rename: safe
+
+content:
+  - name: posts
+    label: Posts
+    type: collection
+    path: content/posts
+    format: yaml-frontmatter
+    filename:
+      template: "{year}-{month}-{day}-{primary}.md"
+      field: create
+    view:
+      fields: [title, date, draft]
+      primary: title
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: date
+        label: Date
+        type: date
+        required: true
+        options:
+          format: yyyy-MM-dd
+      - name: description
+        label: Description
+        type: text
+        description: One or two sentences. Used for the post list, search results, social previews, and RSS.
+      - name: draft
+        label: Draft
+        type: boolean
+        default: true
+        description: Drafts are saved to the repo but never published on the site.
+      - name: cover
+        label: Cover image
+        type: image
+        description: Optional. Shown at the top of the post and used as the social preview image (JPG/PNG/WebP, ideally 1200x630).
+        options:
+          extensions: [jpg, jpeg, png, webp]
+      - name: body
+        label: Body
+        type: rich-text
+        options:
+          format: markdown
