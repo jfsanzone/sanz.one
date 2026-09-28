@@ -100,20 +100,22 @@ const FOOTER = `<footer class="sz-footer">
 
 const BACK_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>';
 
-// Top-right segmented nav on journal + about pages (the landing page is untouched).
-// Two equal-width items with a highlight "thumb" behind the active one. When you switch
-// pages via the nav, the thumb slides from the previous item to the new one: the click
-// stores the page being left in sessionStorage, and a tiny inline script right after the
-// nav starts the thumb there before first paint, then flips data-active so CSS slides it.
+// Top-left segmented nav on journal + about pages (the landing page is untouched): [ logo | About | Journal ].
+// The logo segment links home (the landing page has no nav, so clicking it slides the thumb onto the
+// logo for ~220ms and then navigates). About/Journal: the click stores the page being left in
+// sessionStorage, and the inline script right after the nav starts the thumb there before first
+// paint, then flips data-active so CSS slides it to the current item. A bfcache restore (Back from
+// the landing page) slides the thumb back from the logo to the current item.
 const NAV_ITEMS = [['about', '/about/', 'About'], ['journal', '/journal/', 'Journal']];
 function nav(current) {
   const active = current === 'post' ? 'journal' : current;
+  const home = `<a class="sz-seg-item sz-seg-home" data-key="home" href="/" aria-label="Home"><img src="/assets/logo.svg" alt="" width="16" height="21"></a>`;
   const items = NAV_ITEMS.map(([key, href, label]) => {
     const aria = current === key ? ' aria-current="page"' : key === active ? ' aria-current="true"' : '';
     return `<a class="sz-seg-item" data-key="${key}" href="${href}"${aria}>${label}</a>`;
   }).join('');
-  const script = `(function(){var n=document.currentScript.previousElementSibling,c=n.getAttribute('data-active'),k='sz-seg-from',f=null;try{f=sessionStorage.getItem(k);sessionStorage.removeItem(k)}catch(e){}n.addEventListener('click',function(e){var a=e.target.closest('a');if(a&&a.getAttribute('data-key')!==c){try{sessionStorage.setItem(k,c)}catch(e){}}});if(f&&f!==c&&!matchMedia('(prefers-reduced-motion: reduce)').matches&&n.querySelector('[data-key="'+f+'"]')){n.setAttribute('data-active',f);n.offsetWidth;requestAnimationFrame(function(){requestAnimationFrame(function(){n.setAttribute('data-active',c)})})}})();`;
-  return `<nav class="sz-seg" data-active="${active}" aria-label="Site"><span class="sz-seg-thumb" aria-hidden="true"></span>${items}</nav><script>${script}</script>`;
+  const script = `(function(){var n=document.currentScript.previousElementSibling,c=n.getAttribute('data-active'),k='sz-seg-from',f=null,rm=function(){return matchMedia('(prefers-reduced-motion: reduce)').matches};try{f=sessionStorage.getItem(k);sessionStorage.removeItem(k)}catch(e){}n.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;var t=a.getAttribute('data-key');if(t===c)return;if(t==='home'){if(e.defaultPrevented||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||rm())return;e.preventDefault();n.classList.add('is-leaving');n.setAttribute('data-active','home');setTimeout(function(){location.href=a.href},230);return}try{sessionStorage.setItem(k,c)}catch(e){}});addEventListener('pageshow',function(e){if(e.persisted&&n.getAttribute('data-active')!==c){n.classList.remove('is-leaving');n.setAttribute('data-active',c)}});if(f&&f!==c&&!rm()&&n.querySelector('[data-key="'+f+'"]')){n.setAttribute('data-active',f);n.offsetWidth;requestAnimationFrame(function(){requestAnimationFrame(function(){n.setAttribute('data-active',c)})})}})();`;
+  return `<nav class="sz-seg" data-active="${active}" aria-label="Site"><span class="sz-seg-thumb" aria-hidden="true"></span>${home}${items}</nav><script>${script}</script>`;
 }
 
 function layout({ title, description, url, ogType = 'website', image = '', card: cardType = '', current = '', extraHead = '', body }) {
@@ -143,7 +145,6 @@ ${image ? `<meta name="twitter:image" content="${esc(abs(image))}">\n` : ''}${ex
 <body>
 <main class="sz-main">
   <header class="sz-top">
-    <a class="sz-logo" href="/" aria-label="Jason Sanzone, home"><img src="/assets/logo.svg" alt="Sanzone" width="31" height="40"></a>
     ${nav(current)}
   </header>
   ${body}

@@ -40,19 +40,24 @@ a { color: var(--text); text-decoration: none; }
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .sz-main, .sz-content { animation: none !important; } }
 
-.sz-top { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-.sz-logo { align-self: flex-start; display: block; line-height: 0; }
-/* Segmented nav: 40px tall like the logo, 12px radius like the tiles; the active thumb uses the landing CTA colors */
-.sz-seg { position: relative; display: inline-grid; grid-template-columns: 1fr 1fr; height: 40px; padding: 3px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 12px; background: #111111; isolation: isolate; }
-.sz-seg-thumb { position: absolute; z-index: -1; top: 3px; bottom: 3px; left: 3px; width: calc((100% - 6px) / 2); border-radius: 9px; background: #E8E8E8; transform: translateX(0); transition: transform .45s var(--ease); }
-.sz-seg[data-active="journal"] .sz-seg-thumb { transform: translateX(100%); }
-.sz-seg-item { display: flex; align-items: center; justify-content: center; padding: 0 16px; border-radius: 9px; font-size: 14px; font-weight: 500; letter-spacing: -.005em; line-height: 1; color: var(--muted); white-space: nowrap; transition: color .3s ease; }
+.sz-top { display: flex; align-items: center; justify-content: flex-start; }
+/* Segmented nav [ logo | About | Journal ]: 40px tall like the landing logo, 12px radius like the tiles;
+   the active thumb uses the landing CTA colors (#E8E8E8 / #0A0A0A). --l = logo segment width. */
+.sz-seg { --l: 38px; position: relative; display: inline-grid; grid-template-columns: var(--l) 1fr 1fr; height: 40px; padding: 3px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 12px; background: #111111; isolation: isolate; }
+.sz-seg-thumb { position: absolute; z-index: -1; top: 3px; bottom: 3px; left: calc(3px + var(--l)); width: calc((100% - 6px - var(--l)) / 2); border-radius: 9px; background: #E8E8E8; transition: left .45s var(--ease), width .45s var(--ease); }
+.sz-seg[data-active="journal"] .sz-seg-thumb { left: calc(3px + var(--l) + (100% - 6px - var(--l)) / 2); }
+.sz-seg[data-active="home"] .sz-seg-thumb { left: 3px; width: var(--l); }
+.sz-seg.is-leaving .sz-seg-thumb { transition-duration: .22s; }
+.sz-seg-item { display: flex; align-items: center; justify-content: center; padding: 0 16px; border-radius: 9px; font-size: 14px; font-weight: 500; letter-spacing: -.005em; line-height: 1; color: var(--muted); white-space: nowrap; transition: color .3s ease, background-color .2s ease; }
 .sz-seg-item:hover { color: var(--text); }
 .sz-seg[data-active="about"] .sz-seg-item[data-key="about"], .sz-seg[data-active="journal"] .sz-seg-item[data-key="journal"] { color: #0A0A0A; }
+.sz-seg-home { padding: 0; }
+.sz-seg-home img { display: block; height: 21px; width: auto; }
+.sz-seg-home:hover { background: #1A1A1A; }
+.sz-seg[data-active="home"] .sz-seg-home { background: transparent; }
 .sz-seg-item:focus { outline: none; }
 .sz-seg-item:focus-visible { outline: 2px solid var(--line); outline-offset: 1px; }
 @media (prefers-reduced-motion: reduce) { .sz-seg-thumb, .sz-seg-item { transition: none; } }
-.sz-logo img { height: 40px; width: auto; display: block; }
 
 .sz-content { flex: 1 0 auto; width: 100%; max-width: 1000px; animation: rise .9s cubic-bezier(.2,.8,.2,1) both; }
 
