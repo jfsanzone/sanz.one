@@ -52,12 +52,15 @@ a { color: var(--text); text-decoration: none; }
 .sz-seg-item:hover { color: var(--text); }
 .sz-seg[data-active="about"] .sz-seg-item[data-key="about"], .sz-seg[data-active="journal"] .sz-seg-item[data-key="journal"] { color: #0A0A0A; }
 .sz-seg-home { padding: 0; }
-.sz-seg-home img { display: block; height: 21px; width: auto; }
-.sz-seg-home:hover { background: #1A1A1A; }
-.sz-seg[data-active="home"] .sz-seg-home { background: transparent; }
+.sz-seg-home svg { display: block; height: 21px; width: auto; }
+/* Logo mark: brand orange, #0A0A0A (active text color) while the thumb sits behind it; color eases with the slide. */
+.sz-seg .sz-seg-home { color: #FA431E; transition: color .45s var(--ease), background-color .2s ease; }
+.sz-seg.is-leaving .sz-seg-home { transition-duration: .22s, .2s; }
+.sz-seg .sz-seg-home:hover { color: #FA431E; background: #1A1A1A; }
+.sz-seg[data-active="home"] .sz-seg-home { color: #0A0A0A; background: transparent; }
 .sz-seg-item:focus { outline: none; }
 .sz-seg-item:focus-visible { outline: 2px solid var(--line); outline-offset: 1px; }
-@media (prefers-reduced-motion: reduce) { .sz-seg-thumb, .sz-seg-item { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .sz-seg-thumb, .sz-seg-item, .sz-seg .sz-seg-home { transition: none; } }
 
 .sz-content { flex: 1 0 auto; width: 100%; max-width: 1000px; animation: rise .9s cubic-bezier(.2,.8,.2,1) both; }
 

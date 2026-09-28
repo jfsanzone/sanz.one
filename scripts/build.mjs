@@ -108,9 +108,13 @@ const BACK_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" s
 // starts the thumb there before first paint, then flips data-active so CSS slides it to the current
 // item. A bfcache restore (Back from the landing page) slides the thumb back to the current item.
 const NAV_ITEMS = [['about', '/about/', 'About'], ['journal', '/journal/', 'Journal']];
+// The logo mark is inlined (fill -> currentColor) so CSS can turn it #0A0A0A while the thumb sits behind it.
+const LOGO_MARK = fs.readFileSync(path.join(ROOT, 'site-src/assets/logo.svg'), 'utf8').trim()
+  .replace(/^<svg[^>]*>/, '<svg width="16.1" height="21" viewBox="0 0 105 137" fill="none" aria-hidden="true" focusable="false">')
+  .replaceAll('fill="#FA431E"', 'fill="currentColor"');
 function nav(current) {
   const active = current === 'post' ? 'journal' : current;
-  const home = `<a class="sz-seg-item sz-seg-home" data-key="home" href="/" aria-label="Home"><img src="/assets/logo.svg" alt="" width="16" height="21"></a>`;
+  const home = `<a class="sz-seg-item sz-seg-home" data-key="home" href="/" aria-label="Home">${LOGO_MARK}</a>`;
   const items = NAV_ITEMS.map(([key, href, label]) => {
     const aria = current === key ? ' aria-current="page"' : key === active ? ' aria-current="true"' : '';
     return `<a class="sz-seg-item" data-key="${key}" href="${href}"${aria}>${label}</a>`;
