@@ -105,7 +105,7 @@ const BACK_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" s
 // (inlined right after the nav): the page being left is remembered and the thumb slides from it, and the
 // nav has a fixed view-transition-name so it stays put across pages while only the content crossfades.
 const NAV_ITEMS = [['about', '/about/', 'About'], ['journal', '/journal/', 'Journal']];
-// The logo mark is inlined (fill -> currentColor) so CSS can turn it #0A0A0A while the thumb sits behind it.
+// The logo mark is inlined (fill -> currentColor): orange in the nav, #0A0A0A in the highlight's dark copy.
 const LOGO_MARK = fs.readFileSync(path.join(ROOT, 'site-src/assets/logo.svg'), 'utf8').trim()
   .replace(/^<svg[^>]*>/, '<svg width="16.1" height="21" viewBox="0 0 105 137" fill="none" aria-hidden="true" focusable="false">')
   .replaceAll('fill="#FA431E"', 'fill="currentColor"');
@@ -118,7 +118,8 @@ function nav(current) {
     const aria = current === key ? ' aria-current="page"' : key === active ? ' aria-current="true"' : '';
     return `<a class="sz-seg-item" data-key="${key}" href="${href}"${aria}>${label}</a>`;
   }).join('');
-  return `<nav class="sz-seg" data-active="${active}" aria-label="Site"><span class="sz-seg-thumb" aria-hidden="true"></span>${home}${items}</nav><script>${NAV_JS}(document.currentScript.previousElementSibling);</script>`;
+  const ink = `<span class="sz-seg-ink"><span class="sz-seg-ink-home">${LOGO_MARK}</span>${NAV_ITEMS.map(([, , label]) => `<span>${label}</span>`).join('')}</span>`;
+  return `<nav class="sz-seg" data-active="${active}" aria-label="Site"><span class="sz-seg-thumb" aria-hidden="true">${ink}</span>${home}${items}</nav><script>${NAV_JS}(document.currentScript.previousElementSibling);</script>`;
 }
 
 function layout({ title, description, url, ogType = 'website', image = '', card: cardType = '', current = '', extraHead = '', body }) {
