@@ -1,7 +1,10 @@
 // Build the deployable site into _site/:
 //   - root landing files are copied byte-for-byte (index.html, favicon.svg, CNAME, .nojekyll)
-//   - media/ is copied as-is (Pages CMS uploads land in media/blog)
-//   - content/posts/*.md is rendered to /blog, /blog/<slug>/ and /blog/feed.xml
+//   - media/ is copied as-is (Pages CMS uploads land in media/journal)
+//   - content/posts/*.md is rendered to /journal/, /journal/<slug>/ and /journal/feed.xml
+//   - /about/ is generated from the template below
+//   - /blog/... (old URLs) are redirect pages to /journal/...; /blog/feed.xml is a copy of the journal feed
+//   - shared CSS, fonts and logo are copied from site-src/assets to /assets/
 // Posts with `draft: true` are skipped entirely.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,9 +19,9 @@ const POSTS_DIR = path.join(ROOT, 'content/posts');
 const SITE = {
   url: 'https://sanz.one',
   name: 'Jason Sanzone',
-  blogTitle: 'Writing',
-  blogDescription: 'Jason Sanzone on design, AI, EDC and gear, and everything else.',
-  blogSubline: 'Notes on design, AI, gear, and everything else.',
+  journalTitle: 'Journal',
+  journalDescription: 'Jason Sanzone on design, AI, EDC and gear, and everything else.',
+  journalSubline: 'Notes on design, AI, gear, and everything else.',
   lang: 'en',
 };
 
@@ -78,7 +81,7 @@ function loadPosts() {
     posts.push({
       file: f,
       slug,
-      url: `/blog/${slug}/`,
+      url: `/journal/${slug}/`,
       title: String(data.title).trim(),
       description: data.description ? String(data.description).trim() : '',
       cover: data.cover ? String(data.cover).trim() : '',
@@ -97,14 +100,14 @@ const FOOTER = `<footer class="sz-footer">
 
 const BACK_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>';
 
-// Small top-right nav shown on blog + about pages (the landing page is untouched).
+// Small top-right nav shown on journal + about pages (the landing page is untouched).
 function nav(current) {
   const item = (key, href, label) => {
-    const on = current === key || (key === 'blog' && current === 'post');
+    const on = current === key || (key === 'journal' && current === 'post');
     const aria = current === key ? ' aria-current="page"' : on ? ' aria-current="true"' : '';
     return `<a class="sz-nav-link${on ? ' is-current' : ''}" href="${href}"${aria}>${label}</a>`;
   };
-  return `<nav class="sz-nav" aria-label="Site">${item('blog', '/blog/', 'Writing')}${item('about', '/about/', 'About')}</nav>`;
+  return `<nav class="sz-nav" aria-label="Site">${item('journal', '/journal/', 'Journal')}${item('about', '/about/', 'About')}</nav>`;
 }
 
 function layout({ title, description, url, ogType = 'website', image = '', card: cardType = '', current = '', extraHead = '', body }) {
@@ -118,9 +121,9 @@ function layout({ title, description, url, ogType = 'website', image = '', card:
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${esc(abs(url))}">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="alternate" type="application/rss+xml" title="${esc(SITE.name)} — ${esc(SITE.blogTitle)}" href="/blog/feed.xml">
-<link rel="preload" href="/blog/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/blog/assets/blog.css">
+<link rel="alternate" type="application/rss+xml" title="${esc(SITE.name)} · ${esc(SITE.journalTitle)}" href="/journal/feed.xml">
+<link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/site.css">
 <meta name="theme-color" content="#0A0A0A">
 <meta property="og:site_name" content="${esc(SITE.name)}">
 <meta property="og:type" content="${ogType}">
@@ -134,7 +137,7 @@ ${image ? `<meta name="twitter:image" content="${esc(abs(image))}">\n` : ''}${ex
 <body>
 <main class="sz-main">
   <header class="sz-top">
-    <a class="sz-logo" href="/" aria-label="Jason Sanzone, home"><img src="/blog/assets/logo.svg" alt="Sanzone" width="31" height="40"></a>
+    <a class="sz-logo" href="/" aria-label="Jason Sanzone, home"><img src="/assets/logo.svg" alt="Sanzone" width="31" height="40"></a>
     ${nav(current)}
   </header>
   ${body}
@@ -152,13 +155,13 @@ ${posts.map((p) => `      <li><a class="sz-post-link" href="${p.url}"><span clas
     </ol>`
     : `<p class="sz-empty">First post coming soon.</p>`;
   return layout({
-    title: `${SITE.blogTitle} — ${SITE.name}`,
-    description: SITE.blogDescription,
-    url: '/blog/',
-    current: 'blog',
+    title: `${SITE.journalTitle} · ${SITE.name}`,
+    description: SITE.journalDescription,
+    url: '/journal/',
+    current: 'journal',
     body: `<section class="sz-content">
-    <h1 class="sz-h1">${esc(SITE.blogTitle)}</h1>
-    <p class="sz-sub">${esc(SITE.blogSubline)}</p>
+    <h1 class="sz-h1">${esc(SITE.journalTitle)}</h1>
+    <p class="sz-sub">${esc(SITE.journalSubline)}</p>
     ${list}
   </section>`,
   });
@@ -166,9 +169,9 @@ ${posts.map((p) => `      <li><a class="sz-post-link" href="${p.url}"><span clas
 
 function postPage(p) {
   const desc = p.description || `${p.title}, by ${SITE.name}.`;
-  const back = `<a class="sz-back" href="/blog/">${BACK_ICON}<span>${esc(SITE.blogTitle)}</span></a>`;
+  const back = `<a class="sz-back" href="/journal/">${BACK_ICON}<span>${esc(SITE.journalTitle)}</span></a>`;
   return layout({
-    title: `${p.title} — ${SITE.name}`,
+    title: `${p.title} · ${SITE.name}`,
     description: desc,
     url: p.url,
     ogType: 'article',
@@ -207,11 +210,11 @@ ${p.description ? `      <description>${esc(p.description)}</description>\n` : '
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>${esc(SITE.name)} — ${esc(SITE.blogTitle)}</title>
-    <link>${SITE.url}/blog/</link>
-    <description>${esc(SITE.blogDescription)}</description>
+    <title>${esc(SITE.name)} · ${esc(SITE.journalTitle)}</title>
+    <link>${SITE.url}/journal/</link>
+    <description>${esc(SITE.journalDescription)}</description>
     <language>en-us</language>
-${posts.length ? `    <lastBuildDate>${posts[0].date.toUTCString()}</lastBuildDate>\n` : ''}    <atom:link href="${SITE.url}/blog/feed.xml" rel="self" type="application/rss+xml"/>
+${posts.length ? `    <lastBuildDate>${posts[0].date.toUTCString()}</lastBuildDate>\n` : ''}    <atom:link href="${SITE.url}/journal/feed.xml" rel="self" type="application/rss+xml"/>
 ${items}
   </channel>
 </rss>
@@ -259,6 +262,27 @@ function aboutPage() {
   });
 }
 
+// ---------- Redirects ----------
+function redirectPage(to) {
+  const url = abs(to);
+  return `<!DOCTYPE html>
+<html lang="${SITE.lang}">
+<head>
+<meta charset="utf-8">
+<title>Moved to ${esc(url)}</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="${esc(url)}">
+<meta http-equiv="refresh" content="0; url=${esc(to)}">
+<script>location.replace(${JSON.stringify(to)} + location.search + location.hash);</script>
+<style>html,body{background:#0A0A0A;color:#8A8A8A;font:15px system-ui,sans-serif}a{color:#F2F2F2}</style>
+</head>
+<body>
+<p>This page has moved to <a href="${esc(to)}">${esc(url)}</a>.</p>
+</body>
+</html>
+`;
+}
+
 // ---------- build ----------
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
@@ -269,12 +293,18 @@ for (const f of ROOT_FILES) {
   fs.copyFileSync(src, path.join(OUT, f));
 }
 if (fs.existsSync(path.join(ROOT, 'media'))) fs.cpSync(path.join(ROOT, 'media'), path.join(OUT, 'media'), { recursive: true, filter: (s) => path.basename(s) !== '.gitkeep' });
-fs.cpSync(path.join(ROOT, 'blog-src/assets'), path.join(OUT, 'blog/assets'), { recursive: true });
+fs.cpSync(path.join(ROOT, 'site-src/assets'), path.join(OUT, 'assets'), { recursive: true });
 
 const posts = loadPosts();
-write('blog/index.html', indexPage(posts));
-for (const p of posts) write(`blog/${p.slug}/index.html`, postPage(p));
-write('blog/feed.xml', feed(posts));
+write('journal/index.html', indexPage(posts));
+for (const p of posts) write(`journal/${p.slug}/index.html`, postPage(p));
+const feedXml = feed(posts);
+write('journal/feed.xml', feedXml);
+
+// Old /blog URLs (GitHub Pages has no server-side redirects)
+write('blog/index.html', redirectPage('/journal/'));
+for (const p of posts) write(`blog/${p.slug}/index.html`, redirectPage(p.url));
+write('blog/feed.xml', feedXml);
 write('about/index.html', aboutPage());
 
 console.log(`Built ${posts.length} post(s) into ${path.relative(ROOT, OUT)}/`);

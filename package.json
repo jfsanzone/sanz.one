@@ -2,7 +2,7 @@
   "name": "sanz.one",
   "private": true,
   "type": "module",
-  "description": "sanz.one landing page + static blog built from content/posts",
+  "description": "sanz.one landing page + static journal (content/posts) + about page",
   "scripts": {
     "build": "node scripts/build.mjs",
     "preview": "node scripts/build.mjs && python3 -m http.server 8080 --directory _site"

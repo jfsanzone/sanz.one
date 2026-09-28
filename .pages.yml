@@ -2,8 +2,8 @@
 # Edit at https://app.pagescms.org (sign in with GitHub, open jfsanzone/sanz.one).
 # Every save commits to the repo; commits to main trigger the GitHub Pages deploy.
 media:
-  input: media/blog
-  output: /media/blog
+  input: media/journal
+  output: /media/journal
   categories: [image]
   rename: safe
 

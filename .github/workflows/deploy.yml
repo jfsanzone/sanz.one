@@ -1,4 +1,4 @@
-# Build the site (landing page + blog) and deploy it to GitHub Pages
+# Build the site (landing page + journal + about) and deploy it to GitHub Pages
 name: Deploy to GitHub Pages
 
 on:
