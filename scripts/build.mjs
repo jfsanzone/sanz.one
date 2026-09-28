@@ -97,8 +97,18 @@ const FOOTER = `<footer class="sz-footer">
 
 const BACK_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>';
 
-function layout({ title, description, url, ogType = 'website', image = '', extraHead = '', body }) {
-  const card = image ? 'summary_large_image' : 'summary';
+// Small top-right nav shown on blog + about pages (the landing page is untouched).
+function nav(current) {
+  const item = (key, href, label) => {
+    const on = current === key || (key === 'blog' && current === 'post');
+    const aria = current === key ? ' aria-current="page"' : on ? ' aria-current="true"' : '';
+    return `<a class="sz-nav-link${on ? ' is-current' : ''}" href="${href}"${aria}>${label}</a>`;
+  };
+  return `<nav class="sz-nav" aria-label="Site">${item('blog', '/blog/', 'Writing')}${item('about', '/about/', 'About')}</nav>`;
+}
+
+function layout({ title, description, url, ogType = 'website', image = '', card: cardType = '', current = '', extraHead = '', body }) {
+  const card = cardType || (image ? 'summary_large_image' : 'summary');
   return `<!DOCTYPE html>
 <html lang="${SITE.lang}">
 <head>
@@ -123,7 +133,10 @@ ${image ? `<meta property="og:image" content="${esc(abs(image))}">\n` : ''}<meta
 ${image ? `<meta name="twitter:image" content="${esc(abs(image))}">\n` : ''}${extraHead}</head>
 <body>
 <main class="sz-main">
-  <a class="sz-logo" href="/" aria-label="Jason Sanzone, home"><img src="/blog/assets/logo.svg" alt="Sanzone" width="31" height="40"></a>
+  <header class="sz-top">
+    <a class="sz-logo" href="/" aria-label="Jason Sanzone, home"><img src="/blog/assets/logo.svg" alt="Sanzone" width="31" height="40"></a>
+    ${nav(current)}
+  </header>
   ${body}
   ${FOOTER}
 </main>
@@ -142,6 +155,7 @@ ${posts.map((p) => `      <li><a class="sz-post-link" href="${p.url}"><span clas
     title: `${SITE.blogTitle} — ${SITE.name}`,
     description: SITE.blogDescription,
     url: '/blog/',
+    current: 'blog',
     body: `<section class="sz-content">
     <h1 class="sz-h1">${esc(SITE.blogTitle)}</h1>
     <p class="sz-sub">${esc(SITE.blogSubline)}</p>
@@ -158,6 +172,7 @@ function postPage(p) {
     description: desc,
     url: p.url,
     ogType: 'article',
+    current: 'post',
     image: p.cover,
     extraHead: `<meta property="article:published_time" content="${p.date.toISOString()}">\n<meta property="article:author" content="${esc(SITE.name)}">\n`,
     body: `<section class="sz-content">
@@ -203,6 +218,47 @@ ${items}
 `;
 }
 
+
+// ---------- About ----------
+const SOCIAL = {
+  email: 'jason@sanz.one',
+  linkedin: 'https://linkedin.com/in/jasonsanzone',
+  instagram: 'https://instagram.com/jasonsanzone',
+  x: 'https://x.com/jasonsanzone',
+};
+const spin = '<animateTransform attributeName="gradientTransform" type="rotate" values="0 .5 .5;360 .5 .5" dur="7s" repeatCount="indefinite"></animateTransform>';
+// Icons copied from the landing page (index.html); hover swaps the fill/stroke to the same rotating brand gradient ("Prism").
+const TILES = `<nav class="sz-social" aria-label="Social">
+        <a class="sz-tile sz-tile-li" href="${SOCIAL.linkedin}" target="_blank" rel="noopener" aria-label="LinkedIn" title="LinkedIn"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="gli" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="#6FB6FF"></stop><stop offset="0.50" stop-color="#0A66C2"></stop><stop offset="1.00" stop-color="#3D9BFF"></stop>${spin}</linearGradient></defs><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"></path></svg></a>
+        <a class="sz-tile sz-tile-ig" href="${SOCIAL.instagram}" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram"><svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke-width="1.9" aria-hidden="true"><defs><linearGradient id="gig" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="#FEDA75"></stop><stop offset="0.25" stop-color="#FA7E1E"></stop><stop offset="0.50" stop-color="#D62976"></stop><stop offset="0.75" stop-color="#962FBF"></stop><stop offset="1.00" stop-color="#4F5BD5"></stop>${spin}</linearGradient></defs><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4.2"></circle><circle class="sz-dot" cx="17.4" cy="6.6" r=".6"></circle></svg></a>
+        <a class="sz-tile sz-tile-x" href="${SOCIAL.x}" target="_blank" rel="noopener" aria-label="X" title="X"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="gx" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="#FFFFFF"></stop><stop offset="0.50" stop-color="#7A7A7A"></stop><stop offset="1.00" stop-color="#FFFFFF"></stop>${spin}</linearGradient></defs><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z"></path></svg></a>
+      </nav>`;
+
+function aboutPage() {
+  const photo = '/media/about/jason.jpg';
+  return layout({
+    title: `About · ${SITE.name}`,
+    description: 'Jason Sanzone is a designer based just north of Atlanta, Georgia. He leads design and creative at ClickFunnels and co-founded Overskill, where he heads up design.',
+    url: '/about/',
+    ogType: 'profile',
+    image: photo,
+    card: 'summary',
+    current: 'about',
+    body: `<section class="sz-content sz-about">
+    <picture>
+      <source srcset="/media/about/jason.webp" type="image/webp">
+      <img class="sz-photo" src="${photo}" alt="Jason Sanzone" width="144" height="144">
+    </picture>
+    <h1 class="sz-h1">About</h1>
+    <p class="sz-bio">I'm a designer based just north of Atlanta, Georgia. I've spent my career building brands, products, and interfaces, including work for some of the biggest names out there. Today I lead design and creative at <a class="sz-u" href="https://www.clickfunnels.com" target="_blank" rel="noopener noreferrer">ClickFunnels</a> and co-founded <a class="sz-u" href="https://www.overskill.com" target="_blank" rel="noopener noreferrer">Overskill</a>, where I head up design. Away from the screen, you'll find me outdoors, tinkering with new tech and AI, or hunting down gear that makes everyday life a little easier.</p>
+    <div class="sz-contact">
+      <a class="sz-email" href="mailto:${SOCIAL.email}">${SOCIAL.email}</a>
+      ${TILES}
+    </div>
+  </section>`,
+  });
+}
+
 // ---------- build ----------
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
@@ -219,5 +275,6 @@ const posts = loadPosts();
 write('blog/index.html', indexPage(posts));
 for (const p of posts) write(`blog/${p.slug}/index.html`, postPage(p));
 write('blog/feed.xml', feed(posts));
+write('about/index.html', aboutPage());
 
 console.log(`Built ${posts.length} post(s) into ${path.relative(ROOT, OUT)}/`);
