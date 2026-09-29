@@ -106,7 +106,7 @@ a { color: var(--text); text-decoration: none; }
    animates transform and opacity: a lighter layer (::before) fades in, the card lifts 2px and the arrow nudges
    right while an orange copy of it fades in. Hover is read from the <li> (which does not move), so the lift
    can't make the pointer flicker on the card's edge. */
-.sz-posts { list-style: none; margin: clamp(32px, 4vw, 56px) 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.sz-posts { list-style: none; margin: clamp(32px, 4vw, 56px) 0 0; padding: 0; display: flex; flex-direction: column; gap: 20px; }
 .sz-card { position: relative; isolation: isolate; display: flex; align-items: center; gap: 24px; padding: 24px; border: 1px solid var(--border); border-radius: 16px; background: #111111; transition: transform .18s cubic-bezier(.2,.8,.2,1); }
 .sz-card::before { content: ""; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; border: 1px solid var(--line); background: var(--tile); opacity: 0; transition: opacity .18s ease; }
 .sz-card-body { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -205,6 +205,7 @@ a { color: var(--text); text-decoration: none; }
   .sz-photo { width: 120px; height: 120px; }
   .sz-social { flex-basis: 100%; }
   .sz-tile { flex: 1 1 0; width: auto; }
+  .sz-posts { gap: 16px; }
   .sz-card { flex-wrap: wrap; gap: 14px 16px; padding: 18px; }
   .sz-card-thumb { order: -1; width: 100%; aspect-ratio: 16 / 9; }
   .sz-card-desc { font-size: 14.5px; }
