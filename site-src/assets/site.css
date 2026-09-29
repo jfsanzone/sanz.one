@@ -44,15 +44,33 @@ a { color: var(--text); text-decoration: none; }
 
 .sz-top { display: flex; align-items: center; justify-content: flex-start; }
 /* Segmented nav [ logo | About | Journal ]: 40px tall like the landing logo, 12px radius like the tiles.
-   --l = logo segment, --w = text segments (fixed, so fonts loading can't move anything).
-   The highlight (.sz-seg-thumb) sits ABOVE the items: a #E8E8E8 layer holding a dark copy of every label
-   (and a black logo), clipped to the pill. Sliding it moves the clip, so each label is dark exactly where the
-   highlight covers it and normal (grey / orange) elsewhere, at every frame of the slide. */
+   --l = logo segment, --w = text segments (fixed, so fonts loading can't move anything; the px numbers below
+   are derived from 38/81: pills sit at x 3-41 (logo), 41-122 (About), 122-203 (Journal) inside the 206px box).
+   The highlight (.sz-seg-thumb) sits ABOVE the items and moves with transforms only, so the browser's compositor
+   runs the slide even while the page is busy (e.g. the landing page booting):
+   - the light pill is three 38px rounded pieces (.sz-seg-p) at the pill's left edge, centre and right edge;
+     their union is the pill at any width from 38 to 81px, and each piece only ever translates;
+   - .sz-seg-win is a pill-sized window (translate + scaleX) holding a dark copy of every label and a black
+     logo (.sz-seg-ink), counter-transformed so the copy never moves. So each label is dark exactly where the
+     highlight covers it and normal (grey / orange) elsewhere, at every frame of the slide.
+   site-src/nav.js animates the same transforms (Web Animations API) between these resting states. */
 .sz-seg { --l: 38px; --w: 81px; position: relative; display: inline-grid; grid-template-columns: var(--l) var(--w) var(--w); view-transition-name: sz-nav; height: 40px; padding: 3px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 12px; background: #111111; isolation: isolate; }
-.sz-seg-thumb { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: #E8E8E8; clip-path: inset(3px calc(var(--w) + 3px) 3px calc(var(--l) + 3px) round 9px); transition: clip-path .45s var(--ease); }
-.sz-seg[data-active="journal"] .sz-seg-thumb { clip-path: inset(3px 3px 3px calc(var(--l) + var(--w) + 3px) round 9px); }
-.sz-seg[data-active="home"] .sz-seg-thumb { clip-path: inset(3px calc(var(--w) * 2 + 3px) 3px 3px round 9px); }
-.sz-seg-ink { display: grid; grid-template-columns: var(--l) var(--w) var(--w); height: 100%; padding: 3px; box-sizing: border-box; }
+.sz-seg-thumb { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.sz-seg-thumb > span { position: absolute; top: 3px; left: 0; height: 32px; transform-origin: 0 0; will-change: transform; }
+.sz-seg-p { width: 38px; border-radius: 9px; background: #E8E8E8; }
+.sz-seg-win { width: 81px; overflow: hidden; }
+.sz-seg-ink { position: absolute; top: -3px; left: 0; width: 206px; height: 38px; display: grid; grid-template-columns: var(--l) var(--w) var(--w); padding: 3px; box-sizing: border-box; transform-origin: 0 0; will-change: transform; }
+.sz-seg-p:nth-child(1), .sz-seg-win { transform: translateX(41px); }
+.sz-seg-p:nth-child(2) { transform: translateX(62.5px); }
+.sz-seg-p:nth-child(3) { transform: translateX(84px); }
+.sz-seg-ink { transform: translateX(-41px); }
+.sz-seg[data-active="journal"] .sz-seg-p:nth-child(1), .sz-seg[data-active="journal"] .sz-seg-win { transform: translateX(122px); }
+.sz-seg[data-active="journal"] .sz-seg-p:nth-child(2) { transform: translateX(143.5px); }
+.sz-seg[data-active="journal"] .sz-seg-p:nth-child(3) { transform: translateX(165px); }
+.sz-seg[data-active="journal"] .sz-seg-ink { transform: translateX(-122px); }
+.sz-seg[data-active="home"] .sz-seg-p { transform: translateX(3px); }
+.sz-seg[data-active="home"] .sz-seg-win { transform: translateX(3px) scaleX(.469136); }
+.sz-seg[data-active="home"] .sz-seg-ink { transform: scaleX(2.131579) translateX(-3px); }
 .sz-seg-item, .sz-seg-ink > span { display: flex; align-items: center; justify-content: center; padding: 0 16px; border-radius: 9px; font-size: 14px; font-weight: 500; letter-spacing: -.005em; line-height: 1; white-space: nowrap; }
 .sz-seg-item { color: var(--muted); transition: color .3s ease, background-color .2s ease; }
 .sz-seg-item:hover { color: var(--text); }
@@ -63,11 +81,13 @@ a { color: var(--text); text-decoration: none; }
 .sz-seg .sz-seg-home:hover { background: #1A1A1A; }
 .sz-seg-item:focus { outline: none; }
 .sz-seg-item:focus-visible { outline: 2px solid var(--line); outline-offset: 1px; }
-@media (prefers-reduced-motion: reduce) { .sz-seg-thumb, .sz-seg-item { transition: none; } }
-/* Cross-document View Transitions (same-origin navigations): the nav is its own layer with no animation,
-   so it stays put (its live thumb slide shows through); only the page content crossfades. */
+@media (prefers-reduced-motion: reduce) { .sz-seg-item { transition: none; } }
+/* Cross-document View Transitions (same-origin navigations): the nav is the only captured element and has no
+   animation, so it stays put (its live thumb slide shows through). The page itself is not snapshotted
+   (no full-page captures to render and blend, so the new page shows sooner); its content fades in on its own
+   (.sz-main children on load; site-src/nav.js fades it in when a prerendered page is activated). */
 @view-transition { navigation: auto; }
-::view-transition-old(root), ::view-transition-new(root) { animation-duration: .2s; }
+:root { view-transition-name: none; }
 ::view-transition-group(sz-nav), ::view-transition-new(sz-nav) { animation: none; }
 ::view-transition-old(sz-nav) { display: none; }
 @media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }

@@ -119,7 +119,21 @@ function nav(current) {
     return `<a class="sz-seg-item" data-key="${key}" href="${href}"${aria}>${label}</a>`;
   }).join('');
   const ink = `<span class="sz-seg-ink"><span class="sz-seg-ink-home">${LOGO_MARK}</span>${NAV_ITEMS.map(([, , label]) => `<span>${label}</span>`).join('')}</span>`;
-  return `<nav class="sz-seg" data-active="${active}" aria-label="Site"><span class="sz-seg-thumb" aria-hidden="true">${ink}</span>${home}${items}</nav><script>${NAV_JS}(document.currentScript.previousElementSibling);</script>`;
+  return `<nav class="sz-seg" data-active="${active}" aria-label="Site"><span class="sz-seg-thumb" aria-hidden="true"><span class="sz-seg-p"></span><span class="sz-seg-p"></span><span class="sz-seg-p"></span><span class="sz-seg-win">${ink}</span></span>${home}${items}</nav><script>${NAV_JS}(document.currentScript.previousElementSibling);</script>`;
+}
+
+// Speculation rules: every page prerenders the other nav destinations as soon as it loads (Chrome/Edge), so a
+// nav click activates an already-rendered page (landing included, bundle already booted) instead of waiting
+// for the network, parsing and booting. Browsers without speculation rules ignore this. The landing page
+// carries the same rules (without "/") in its bundled template.
+// rel=expect: the page does not paint until it is fully parsed (up to #sz-end). Without it, a fast page could
+// paint its first frame with only the nav parsed, which made Chrome skip the cross-document view transition
+// (old page "aborted because of invalid state") and then hold the content back for ~0.5s.
+const NAV_URLS = ['/', '/about/', '/journal/'];
+function specRules(current) {
+  const self = { about: '/about/', journal: '/journal/' }[current];
+  const urls = NAV_URLS.filter((u) => u !== self);
+  return `<script type="speculationrules">${JSON.stringify({ prerender: [{ urls, eagerness: 'immediate' }], prefetch: [{ urls, eagerness: 'immediate' }] })}</script>\n`;
 }
 
 function layout({ title, description, url, ogType = 'website', image = '', card: cardType = '', current = '', extraHead = '', body }) {
@@ -136,7 +150,8 @@ function layout({ title, description, url, ogType = 'website', image = '', card:
 <link rel="alternate" type="application/rss+xml" title="${esc(SITE.name)} · ${esc(SITE.journalTitle)}" href="/journal/feed.xml">
 <link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/site.css">
-<meta name="theme-color" content="#0A0A0A">
+<link rel="expect" href="#sz-end" blocking="render">
+${specRules(current)}<meta name="theme-color" content="#0A0A0A">
 <meta property="og:site_name" content="${esc(SITE.name)}">
 <meta property="og:type" content="${ogType}">
 <meta property="og:title" content="${esc(title)}">
@@ -154,6 +169,7 @@ ${image ? `<meta name="twitter:image" content="${esc(abs(image))}">\n` : ''}${ex
   ${body}
   ${FOOTER}
 </main>
+<i id="sz-end" hidden></i>
 </body>
 </html>
 `;
