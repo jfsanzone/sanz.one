@@ -51,6 +51,9 @@ function toDate(v, file) {
 // Dates are calendar dates: format in UTC so "2026-09-28" never shifts a day.
 const fmtDate = (d) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 const isoDate = (d) => d.toISOString().slice(0, 10);
+const shortDate = (d) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+// Reading time from the rendered text at ~230 words per minute (at least 1 minute).
+const readMinutes = (html) => Math.max(1, Math.round(html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length / 230));
 
 function slugFromFile(file) {
   return path.basename(file, path.extname(file))
@@ -78,6 +81,7 @@ function loadPosts() {
     if (seen.has(slug)) throw new Error(`Duplicate slug "${slug}": ${seen.get(slug)} and ${f}`);
     seen.set(slug, f);
     const date = toDate(data.date, f);
+    const html = marked.parse(content, { gfm: true });
     posts.push({
       file: f,
       slug,
@@ -86,7 +90,8 @@ function loadPosts() {
       description: data.description ? String(data.description).trim() : '',
       cover: data.cover ? String(data.cover).trim() : '',
       date,
-      html: marked.parse(content, { gfm: true }),
+      html,
+      minutes: readMinutes(html),
     });
   }
   posts.sort((a, b) => b.date - a.date || a.title.localeCompare(b.title));
@@ -98,6 +103,7 @@ const FOOTER = `<footer class="sz-footer">
     <span class="sz-roles"><span class="sz-role">VP, Design/Creative, <a class="sz-u" href="https://www.clickfunnels.com" target="_blank" rel="noopener noreferrer">ClickFunnels</a></span><span class="sz-sep" aria-hidden="true">  ·  </span><span class="sz-role">Co-Founder &amp; Head of Design, <a class="sz-u" href="https://www.overskill.com" target="_blank" rel="noopener noreferrer">Overskill</a></span></span>
   </footer>`;
 
+const ARROW_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 const BACK_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>';
 
 // Top-left segmented nav on journal + about pages: [ logo | About | Journal ]. The landing page (index.html)
@@ -175,10 +181,24 @@ ${image ? `<meta name="twitter:image" content="${esc(abs(image))}">\n` : ''}${ex
 `;
 }
 
+// Journal index: each post is a full-width rounded card (one link): date + reading time, title, a 2-line
+// description, an optional cover thumbnail on the right (stacked on top on small screens) and an arrow.
+function postCard(p) {
+  const thumb = p.cover ? `<span class="sz-card-thumb"><img src="${esc(p.cover)}" alt="" loading="lazy" decoding="async"></span>` : '';
+  return `<li><a class="sz-card${p.cover ? ' sz-card-has-thumb' : ''}" href="${p.url}">
+        <div class="sz-card-body">
+          <div class="sz-card-meta"><time datetime="${isoDate(p.date)}">${shortDate(p.date)}</time><span aria-hidden="true">·</span><span>${p.minutes} min read</span></div>
+          <h2 class="sz-card-title">${esc(p.title)}</h2>
+          ${p.description ? `<p class="sz-card-desc">${esc(p.description)}</p>` : ''}
+        </div>
+        ${thumb}<span class="sz-card-arrow" aria-hidden="true">${ARROW_ICON}<span class="sz-card-arrow-hot">${ARROW_ICON}</span></span>
+      </a></li>`;
+}
+
 function indexPage(posts) {
   const list = posts.length
     ? `<ol class="sz-posts" reversed>
-${posts.map((p) => `      <li><a class="sz-post-link" href="${p.url}"><span class="sz-post-title">${esc(p.title)}</span><time class="sz-post-date" datetime="${isoDate(p.date)}">${fmtDate(p.date)}</time>${p.description ? `<p class="sz-post-desc">${esc(p.description)}</p>` : ''}</a></li>`).join('\n')}
+      ${posts.map(postCard).join('\n      ')}
     </ol>`
     : `<p class="sz-empty">First post coming soon.</p>`;
   return layout({

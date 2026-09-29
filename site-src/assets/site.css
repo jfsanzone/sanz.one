@@ -102,14 +102,35 @@ a { color: var(--text); text-decoration: none; }
 .sz-h1 { margin: 0; font-weight: 500; font-size: clamp(28px, 3.6vw, 50px); line-height: 1.12; letter-spacing: -.025em; text-wrap: balance; }
 .sz-sub { margin: 0; font-weight: 500; font-size: clamp(28px, 3.6vw, 50px); line-height: 1.12; letter-spacing: -.025em; color: var(--faint); text-wrap: balance; }
 
-.sz-posts { list-style: none; margin: clamp(32px, 4vw, 56px) 0 0; padding: 0; max-width: 720px; border-top: 1px solid var(--border); }
-.sz-posts li { border-bottom: 1px solid var(--border); }
-.sz-post-link { display: grid; grid-template-columns: 1fr auto; column-gap: 24px; row-gap: 6px; padding: 22px 0; align-items: baseline; }
-.sz-post-title { font-size: clamp(19px, 1.6vw, 22px); font-weight: 500; letter-spacing: -.015em; line-height: 1.3; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; text-decoration-color: transparent; transition: text-decoration-color .2s; }
-.sz-post-link:hover .sz-post-title, .sz-post-link:focus-visible .sz-post-title { text-decoration-color: var(--text); }
-.sz-post-date { font-size: 14px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.sz-post-desc { grid-column: 1 / -1; margin: 0; font-size: 15px; line-height: 1.5; color: var(--muted); }
-.sz-empty { margin: clamp(32px, 4vw, 56px) 0 0; max-width: 720px; padding: 22px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); color: var(--muted); font-size: 16px; line-height: 1.5; }
+/* Post cards: full-width rounded links (16px radius, #2A2A2A border like the tiles). The hover/focus state only
+   animates transform and opacity: a lighter layer (::before) fades in, the card lifts 2px and the arrow nudges
+   right while an orange copy of it fades in. Hover is read from the <li> (which does not move), so the lift
+   can't make the pointer flicker on the card's edge. */
+.sz-posts { list-style: none; margin: clamp(32px, 4vw, 56px) 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.sz-card { position: relative; isolation: isolate; display: flex; align-items: center; gap: 24px; padding: 24px; border: 1px solid var(--border); border-radius: 16px; background: #111111; transition: transform .18s cubic-bezier(.2,.8,.2,1); }
+.sz-card::before { content: ""; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; border: 1px solid var(--line); background: var(--tile); opacity: 0; transition: opacity .18s ease; }
+.sz-card-body { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.sz-card-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; font-weight: 500; line-height: 1.4; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sz-card-meta > span[aria-hidden] { color: var(--faint); }
+.sz-card-title { margin: 0; font-size: clamp(19px, 1.6vw, 22px); font-weight: 600; line-height: 1.3; letter-spacing: -.015em; color: var(--text); text-wrap: pretty; }
+.sz-card-desc { margin: 0; font-size: 15px; line-height: 1.5; color: var(--muted); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.sz-card-thumb { flex: 0 0 auto; width: 176px; aspect-ratio: 16 / 10; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: var(--tile); }
+.sz-card-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sz-card-arrow { position: relative; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); color: var(--muted); }
+.sz-card-arrow svg { display: block; transition: transform .18s cubic-bezier(.2,.8,.2,1); }
+.sz-card-arrow-hot { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #FA431E; opacity: 0; transition: opacity .18s ease; }
+.sz-posts li:hover > .sz-card, .sz-card:focus-visible { transform: translateY(-2px); }
+.sz-posts li:hover > .sz-card::before, .sz-card:focus-visible::before { opacity: 1; }
+.sz-posts li:hover > .sz-card .sz-card-arrow svg, .sz-card:focus-visible .sz-card-arrow svg { transform: translateX(3px); }
+.sz-posts li:hover > .sz-card .sz-card-arrow-hot, .sz-card:focus-visible .sz-card-arrow-hot { opacity: 1; }
+.sz-card:active { transform: translateY(0); }
+.sz-card:focus { outline: none; }
+.sz-card:focus-visible { outline: 2px solid rgba(242, 242, 242, .75); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .sz-card, .sz-card-arrow svg { transition: none; }
+  .sz-posts li:hover > .sz-card, .sz-card:focus-visible, .sz-posts li:hover > .sz-card .sz-card-arrow svg, .sz-card:focus-visible .sz-card-arrow svg { transform: none; }
+}
+.sz-empty { margin: clamp(32px, 4vw, 56px) 0 0; padding: 24px; border: 1px solid var(--border); border-radius: 16px; background: #111111; color: var(--muted); font-size: 16px; line-height: 1.5; }
 
 /* ---------- Post ---------- */
 .sz-back { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); transition: color .2s; margin-bottom: clamp(28px, 4vw, 48px); }
@@ -181,11 +202,13 @@ a { color: var(--text); text-decoration: none; }
   .sz-roles { display: flex; flex-direction: column; gap: 4px; }
   .sz-role { display: block; }
   .sz-sep { display: none; }
-  .sz-post-link { grid-template-columns: 1fr; }
   .sz-photo { width: 120px; height: 120px; }
   .sz-social { flex-basis: 100%; }
   .sz-tile { flex: 1 1 0; width: auto; }
-  .sz-post-date { order: -1; }
+  .sz-card { flex-wrap: wrap; gap: 14px 16px; padding: 18px; }
+  .sz-card-thumb { order: -1; width: 100%; aspect-ratio: 16 / 9; }
+  .sz-card-desc { font-size: 14.5px; }
+  .sz-card-arrow { align-self: flex-start; width: 32px; height: 32px; }
   .sz-prose { font-size: 17px; }
   .sz-prose h2 { font-size: 23px; }
   .sz-prose h3 { font-size: 19px; }
