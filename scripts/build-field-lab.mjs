@@ -154,10 +154,15 @@ const labThemeJs = (js) => once(js, "K = 'sz-side'", `K = '${KEY}'`);
 const THEME_JS = labThemeJs(fs.readFileSync(path.join(LAB, 'theme.js'), 'utf8')
   .replace(/\/\*[\s\S]*?\*\//, '').split('\n').map((l) => l.trim()).join('').trim());
 // Switch icons: site-src/labs/field/icons.mjs (PICK), 16px.
-// role=switch: "Field mode", checked = Field. The two labels are visual only (the knob slides behind the active one).
-// abs: absolutely positioned top right (landing page); on the other pages it is the last item of the header row.
+// Top-right controls (.sz-ctl): [light/dark] [Studio | Field]. abs: absolutely placed (landing page); elsewhere
+// the group is the last item of the header row. Mode button: filled sun (shown in dark) / moon (shown in light);
+// side switch: role=switch "Field mode", checked = Field; filled icons from icons.mjs (PICK).
+const FILL = 'fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round" aria-hidden="true" focusable="false"';
+const SUN_ICON = `<svg class="sz-i-sun" width="16" height="16" viewBox="0 0 24 24" ${FILL}><path d="M12 1.5v2.2M12 20.3v2.2M4.6 4.6l1.5 1.5M17.9 17.9l1.5 1.5M1.5 12h2.2M20.3 12h2.2M4.6 19.4l1.5-1.5M17.9 6.1l1.5-1.5" fill="none" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="4.8"/></svg>`;
+const MOON_ICON = `<svg class="sz-i-moon" width="16" height="16" viewBox="0 0 24 24" ${FILL}><path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a.6.6 0 0 0-.8-.7 9.6 9.6 0 1 0 12.6 12.6.6.6 0 0 0-.7-.8Z"/></svg>`;
 function themeButton(abs = false) {
-  return `<button type="button" class="sz-side${abs ? ' sz-side-abs' : ''}" data-icons="${ICONS.id}" role="switch" aria-checked="false" aria-label="Field mode"><span class="sz-side-knob" aria-hidden="true"></span><span class="sz-side-opt sz-side-os" aria-hidden="true">${ICONS.studioSvg}Studio</span><span class="sz-side-opt sz-side-of" aria-hidden="true">${ICONS.fieldSvg}Field</span><span class="sz-side-live" role="status" aria-live="polite"></span></button><script>window.__szTheme && window.__szTheme.sync();</script>`;
+  const live = '<span class="sz-side-live" role="status" aria-live="polite"></span>';
+  return `<div class="sz-ctl${abs ? ' sz-ctl-abs' : ''}"><button type="button" class="sz-mode" aria-label="Switch to light mode">${SUN_ICON}${MOON_ICON}${live}</button><button type="button" class="sz-side" data-icons="${ICONS.id}" role="switch" aria-checked="false" aria-label="Field mode"><span class="sz-side-knob" aria-hidden="true"></span><span class="sz-side-opt sz-side-os" aria-hidden="true">${ICONS.studioSvg}<span>Studio</span></span><span class="sz-side-opt sz-side-of" aria-hidden="true">${ICONS.fieldSvg}<span>Field</span></span>${live}</button></div><script>window.__szTheme && window.__szTheme.sync();</script>`;
 }
 
 function nav(current) {
@@ -394,13 +399,16 @@ function labLanding() {
   if (enc(tpl) !== lines[i]) throw new Error('lab field: landing template does not round-trip');
   const button = themeButton(true);
   const fix = (x, isTpl) => {
-    x = once(x, "K = 'sz-side'", `K = '${KEY}'`);
+    // the head theme script: always the lab's theme.js (side + light/dark mode)
+    const th = x.match(/<script>\(function \(\) \{var W = window, d = document, K = 'sz-side'[\s\S]*?\}\)\(\);<\/script>/g);
+    if (!th || th.length !== 1) throw new Error('lab field: landing theme script not found');
+    x = x.replace(th[0], () => `<script>${THEME_JS}</script>`);
     x = labNavJs(x);
     // the switch + side CSS: always the lab's current site.css blocks
     x = once(x, x.match(/\/\* switcher:start[\s\S]*?\/\* side:end \*\//)[0], LAB_BLOCKS);
     x = x.replace(/<button type="button" class="sz-side sz-side-abs"[\s\S]*?<\/button><script>window\.__szTheme && window\.__szTheme\.sync\(\);<\/script>/, () => button);
     if (!x.includes(`data-icons="${ICONS.id}"`)) throw new Error('lab field: landing switch not replaced');
-    x = once(x, '<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="robots" content="noindex, nofollow">\n<meta name="referrer" content="no-referrer">');
+    x = once(x, '<meta charset="utf-8">', '<meta charset="utf-8">\n<meta name="robots" content="noindex, nofollow">\n<meta name="referrer" content="no-referrer">\n<meta name="theme-color" content="#121211">');
     if (isTpl) {
       x = once(x, "var u = ['/about/', '/journal/']", `var u = ['${P}/about/', '${P}/journal/']`);
       x = x.replace(/(<script type="speculationrules">)([\s\S]*?)(<\/script>)/g, (m, a, j, b) => {

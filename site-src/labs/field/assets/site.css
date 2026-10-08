@@ -42,7 +42,7 @@ a { color: var(--text); text-decoration: none; }
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .sz-main > *, .sz-content { animation: none !important; } }
 
-.sz-top { display: flex; align-items: center; justify-content: flex-start; }
+.sz-top { display: flex; align-items: center; justify-content: flex-start; gap: 6px; }
 /* Segmented nav [ logo | About | Journal ]: 34px tall like the toggle and the buttons, 10px radius.
    --l = logo segment, --w = text segments (fixed, so fonts loading can't move anything; the px numbers below
    are derived from 32/70: pills sit at x 3-35 (logo), 35-105 (About), 105-175 (Journal) inside the 178px box).
@@ -93,57 +93,73 @@ a { color: var(--text); text-decoration: none; }
 ::view-transition-old(sz-nav) { display: none; }
 @media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }
 
-/* switcher:start - Studio | Field switch, top right on every page (copied into index.html too).
-   A compact two-position switch in a 34px glass pill (translucent fill and 1px stroke mixed from the text colour,
-   a backdrop blur, a faint inner top highlight): [spark Studio | pine Field]. role=switch, aria-label "Field mode",
-   aria-checked = Field (site-src/theme.js). The knob slides behind the active side. Aligned with the nav's top;
-   like the nav it has its own view-transition-name and no animation, so it stays put across page switches. */
+/* switcher:start - top-right controls on every page (copied into index.html too): [mode] [Studio | Field].
+   .sz-ctl groups them (last item of the header row; .sz-ctl-abs = absolutely placed on the landing page).
+   - .sz-mode: 34px glass square, light/dark for whichever side is showing. Shows a sun in dark mode and a moon in
+     light mode (it says what it switches to, like the earlier Studio toggle); aria-label follows (theme.js).
+   - .sz-side: Studio | Field, role=switch, aria-checked = Field. A 34px glass track (translucent fill, even 1px stroke, backdrop blur) with an even 4px inset all round;
+     two equal segments (the wider label sets both), 13px side padding, filled 15px icon, 6px gap, 12px label. The
+     knob (radius 6 = track radius 11 - 1px border - 4px inset) slides behind the active segment.
+   Both have their own view-transition-name and no animation, so they stay put across page switches. */
 html { scrollbar-gutter: stable; }
-.sz-side { --g: color-mix(in srgb, var(--text) 5%, transparent); --gs: color-mix(in srgb, var(--text) 11%, transparent); --gh: color-mix(in srgb, var(--text) 8%, transparent); position: relative; flex: none; display: inline-grid; grid-template-columns: 66px 66px; height: 34px; margin: 0 0 0 auto; padding: 3px; box-sizing: border-box; border: 1px solid var(--gs); border-radius: 10px; background: var(--g); -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%); box-shadow: inset 0 1px 0 var(--gh); color: var(--muted); font: 400 12px/1 'SZ Nav', Geist, system-ui, sans-serif; letter-spacing: 0; cursor: pointer; view-transition-name: sz-theme; -webkit-tap-highlight-color: transparent; transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease; }
-.sz-side-abs { position: absolute; z-index: 1; top: clamp(28px, 6vw, 80px); right: clamp(28px, 6vw, 80px); }
-.sz-side-knob { position: absolute; top: 3px; left: 3px; width: 66px; height: 26px; border-radius: 7px; background: var(--pill); transition: transform .35s cubic-bezier(.2, .8, .2, 1); }
-.sz-side-opt { position: relative; display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; transition: color .25s ease; }
-.sz-side-opt svg { display: block; flex: none; }
-.sz-side-os { color: var(--pill-text); }
-.sz-side-of svg { color: var(--logo); }
-[data-side="field"] .sz-side-knob { transform: translateX(66px); }
+.sz-ctl { flex: none; display: flex; align-items: center; gap: 8px; margin: 0 0 0 auto; }
+.sz-ctl-abs { position: absolute; z-index: 1; top: clamp(28px, 6vw, 80px); right: clamp(28px, 6vw, 80px); }
+.sz-side, .sz-mode { --g: color-mix(in srgb, var(--text) 5%, transparent); --gs: color-mix(in srgb, var(--text) 11%, transparent); --gh: color-mix(in srgb, var(--text) 8%, transparent); position: relative; height: 34px; box-sizing: border-box; border: 1px solid var(--gs); background: var(--g); -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%); color: var(--muted); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color .2s ease, border-color .2s ease, color .2s ease; }
+.sz-side { display: inline-grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 11px; font: 400 12px/1 'SZ Nav', Geist, system-ui, sans-serif; letter-spacing: 0; view-transition-name: sz-theme; }
+.sz-side-knob { position: absolute; top: 4px; left: 4px; width: calc((100% - 8px) / 2); height: calc(100% - 8px); border-radius: 6px; background: var(--pill); transition: transform .35s cubic-bezier(.2, .8, .2, 1), background-color .2s ease; }
+.sz-side-opt { position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; height: 24px; padding: 0 13px; white-space: nowrap; color: var(--muted); transition: color .25s ease; }
+.sz-side-opt svg { display: block; flex: none; width: 15px; height: 15px; }
+.sz-side-opt span { display: block; line-height: 15px; transform: translateY(.5px); }
+.sz-side-os, [data-side="field"] .sz-side-of { color: var(--pill-text); }
 [data-side="field"] .sz-side-os { color: var(--muted); }
-[data-side="field"] .sz-side-of, [data-side="field"] .sz-side-of svg { color: var(--pill-text); }
-.sz-side:hover, .sz-side:focus-visible { --g: color-mix(in srgb, var(--text) 9%, transparent); --gs: color-mix(in srgb, var(--text) 18%, transparent); --gh: color-mix(in srgb, var(--text) 14%, transparent); }
-.sz-side:hover .sz-side-of, [data-side="field"] .sz-side:hover .sz-side-os { color: var(--text); }
+[data-side="field"] .sz-side-knob { transform: translateX(100%); }
+.sz-mode { display: inline-grid; place-items: center; width: 34px; padding: 0; border-radius: 11px; view-transition-name: sz-mode; }
+.sz-mode svg { grid-area: 1 / 1; display: block; width: 16px; height: 16px; transition: opacity .3s ease, transform .4s cubic-bezier(.2, .8, .2, 1); }
+.sz-mode .sz-i-moon, [data-theme="light"] .sz-mode .sz-i-sun { opacity: 0; transform: rotate(-60deg) scale(.6); }
+[data-theme="light"] .sz-mode .sz-i-moon { opacity: 1; transform: none; }
+.sz-side:hover, .sz-side:focus-visible, .sz-mode:hover, .sz-mode:focus-visible { --g: color-mix(in srgb, var(--text) 9%, transparent); --gs: color-mix(in srgb, var(--text) 18%, transparent); --gh: color-mix(in srgb, var(--text) 14%, transparent); }
+.sz-mode:hover, .sz-mode:focus-visible, .sz-side:hover .sz-side-of, [data-side="field"] .sz-side:hover .sz-side-os { color: var(--text); }
 [data-side="field"] .sz-side:hover .sz-side-of { color: var(--pill-text); }
-.sz-side:focus { outline: none; }
-.sz-side:focus-visible { outline: 2px solid color-mix(in srgb, var(--text) 60%, transparent); outline-offset: 2px; }
+.sz-side:focus, .sz-mode:focus { outline: none; }
+.sz-side:focus-visible, .sz-mode:focus-visible { outline: 2px solid color-mix(in srgb, var(--text) 60%, transparent); outline-offset: 2px; }
 /* Touch screens: the nav segments (26px) get a larger invisible hit area (~42px). */
 @media (pointer: coarse) { .sz-seg-item { position: relative; } .sz-seg-item::after { content: ""; position: absolute; inset: -8px 0; } }
 .sz-side-live { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
-::view-transition-group(sz-theme), ::view-transition-new(sz-theme) { animation: none; }
-::view-transition-old(sz-theme) { display: none; }
+::view-transition-group(sz-theme), ::view-transition-new(sz-theme), ::view-transition-group(sz-mode), ::view-transition-new(sz-mode) { animation: none; }
+::view-transition-old(sz-theme), ::view-transition-old(sz-mode) { display: none; }
 /* Switching sides: a same-document View Transition (theme.js adds html.sz-vt) where the new side wipes in from
-   the right, where the switch is (380ms); the nav and switch are part of the wipe. Without View Transitions,
-   colours ease over 250ms (html.sz-theming). Reduced motion: instant (theme.js skips both). */
+   the right, where the switch is (380ms); switching light/dark crossfades (html.sz-vt-fade, 300ms). The nav and
+   the controls are part of it. Without View Transitions, colours ease over 250ms (html.sz-theming). Reduced
+   motion: instant (theme.js skips both). */
 html.sz-vt { view-transition-name: root; }
-html.sz-vt .sz-seg, html.sz-vt .sz-side { view-transition-name: none; }
+html.sz-vt .sz-seg, html.sz-vt .sz-side, html.sz-vt .sz-mode { view-transition-name: none; }
 html.sz-vt::view-transition-old(root) { animation: none; }
 html.sz-vt::view-transition-new(root) { animation: sz-wipe .38s cubic-bezier(.65, 0, .35, 1) both; }
+html.sz-vt.sz-vt-fade::view-transition-new(root) { animation: sz-fade .3s ease both; }
 @keyframes sz-wipe { from { clip-path: inset(0 0 0 100%); } to { clip-path: inset(0); } }
+@keyframes sz-fade { from { opacity: 0; } to { opacity: 1; } }
 html.sz-theming, html.sz-theming *, html.sz-theming *::before, html.sz-theming *::after { transition: background-color .25s ease, color .25s ease, border-color .25s ease, outline-color .25s ease, fill .25s ease, stroke .25s ease, stop-color .25s ease, text-decoration-color .25s ease !important; }
-/* phones: icons only (spark / pine), so the nav (224px in Field) and the switch share one row at 360px+ */
-@media (max-width: 480px) { .sz-side { grid-template-columns: 34px 34px; } .sz-side-knob { width: 34px; } [data-side="field"] .sz-side-knob { transform: translateX(34px); } .sz-side-opt { gap: 0; font-size: 0; } .sz-side-opt svg { width: 16px; height: 16px; } }
-@media (max-width: 340px) { .sz-side { grid-template-columns: 30px 30px; } .sz-side-knob { width: 30px; } [data-side="field"] .sz-side-knob { transform: translateX(30px); } }
-@media (prefers-reduced-motion: reduce) { .sz-side, .sz-side-knob, .sz-side-opt, html.sz-theming * { transition: none !important; } }
+/* phones (<= 480px): icons only, 26px segments, 6px gap: [mode 34] [track 62] = 102px next to the nav */
+@media (max-width: 480px) { .sz-ctl { gap: 6px; } .sz-side-opt { gap: 0; width: 26px; padding: 0; } .sz-side-opt span { display: none; } }
+/* very small (<= 340px): 30px mode button, and the side switch shows only the active side (tap flips it) */
+@media (max-width: 340px) { .sz-ctl { gap: 4px; } .sz-mode { width: 30px; } .sz-side { grid-template-columns: 1fr; padding: 3px; } .sz-side-knob { top: 3px; left: 3px; width: calc(100% - 6px); height: calc(100% - 6px); } .sz-side-opt { width: 24px; height: 26px; } .sz-side-of, [data-side="field"] .sz-side-os { display: none; } [data-side="field"] .sz-side-of { display: flex; } [data-side="field"] .sz-side-knob { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .sz-side, .sz-side-knob, .sz-side-opt, .sz-mode, .sz-mode svg, html.sz-theming * { transition: none !important; } }
 /* switcher:end */
 
-/* side:start - Field look (copied into index.html too). Studio = the dark palette above; Field = warm canvas,
-   charcoal, forest green, blaze orange accent; Zilla Slab headings, IBM Plex Mono meta; faint topo lines + grain.
-   .sz-s / .sz-f: Studio-only / Field-only copy. */
+/* side:start - Field look (copied into index.html too). Studio = the light/dark palettes above; Field light =
+   warm canvas, charcoal, forest green, blaze orange accent; Field dark = "campfire at night": deep warm charcoal,
+   canvas-cream text, sage pill with dark text, blaze for graphics only. Zilla Slab headings, IBM Plex Mono meta;
+   faint topo lines + grain (inverted and fainter in dark). .sz-s / .sz-f: Studio-only / Field-only copy.
+   No one-sided borders anywhere (no edge stripes, tabs or rules on one side): even 1px borders or fills only. */
 @font-face { font-family: 'Zilla Slab'; font-style: normal; font-weight: 500; font-display: swap; src: url("/assets/fonts/zilla-slab-500.woff2") format('woff2'); }
 @font-face { font-family: 'Zilla Slab'; font-style: normal; font-weight: 600; font-display: swap; src: url("/assets/fonts/zilla-slab-600.woff2") format('woff2'); }
 @font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url("/assets/fonts/plex-mono-400.woff2") format('woff2'); }
 html:not([data-side="field"]) .sz-f { display: none !important; }
 [data-side="field"] .sz-s { display: none !important; }
-[data-side="field"] { color-scheme: light; --bg: #E9E2D3; --surface: #F2EDE2; --tile: #E2DAC8; --border: #D2C8B2; --line: #BCAF94; --hover: #E0D8C5; --text: #1F1D1A; --body: #36322B; --muted: #5C554A; --faint: #615A4F; --strong: #110F0D; --quote: #4A443B; --code: #1F1D1A; --accent: #2F4A3A; --pill: #2F4A3A; --pill-text: #F2EDE2; --pill-hover: #253C2F; --logo: #E8401C; --logo-on: #F2EDE2; --x-a: #1F1D1A; --x-b: #5C554A; --uline: #BCAF94; --sel: rgba(232, 64, 28, .2); --green: #2F4A3A; --blaze: #E8401C; --blaze-ink: #A82D0E; --slab: 'Zilla Slab', Rockwell, 'Roboto Slab', Georgia, serif; --fmono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+[data-side="field"] { color-scheme: light; --bg: #E9E2D3; --surface: #F2EDE2; --tile: #E2DAC8; --border: #D2C8B2; --line: #BCAF94; --hover: #E0D8C5; --text: #1F1D1A; --body: #36322B; --muted: #5C554A; --faint: #615A4F; --strong: #110F0D; --quote: #4A443B; --code: #1F1D1A; --accent: #2F4A3A; --pill: #2F4A3A; --pill-text: #F2EDE2; --pill-hover: #253C2F; --logo: #E8401C; --logo-on: #F2EDE2; --x-a: #1F1D1A; --x-b: #5C554A; --uline: #BCAF94; --sel: rgba(232, 64, 28, .2); --green: #2F4A3A; --blaze: #E8401C; --blaze-ink: #A82D0E; --sample-bg: #F2D7C9; --sample-ink: #8E260B; --slab: 'Zilla Slab', Rockwell, 'Roboto Slab', Georgia, serif; --fmono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+[data-side="field"][data-theme="dark"] { color-scheme: dark; --bg: #16140F; --surface: #1E1C16; --tile: #24211B; --border: #34302A; --line: #48443B; --hover: #26231C; --text: #E9E2D3; --body: #CFC7B6; --muted: #A49B89; --faint: #958C7B; --strong: #F6F0E4; --quote: #BFB6A4; --code: #E9E2D3; --accent: #A9BF9E; --pill: #9DB492; --pill-text: #15180F; --pill-hover: #AFC4A5; --logo: #FA431E; --logo-on: #16140F; --x-a: #E9E2D3; --x-b: #A49B89; --uline: #4A463D; --sel: rgba(250, 67, 28, .28); --green: #A9BF9E; --blaze: #FA431E; --blaze-ink: #FF8A66; --sample-bg: #3A2219; --sample-ink: #FFB199; }
 html[data-side="field"] { background-color: var(--bg) !important; background-image: url("/assets/grain.svg"), url("/assets/topo.svg") !important; background-repeat: repeat, no-repeat; background-size: 220px 220px, cover; background-position: 0 0, center; background-attachment: fixed; }
+html[data-side="field"][data-theme="dark"] { background-image: url("/assets/grain-dark.svg"), url("/assets/topo-dark.svg") !important; }
 [data-side="field"] body { background: transparent !important; }
 [data-side="field"] .sz-main { background: transparent !important; }
 /* nav: the labels say "Field Notes", so the text segments are 92px (logo 3-35, About 35-127, Field Notes 127-219);
@@ -186,21 +202,40 @@ html[data-side="field"] { background-color: var(--bg) !important; background-ima
 [data-side="field"] .sz-card-meta, [data-side="field"] .sz-card-field, [data-side="field"] .sz-article-meta, [data-side="field"] .sz-article-field, [data-side="field"] .sz-coords, [data-side="field"] .sz-carry-k, [data-side="field"] .sz-back { font-family: var(--fmono); font-size: 11.5px; letter-spacing: .03em; text-transform: uppercase; }
 [data-side="field"] .sz-card-field, [data-side="field"] .sz-article-field { color: var(--green); }
 [data-side="field"] .sz-u, [data-side="field"] .sz-prose a { text-decoration-color: var(--blaze); }
-.sz-sample { display: inline-block; font-family: var(--fmono, ui-monospace, monospace); font-size: 10.5px; line-height: 1.5; letter-spacing: .08em; text-transform: uppercase; color: var(--blaze-ink, #FF7A59); border: 1px solid currentColor; border-radius: 3px; padding: 0 5px; }
-/* field-notebook cards: paper, square-ish corners, faint ruled lines, a blaze tab on the left; photo first */
-[data-side="field"] .sz-card { border-radius: 4px; background-color: var(--surface); background-image: repeating-linear-gradient(to bottom, transparent 0 25px, rgba(47, 74, 58, .07) 25px 26px); box-shadow: inset 3px 0 0 var(--blaze), 0 1px 0 rgba(31, 29, 26, .05); }
+.sz-sample { display: inline-block; font-family: var(--fmono, ui-monospace, monospace); font-size: 10px; line-height: 16px; letter-spacing: .06em; text-transform: uppercase; color: var(--sample-ink, #FFB199); background: var(--sample-bg, #3A2219); border-radius: 999px; padding: 0 7px; }
+/* Field cards: compact and rounded, like the Studio cards: even 1px border all round on the surface fill, a quiet
+   hover (fill + border, no lift). Photo first, inset 14px and rounded to match (22 - 14 = 8px); one quiet mono line
+   for SAMPLE + date + read time, a second for place / elevation / weather; 16.5px slab title. */
+[data-side="field"] .sz-posts { gap: 12px; }
+[data-side="field"] .sz-card { border-radius: 22px; padding: 14px; gap: 14px; transition: none; }
 [data-side="field"] .sz-card::before { border-radius: inherit; background: var(--hover); }
-[data-side="field"] .sz-card-has-thumb { flex-direction: column; align-items: stretch; gap: 0; padding: 0; overflow: hidden; }
-[data-side="field"] .sz-card-has-thumb .sz-card-thumb { order: -1; width: 100%; aspect-ratio: 21 / 9; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; }
-[data-side="field"] .sz-card-has-thumb .sz-card-body { padding: 16px 56px 18px 22px; }
-[data-side="field"] .sz-card-has-thumb .sz-card-arrow { position: absolute; right: 14px; bottom: 16px; }
-[data-side="field"] .sz-card-title { font-family: var(--slab); font-weight: 600; font-size: clamp(18px, 1.4vw, 20px); letter-spacing: -.005em; }
-[data-side="field"] .sz-card-arrow-hot { color: var(--blaze-ink); }
+[data-side="field"] .sz-card-has-thumb { display: grid; grid-template-columns: 200px 1fr auto; align-items: center; }
+[data-side="field"] .sz-card-has-thumb .sz-card-thumb { order: -1; width: 200px; aspect-ratio: 16 / 10; border: 0; border-radius: 8px; }
+[data-side="field"] .sz-card-body { gap: 4px; padding: 2px 0; }
+[data-side="field"] .sz-card-meta, [data-side="field"] .sz-card-field { font-size: 10.5px; line-height: 16px; letter-spacing: .04em; color: var(--faint); gap: 6px; align-items: center; }
+[data-side="field"] .sz-card-field { color: var(--muted); }
+[data-side="field"] .sz-card-title { margin-top: 4px; font-family: var(--slab); font-weight: 600; font-size: 16.5px; line-height: 1.25; letter-spacing: -.005em; }
+[data-side="field"] .sz-card-desc { font-size: 13.5px; -webkit-line-clamp: 1; line-clamp: 1; }
+[data-side="field"] .sz-card-arrow-hot { color: var(--text); }
+@media (max-width: 640px) {
+  [data-side="field"] .sz-card { border-radius: 20px; padding: 10px; }
+  [data-side="field"] .sz-card-has-thumb { grid-template-columns: 84px 1fr; gap: 12px; }
+  [data-side="field"] .sz-card-has-thumb .sz-card-thumb { width: 84px; aspect-ratio: 1 / 1; border-radius: 10px; }
+  [data-side="field"] .sz-card-meta { flex-wrap: nowrap; white-space: nowrap; overflow: hidden; }
+  [data-side="field"] .sz-card-meta > time ~ span { display: none; }
+  [data-side="field"] .sz-card-field { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  [data-side="field"] .sz-card-title { margin-top: 2px; font-size: 15.5px; }
+  [data-side="field"] .sz-card-desc, [data-side="field"] .sz-card-has-thumb .sz-card-arrow { display: none; }
+}
+/* Field post page: rounded cover, compact meta */
+[data-side="field"] .sz-cover { border-radius: 20px; border: 1px solid var(--border); }
+[data-side="field"] .sz-article-field { margin: 6px 0 0; color: var(--muted); }
 /* About: Currently carrying */
-.sz-carry { max-width: 620px; margin-top: 28px; padding-top: 18px; border-top: 1px dashed var(--line); }
+.sz-carry { max-width: 620px; margin-top: 28px; }
 .sz-carry-h { margin: 0 0 10px; font-size: 18px; font-weight: 600; color: var(--text); }
-.sz-carry-list { list-style: none; margin: 0; padding: 0; }
-.sz-carry-list li { display: grid; grid-template-columns: 110px 1fr; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--body); }
+.sz-carry-list { list-style: none; margin: 0; padding: 6px; display: grid; gap: 2px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface); }
+.sz-carry-list li { display: grid; grid-template-columns: 110px 1fr; gap: 12px; padding: 9px 12px; border-radius: 14px; font-size: 14px; color: var(--body); }
+.sz-carry-list li:nth-child(odd) { background: var(--tile); }
 .sz-carry-k { color: var(--green, var(--muted)); padding-top: 2px; }
 .sz-carry-note { margin: 10px 0 0; font-size: 13px; color: var(--faint); font-style: italic; }
 .sz-sample-note { margin: 12px 0 0; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
@@ -272,17 +307,18 @@ html[data-side="field"] { background-color: var(--bg) !important; background-ima
 .sz-prose p > img { margin: 2em 0; }
 .sz-prose figure img { margin: 0; }
 .sz-prose figcaption { margin-top: 10px; font-size: 13px; color: var(--muted); }
-.sz-prose blockquote { margin-left: 0; padding: 2px 0 2px 20px; border-left: 2px solid var(--line); color: var(--quote); }
+.sz-prose blockquote { margin-left: 0; padding: 14px 18px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); color: var(--quote); }
 .sz-prose blockquote > :last-child { margin-bottom: 0; }
 .sz-prose code { font-family: var(--mono); font-size: .86em; background: var(--tile); border: 1px solid var(--border); border-radius: 6px; padding: .12em .38em; color: var(--text); }
 .sz-prose pre { background: var(--tile); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; overflow-x: auto; line-height: 1.55; font-size: 13px; }
 .sz-prose pre code { background: none; border: 0; padding: 0; font-size: inherit; color: var(--code); }
-.sz-prose hr { border: 0; border-top: 1px solid var(--border); margin: 2.5em 0; }
+.sz-prose hr { border: 0; height: 1px; background: var(--border); margin: 2.5em 0; }
 .sz-prose table { width: 100%; border-collapse: collapse; font-size: 14px; display: block; overflow-x: auto; }
-.sz-prose th, .sz-prose td { text-align: left; padding: 10px 14px 10px 0; border-bottom: 1px solid var(--border); }
+.sz-prose th, .sz-prose td { text-align: left; padding: 10px 14px; }
+.sz-prose tr:nth-child(even) td { background: var(--surface); }
 .sz-prose th { color: var(--text); font-weight: 500; }
 
-.sz-article-foot { margin-top: clamp(40px, 6vw, 64px); padding-top: 24px; border-top: 1px solid var(--border); }
+.sz-article-foot { margin-top: clamp(40px, 6vw, 64px); }
 .sz-article-foot .sz-back { margin-bottom: 0; }
 
 /* ---------- About ---------- */
