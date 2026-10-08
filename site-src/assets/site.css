@@ -99,7 +99,7 @@ a { color: var(--text); text-decoration: none; }
    aria-label says the same ("Switch to light mode"). Aligned with the nav's top; like the nav it has its own
    view-transition-name and no animation, so it stays put across page switches. */
 html { scrollbar-gutter: stable; }
-.sz-theme { --g: color-mix(in srgb, var(--text) 5%, transparent); --gs: color-mix(in srgb, var(--text) 11%, transparent); --gh: color-mix(in srgb, var(--text) 8%, transparent); position: relative; flex: none; display: inline-grid; place-items: center; width: 40px; height: 40px; margin: 0 0 0 auto; padding: 0; box-sizing: border-box; border: 1px solid var(--gs); border-radius: 50%; background: var(--g); -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%); box-shadow: inset 0 1px 0 var(--gh); color: var(--muted); cursor: pointer; view-transition-name: sz-theme; -webkit-tap-highlight-color: transparent; transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.sz-theme { --g: color-mix(in srgb, var(--text) 5%, transparent); --gs: color-mix(in srgb, var(--text) 11%, transparent); --gh: color-mix(in srgb, var(--text) 8%, transparent); position: relative; flex: none; display: inline-grid; place-items: center; width: 40px; height: 40px; margin: 0 0 0 auto; padding: 0; box-sizing: border-box; border: 1px solid var(--gs); border-radius: 50%; background: var(--g); -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%); color: var(--muted); cursor: pointer; view-transition-name: sz-theme; -webkit-tap-highlight-color: transparent; transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease; }
 .sz-theme-abs { position: absolute; z-index: 1; top: clamp(28px, 6vw, 80px); right: clamp(28px, 6vw, 80px); }
 .sz-theme svg { grid-area: 1 / 1; display: block; transition: opacity .3s ease, transform .4s var(--ease); }
 .sz-theme .sz-i-moon, [data-theme="light"] .sz-theme .sz-i-sun { opacity: 0; transform: rotate(-60deg) scale(.6); }
@@ -182,17 +182,20 @@ html.sz-theming .sz-theme svg { transition: opacity .3s ease, transform .4s var(
 .sz-prose p > img { margin: 2em 0; }
 .sz-prose figure img { margin: 0; }
 .sz-prose figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
-.sz-prose blockquote { margin-left: 0; padding: 2px 0 2px 20px; border-left: 2px solid var(--line); color: var(--quote); }
+.sz-prose blockquote { margin-left: 0; margin-right: 0; padding: 14px 20px; border-radius: 12px; background: var(--tile); color: var(--quote); }
 .sz-prose blockquote > :last-child { margin-bottom: 0; }
 .sz-prose code { font-family: var(--mono); font-size: .86em; background: var(--tile); border: 1px solid var(--border); border-radius: 6px; padding: .12em .38em; color: var(--text); }
 .sz-prose pre { background: var(--tile); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; overflow-x: auto; line-height: 1.55; font-size: 14.5px; }
 .sz-prose pre code { background: none; border: 0; padding: 0; font-size: inherit; color: var(--code); }
-.sz-prose hr { border: 0; border-top: 1px solid var(--border); margin: 2.5em 0; }
-.sz-prose table { width: 100%; border-collapse: collapse; font-size: 16px; display: block; overflow-x: auto; }
-.sz-prose th, .sz-prose td { text-align: left; padding: 10px 14px 10px 0; border-bottom: 1px solid var(--border); }
+.sz-prose hr { width: 4px; height: 4px; margin: 2.5em auto; border: 0; border-radius: 50%; background: var(--faint); box-shadow: -14px 0 0 var(--faint), 14px 0 0 var(--faint); }
+.sz-prose table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 16px; display: block; overflow-x: auto; }
+.sz-prose th, .sz-prose td { text-align: left; padding: 10px 14px; }
+.sz-prose tbody tr:nth-child(odd) > * { background: var(--tile); }
+.sz-prose tbody tr > :first-child { border-radius: 8px 0 0 8px; }
+.sz-prose tbody tr > :last-child { border-radius: 0 8px 8px 0; }
 .sz-prose th { color: var(--text); font-weight: 500; }
 
-.sz-article-foot { margin-top: clamp(40px, 6vw, 64px); padding-top: 24px; border-top: 1px solid var(--border); }
+.sz-article-foot { margin-top: clamp(40px, 6vw, 64px); padding-top: 24px; }
 .sz-article-foot .sz-back { margin-bottom: 0; }
 
 /* ---------- About ---------- */
