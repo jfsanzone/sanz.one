@@ -147,17 +147,17 @@ html.sz-theming, html.sz-theming *, html.sz-theming *::before, html.sz-theming *
 /* switcher:end */
 
 /* side:start - Field look (copied into index.html too). Studio = the light/dark palettes above; Field light =
-   warm canvas, charcoal, forest green, blaze orange accent; Field dark = "campfire at night": deep warm charcoal,
-   canvas-cream text, sage pill with dark text, blaze for graphics only. Zilla Slab headings, IBM Plex Mono meta;
-   faint topo lines + grain (inverted and fainter in dark). .sz-s / .sz-f: Studio-only / Field-only copy.
+   warm stone/greige canvas, charcoal, grey-green (olive-grey) accent; Field dark = "campfire at night": neutral
+   warm charcoal, stone text, grey-sage pill with dark text. Blaze orange is the logo only; links/SAMPLE use muted rust. Zilla Slab headings, IBM Plex Mono meta;
+   barely-there topo lines + grain (inverted in dark). .sz-s / .sz-f: Studio-only / Field-only copy.
    No one-sided borders anywhere (no edge stripes, tabs or rules on one side): even 1px borders or fills only. */
 @font-face { font-family: 'Zilla Slab'; font-style: normal; font-weight: 500; font-display: swap; src: url("/assets/fonts/zilla-slab-500.woff2") format('woff2'); }
 @font-face { font-family: 'Zilla Slab'; font-style: normal; font-weight: 600; font-display: swap; src: url("/assets/fonts/zilla-slab-600.woff2") format('woff2'); }
 @font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url("/assets/fonts/plex-mono-400.woff2") format('woff2'); }
 html:not([data-side="field"]) .sz-f { display: none !important; }
 [data-side="field"] .sz-s { display: none !important; }
-[data-side="field"] { color-scheme: light; --bg: #E9E2D3; --surface: #F2EDE2; --tile: #E2DAC8; --border: #D2C8B2; --line: #BCAF94; --hover: #E0D8C5; --text: #1F1D1A; --body: #36322B; --muted: #5C554A; --faint: #615A4F; --strong: #110F0D; --quote: #4A443B; --code: #1F1D1A; --accent: #2F4A3A; --pill: #2F4A3A; --pill-text: #F2EDE2; --pill-hover: #253C2F; --logo: #E8401C; --logo-on: #F2EDE2; --x-a: #1F1D1A; --x-b: #5C554A; --uline: #BCAF94; --sel: rgba(232, 64, 28, .2); --green: #2F4A3A; --blaze: #E8401C; --blaze-ink: #A82D0E; --sample-bg: #F2D7C9; --sample-ink: #8E260B; --slab: 'Zilla Slab', Rockwell, 'Roboto Slab', Georgia, serif; --fmono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
-[data-side="field"][data-theme="dark"] { color-scheme: dark; --bg: #16140F; --surface: #1E1C16; --tile: #24211B; --border: #34302A; --line: #48443B; --hover: #26231C; --text: #E9E2D3; --body: #CFC7B6; --muted: #A49B89; --faint: #958C7B; --strong: #F6F0E4; --quote: #BFB6A4; --code: #E9E2D3; --accent: #A9BF9E; --pill: #9DB492; --pill-text: #15180F; --pill-hover: #AFC4A5; --logo: #FA431E; --logo-on: #16140F; --x-a: #E9E2D3; --x-b: #A49B89; --uline: #4A463D; --sel: rgba(250, 67, 28, .28); --green: #A9BF9E; --blaze: #FA431E; --blaze-ink: #FF8A66; --sample-bg: #3A2219; --sample-ink: #FFB199; }
+[data-side="field"] { color-scheme: light; --bg: #E6E3DC; --surface: #EFEDE8; --tile: #DEDAD2; --border: #CFCAC0; --line: #B8B2A6; --hover: #DCD8CF; --text: #1E1D1B; --body: #353330; --muted: #5A5650; --faint: #5F5B55; --strong: #11100F; --quote: #47443F; --code: #1E1D1B; --accent: #3E4A42; --pill: #3E4A42; --pill-text: #EFEDE8; --pill-hover: #333D36; --logo: #E8401C; --logo-on: #EFEDE8; --x-a: #1E1D1B; --x-b: #5A5650; --uline: #B8B2A6; --sel: rgba(62, 74, 66, .18); --green: #3E4A42; --blaze: #A86F5C; --blaze-ink: #8A4A36; --sample-bg: #E7DAD3; --sample-ink: #7A3E2C; --slab: 'Zilla Slab', Rockwell, 'Roboto Slab', Georgia, serif; --fmono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+[data-side="field"][data-theme="dark"] { color-scheme: dark; --bg: #151513; --surface: #1C1C19; --tile: #22221F; --border: #33322E; --line: #46443F; --hover: #252421; --text: #E4E1DA; --body: #C9C5BC; --muted: #A09B91; --faint: #918C83; --strong: #F3F1EC; --quote: #B9B4AA; --code: #E4E1DA; --accent: #A3AD9F; --pill: #A3AD9F; --pill-text: #161814; --pill-hover: #B3BCAF; --logo: #FA431E; --logo-on: #151513; --x-a: #E4E1DA; --x-b: #A09B91; --uline: #4A4843; --sel: rgba(163, 173, 159, .25); --green: #A3AD9F; --blaze: #B9806C; --blaze-ink: #D9A08C; --sample-bg: #352723; --sample-ink: #E3B4A4; }
 html[data-side="field"] { background-color: var(--bg) !important; background-image: url("/assets/grain.svg"), url("/assets/topo.svg") !important; background-repeat: repeat, no-repeat; background-size: 220px 220px, cover; background-position: 0 0, center; background-attachment: fixed; }
 html[data-side="field"][data-theme="dark"] { background-image: url("/assets/grain-dark.svg"), url("/assets/topo-dark.svg") !important; }
 [data-side="field"] body { background: transparent !important; }
@@ -202,7 +202,7 @@ html[data-side="field"][data-theme="dark"] { background-image: url("/assets/grai
 [data-side="field"] .sz-card-meta, [data-side="field"] .sz-card-field, [data-side="field"] .sz-article-meta, [data-side="field"] .sz-article-field, [data-side="field"] .sz-coords, [data-side="field"] .sz-carry-k, [data-side="field"] .sz-back { font-family: var(--fmono); font-size: 11.5px; letter-spacing: .03em; text-transform: uppercase; }
 [data-side="field"] .sz-card-field, [data-side="field"] .sz-article-field { color: var(--green); }
 [data-side="field"] .sz-u, [data-side="field"] .sz-prose a { text-decoration-color: var(--blaze); }
-.sz-sample { display: inline-block; font-family: var(--fmono, ui-monospace, monospace); font-size: 10px; line-height: 16px; letter-spacing: .06em; text-transform: uppercase; color: var(--sample-ink, #FFB199); background: var(--sample-bg, #3A2219); border-radius: 999px; padding: 0 7px; }
+.sz-sample { display: inline-block; font-family: var(--fmono, ui-monospace, monospace); font-size: 10px; line-height: 16px; letter-spacing: .06em; text-transform: uppercase; color: var(--sample-ink, #E3B4A4); background: var(--sample-bg, #352723); border-radius: 999px; padding: 0 7px; }
 /* Field cards: compact and rounded, like the Studio cards: even 1px border all round on the surface fill, a quiet
    hover (fill + border, no lift). Photo first, inset 14px and rounded to match (22 - 14 = 8px); one quiet mono line
    for SAMPLE + date + read time, a second for place / elevation / weather; 16.5px slab title. */

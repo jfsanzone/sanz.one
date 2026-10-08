@@ -12,7 +12,7 @@
    backslashes: it is inlined as a single line (and JSON-escaped in the landing template). */
 (function () {
   var W = window, d = document, K = 'sz-side', KM = K + '-mode';
-  var C = { studio: { dark: '#121211', light: '#F6F6F3' }, field: { light: '#E9E2D3', dark: '#16140F' } };
+  var C = { studio: { dark: '#121211', light: '#F6F6F3' }, field: { light: '#E6E3DC', dark: '#151513' } };
   var S = W.__szTheme;
   if (S) { S.apply(); return; }
   var side = '', mode = '', tm = 0;
