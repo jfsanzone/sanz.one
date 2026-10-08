@@ -320,29 +320,32 @@ const CARRY = [
   ['Notebook', 'Placeholder: waterproof field notebook'],
 ];
 function aboutPage() {
-  // Field photo slot: drop jason-field.(jpg|webp|png) in the lab assets folder; otherwise the current About photo.
+  // Field photo slot: jason-field.jpg (or .png / .webp; a .webp next to a .jpg/.png is served as the webp source) in
+  // the lab assets folder; otherwise the current About photo.
+  const has = (f) => fs.existsSync(path.join(LAB, 'assets', f));
   const fieldPhoto = (() => {
-    for (const [f, t] of [['jason-field.webp', 'image/webp'], ['jason-field.jpg', 'image/jpeg'], ['jason-field.png', 'image/png']]) {
-      if (fs.existsSync(path.join(LAB, 'assets', f))) return { src: `/assets/${f}`, type: t, own: true };
-    }
-    return { src: '/media/about/jason.jpg', type: 'image/jpeg', own: false };
+    const img = ['jason-field.jpg', 'jason-field.png', 'jason-field.webp'].find(has);
+    if (!img) return { src: '/media/about/jason.jpg', webp: '/media/about/jason.webp', own: false };
+    return { src: `/assets/${img}`, webp: has('jason-field.webp') && img !== 'jason-field.webp' ? '/assets/jason-field.webp' : '', own: true };
   })();
   const photo = fieldPhoto.src;
-  const sources = fieldPhoto.own
-    ? `<source srcset="${P}${photo}" type="${fieldPhoto.type}">`
-    : `<source srcset="${P}/media/about/jason.webp" type="image/webp">`;
+  const sources = fieldPhoto.webp ? `<source srcset="${P}${fieldPhoto.webp}" type="image/webp">` : '';
   return layout({
     title: `About · ${SITE.name}`,
     description: 'Jason Sanzone is a designer based just north of Atlanta, Georgia. He leads design and creative at ClickFunnels and co-founded Overskill, where he heads up design.',
     url: '/about/',
     ogType: 'profile',
-    image: photo,
+    image: '/media/about/jason.jpg',
     card: 'summary',
     current: 'about',
     body: `<section class="sz-content sz-about">
-    <picture>
+    <picture class="sz-s">
+      <source srcset="${P}/media/about/jason.webp" type="image/webp">
+      <img class="sz-photo" src="${P}/media/about/jason.jpg" alt="Jason Sanzone" width="144" height="144">
+    </picture>
+    <picture class="sz-f">
       ${sources}
-      <img class="sz-photo" src="${P}${photo}" alt="Jason Sanzone" width="144" height="144">
+      <img class="sz-photo" src="${P}${photo}" alt="Jason Sanzone outdoors in the snow" width="144" height="144">
     </picture>
     <h1 class="sz-h1">About</h1>
     <p class="sz-bio sz-s">I'm a designer based just north of Atlanta, Georgia. I've spent my career building brands, products, and interfaces, including work for some of the world's most recognizable brands. Today I lead design and creative at <a class="sz-u" href="https://www.clickfunnels.com" target="_blank" rel="noopener noreferrer">ClickFunnels</a> and co-founded <a class="sz-u" href="https://www.overskill.com" target="_blank" rel="noopener noreferrer">Overskill</a>, where I head up design. Away from the screen, you'll find me outdoors, tinkering with new tech and AI, or hunting down gear that makes everyday life a little easier.</p>
