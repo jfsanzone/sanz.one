@@ -117,6 +117,16 @@ const LOGO_MARK = fs.readFileSync(path.join(ROOT, 'site-src/assets/logo.svg'), '
   .replaceAll('fill="#FA431E"', 'fill="currentColor"');
 const NAV_JS = fs.readFileSync(path.join(ROOT, 'site-src/nav.js'), 'utf8')
   .replace(/\/\*[\s\S]*?\*\//, '').split('\n').map((l) => l.trim()).join('').trim();
+// Colour themes: site-src/theme.js is inlined at the top of every <head> (applies the saved palette before first
+// paint); the paintbrush button sits top right, next to the nav in the persistent header.
+const THEME_JS = fs.readFileSync(path.join(ROOT, 'site-src/theme.js'), 'utf8')
+  .replace(/\/\*[\s\S]*?\*\//, '').split('\n').map((l) => l.trim()).join('').trim();
+const BRUSH_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m14.622 17.897-10.68-2.913"/><path d="M18.376 2.622a1 1 0 1 1 3.002 3.002L17.36 9.643a.5.5 0 0 0 0 .707l.944.944a2.41 2.41 0 0 1 0 3.408l-.944.944a.5.5 0 0 1-.707 0L8.354 7.348a.5.5 0 0 1 0-.707l.944-.944a2.41 2.41 0 0 1 3.408 0l.944.944a.5.5 0 0 0 .707 0z"/><path d="M9 8c-1.804 2.71-3.97 3.46-6.583 3.948a.507.507 0 0 0-.302.819l7.32 8.883a1 1 0 0 0 1.185.204C12.735 20.405 16 16.792 16 15"/></svg>';
+// abs: absolutely positioned top right (landing page); on the other pages it is the last item of the header row.
+function themeButton(abs = false) {
+  return `<button type="button" class="sz-theme${abs ? ' sz-theme-abs' : ''}" aria-label="Change colour theme">${BRUSH_ICON}<span class="sz-theme-live" role="status" aria-live="polite"></span></button><script>window.__szTheme && window.__szTheme.sync();</script>`;
+}
+
 function nav(current) {
   const active = current === 'post' ? 'journal' : current;
   const home = `<a class="sz-seg-item sz-seg-home" data-key="home" href="/" aria-label="Home">${LOGO_MARK}</a>`;
@@ -149,6 +159,7 @@ function layout({ title, description, url, ogType = 'website', image = '', card:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>${THEME_JS}</script>
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${esc(abs(url))}">
@@ -171,6 +182,7 @@ ${image ? `<meta name="twitter:image" content="${esc(abs(image))}">\n` : ''}${ex
 <main class="sz-main">
   <header class="sz-top">
     ${nav(current)}
+    ${themeButton()}
   </header>
   ${body}
   ${FOOTER}
@@ -320,8 +332,10 @@ function redirectPage(to) {
 <meta name="robots" content="noindex">
 <link rel="canonical" href="${esc(url)}">
 <meta http-equiv="refresh" content="0; url=${esc(to)}">
+<script>${THEME_JS}</script>
 <script>location.replace(${JSON.stringify(to)} + location.search + location.hash);</script>
-<style>html,body{background:#0A0A0A;color:#8A8A8A;font:15px system-ui,sans-serif}a{color:#F2F2F2}</style>
+<link rel="stylesheet" href="/assets/site.css">
+<style>body{color:var(--muted);font:15px Geist,system-ui,sans-serif;padding:28px}</style>
 </head>
 <body>
 <p>This page has moved to <a href="${esc(to)}">${esc(url)}</a>.</p>
