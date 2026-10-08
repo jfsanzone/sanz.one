@@ -33,6 +33,10 @@ jobs:
         run: npm ci
       - name: Build site
         run: npm run build
+        env:
+          # Secret paths of the unlinked lab copies (see LABS in scripts/build.mjs); a lab is skipped when unset.
+          SZ_LAB_LIME: ${{ secrets.SZ_LAB_LIME }}
+          SZ_LAB_ORB: ${{ secrets.SZ_LAB_ORB }}
       - name: Check landing page is copied unchanged
         run: cmp index.html _site/index.html
       - name: Setup Pages
