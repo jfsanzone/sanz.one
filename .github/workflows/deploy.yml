@@ -33,9 +33,6 @@ jobs:
         run: npm ci
       - name: Build site
         run: npm run build
-        env:
-          # Secret path of the unlinked Field lab (scripts/build-field-lab.mjs); skipped when unset.
-          SZ_LAB_FIELD: ${{ secrets.SZ_LAB_FIELD }}
       - name: Check landing page is copied unchanged
         run: cmp index.html _site/index.html
       - name: Setup Pages

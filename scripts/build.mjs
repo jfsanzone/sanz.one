@@ -6,8 +6,6 @@
 //   - /blog/... (old URLs) are redirect pages to /journal/...; /blog/feed.xml is a copy of the journal feed
 //   - shared CSS, fonts and logo are copied from site-src/assets to /assets/
 // Posts with `draft: true` are skipped entirely.
-//   - Field lab: an unlinked, noindex copy of the site with the Studio / Field switch, built under a secret path only
-//     when SZ_LAB_FIELD holds it (CI: repository secret); see scripts/build-field-lab.mjs. It only writes _site/<slug>/.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -372,6 +370,3 @@ write('blog/feed.xml', feedXml);
 write('about/index.html', aboutPage());
 
 console.log(`Built ${posts.length} post(s) into ${path.relative(ROOT, OUT)}/`);
-
-// Field lab (see scripts/build-field-lab.mjs): only with a configured secret path; the slug is never printed.
-if ((process.env.SZ_LAB_FIELD || '').trim()) await import('./build-field-lab.mjs');
