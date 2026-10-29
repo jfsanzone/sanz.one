@@ -47,8 +47,9 @@
       }
     });
     links.forEach(function (l) { var a = by[l[0]], b = by[l[1]]; svgEl('line', { x1: a.x, y1: a.y, x2: b.x, y2: b.y, 'class': 'g-edge g-edge-hub' }, gE); });
-    hubs.forEach(function (h) {
-      var a = svgEl('a', { href: h.href, 'class': 'g-hub' }, gH);
+    var TONES = ['orange', 'volt', 'lilac', 'sky'];
+    hubs.forEach(function (h, hi) {
+      var a = svgEl('a', { href: h.href, 'class': 'g-hub t-' + TONES[hi % TONES.length] }, gH);
       if (h.ext) { a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener noreferrer'); }
       svgEl('circle', { cx: h.x, cy: h.y, r: 11, 'class': 'g-ring' }, a);
       svgEl('circle', { cx: h.x, cy: h.y, r: 5 }, a);
@@ -83,8 +84,10 @@
   });
 
   /* ---------------- section geometry, bar + index state ---------------- */
-  var FIELD = { orange: ['#FA431E', '#0A0A0A'], light: ['#F3F3F3', '#0A0A0A'], white: ['#FFFFFF', '#0A0A0A'], ink: ['#0A0A0A', '#FFFFFF'] };
-  var HEXF = { '#FA431E': 'orange', '#F3F3F3': 'light', '#FFFFFF': 'white', '#0A0A0A': 'ink' };
+  // field → [fill, text]; text is always ink #0A0A0A or fog #F2F2F2 (AA-checked)
+  var INK = '#0A0A0A', FOG = '#F2F2F2';
+  var FIELD = { orange: ['#FA431E', INK], light: ['#F3F3F3', INK], white: ['#FFFFFF', INK], ink: [INK, FOG], lilac: ['#BBA6FF', INK], cobalt: ['#2B3BFF', FOG], volt: ['#D4FF3A', INK], sky: ['#7BD8FF', INK] };
+  var HEXF = {}; Object.keys(FIELD).forEach(function (k) { HEXF[FIELD[k][0]] = k; });
   var sections = $$('.ed-sec', ribbon), blocks = [];
   var indexNav = $('.ed-index'), idxLinks = $$('.ed-index a');
   function measure() {
@@ -111,12 +114,12 @@
     idxLinks.forEach(function (a) { var on = a.getAttribute('data-sec') === sec.id; a.classList.toggle('is-active', on); if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
     if (expo) return;
     var bar = FIELD[fieldAt(s + 26)], mid = FIELD[fieldAt(s + vh / 2)], low = FIELD[fieldAt(s + vh - 34)];
-    root.style.setProperty('--bar-bg', bar[0]); root.style.setProperty('--bar-fg', bar[1]);
+    root.style.setProperty('--bar-bg', bar[0]); root.style.setProperty('--bar-fg', bar[1]); root.style.setProperty('--bar-pill', bar[1] === INK ? FOG : INK);
     indexNav.style.setProperty('--idx-fg', mid[1]);
     var btn = $('.ed-expo-btn');
     btn.style.setProperty('--idx-fg', low[1]);
-    btn.style.setProperty('--idx-line', low[1] === '#FFFFFF' ? 'rgba(255,255,255,.4)' : 'rgba(10,10,10,.28)');
-    btn.style.setProperty('--idx-bg', low[1] === '#FFFFFF' ? 'rgba(255,255,255,.08)' : 'rgba(255,255,255,.14)');
+    btn.style.setProperty('--idx-line', low[1] === FOG ? 'rgba(242,242,242,.4)' : 'rgba(10,10,10,.28)');
+    btn.style.setProperty('--idx-bg', low[1] === FOG ? 'rgba(242,242,242,.08)' : 'rgba(255,255,255,.14)');
     var theme = $('meta[name="theme-color"]'); if (theme) theme.setAttribute('content', bar[0]);
     indexNav.classList.toggle('is-on', s > vh * .55);
   }
@@ -242,8 +245,8 @@
     var annot = svgEl('svg', { 'class': 'ed-annot', 'aria-hidden': 'true' });
     d.body.appendChild(stage); d.body.appendChild(annot);
     root.classList.add('ed-expo');
-    indexNav.style.setProperty('--idx-fg', '#FFFFFF');
-    btn.style.setProperty('--idx-fg', '#FFFFFF'); btn.style.setProperty('--idx-line', 'rgba(255,255,255,.4)'); btn.style.setProperty('--idx-bg', 'rgba(10,10,10,.5)');
+    indexNav.style.setProperty('--idx-fg', FOG);
+    btn.style.setProperty('--idx-fg', FOG); btn.style.setProperty('--idx-line', 'rgba(242,242,242,.4)'); btn.style.setProperty('--idx-bg', 'rgba(10,10,10,.5)');
     btn.setAttribute('aria-pressed', 'true'); btn.setAttribute('aria-label', 'Exit Expo Mode'); $('.ed-expo-label', btn).textContent = 'Back';
     live.textContent = 'Expo Mode on. Press Escape or Shift to go back.';
 
@@ -272,8 +275,9 @@
     if (expo.t < .6) return;
     var vw = root.clientWidth, vh = W.innerHeight, lo = v0, hi = v0 + expo.Hf * .7;
     // right-hand callouts: panel corner → floating label
-    var used = [];
-    $$('.ed-panel[data-annot]', ribbon).forEach(function (p) {
+    var used = [], CT = ['sky', 'volt', 'lilac', 'orange'];
+    $$('.ed-panel[data-annot]', ribbon).forEach(function (p, pi) {
+      var tone = 't-' + CT[pi % CT.length];
       var sec = p.closest('.ed-sec'), top = sec.offsetTop + p.offsetTop;
       if (top < lo || top > hi) return;
       var r = p.getBoundingClientRect();
@@ -281,12 +285,12 @@
       var lx = vw - 36, ly = r.top - 18;
       for (var i = 0; i < used.length; i++) if (Math.abs(used[i] - ly) < 40) return;
       used.push(ly);
-      var g = svgEl('g', { 'class': 'a-pill' }, a);
+      var g = svgEl('g', { 'class': 'a-pill ' + tone }, a);
       var tx = svgEl('text', { x: lx - 12, y: ly + 4, 'text-anchor': 'end' }, g); tx.textContent = p.getAttribute('data-annot');
       var bw = tx.getComputedTextLength ? tx.getComputedTextLength() + 24 : 200;
-      g.insertBefore(svgEl('rect', { x: lx - bw, y: ly - 13, width: bw, height: 26, rx: 4 }), tx);
+      g.insertBefore(svgEl('rect', { x: lx - bw, y: ly - 13, width: bw, height: 26, rx: 13 }), tx);
       svgEl('path', { d: 'M' + (lx - bw) + ' ' + ly + ' H' + (r.right + 30) + ' L' + r.right + ' ' + r.top }, a);
-      svgEl('circle', { cx: r.right, cy: r.top, r: 3 }, a);
+      svgEl('circle', { cx: r.right, cy: r.top, r: 3.5, 'class': tone }, a);
       // dimension label along the near edge of the panel
       var dim = svgEl('text', { x: r.left, y: r.bottom + 18, 'class': 'a-dim' }, a); dim.textContent = '↔ ' + p.offsetWidth + ' px';
     });
