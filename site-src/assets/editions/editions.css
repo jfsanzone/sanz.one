@@ -70,8 +70,12 @@ button { font: inherit; color: inherit; }
 /* ---------- expo button ---------- */
 .ed-expo-btn { position: fixed; left: 14px; bottom: 14px; z-index: 61; display: flex; align-items: center; gap: 0; height: 40px; padding: 0 10px; border: 1px solid var(--idx-line, var(--line)); border-radius: 999px; background: var(--idx-bg, rgba(255,255,255,.12)); color: var(--idx-fg, var(--ink)); cursor: pointer; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); transition: gap .3s var(--ease), padding .3s var(--ease), background-color .3s, color .3s; }
 .ed-expo-label { max-width: 0; overflow: hidden; white-space: nowrap; font-family: var(--mono); font-size: 12px; transition: max-width .35s var(--ease); }
-.ed-expo-btn:hover, .ed-expo-btn:focus-visible { gap: 8px; padding: 0 14px 0 10px; }
-.ed-expo-btn:hover .ed-expo-label, .ed-expo-btn:focus-visible .ed-expo-label { max-width: 120px; }
+.ed-expo-btn:focus-visible { gap: 8px; padding: 0 14px 0 10px; }
+.ed-expo-btn:focus-visible .ed-expo-label { max-width: 120px; }
+@media (hover: hover) {
+  .ed-expo-btn:hover { gap: 8px; padding: 0 14px 0 10px; }
+  .ed-expo-btn:hover .ed-expo-label { max-width: 120px; }
+}
 html.ed-expo .ed-expo-btn { gap: 8px; padding: 0 14px 0 10px; }
 html.ed-expo .ed-expo-label { max-width: 120px; }
 
@@ -284,9 +288,22 @@ html.ed-expo .ed-panel { box-shadow: 0 30px 60px -20px rgba(0,0,0,.35); }
   .ed-note::before, .ed-note::after { display: none; }
   .ed-head, .ed-sub, .ed-foot { grid-column: 2; }
 }
+/* touch / small screens: same button, 44px target, inside the safe area, no border */
 @media (max-width: 767px), (hover: none) and (pointer: coarse) {
-  .ed-expo-btn { display: none; }
+  .ed-expo-btn { left: max(12px, calc(env(safe-area-inset-left) + 8px)); bottom: max(12px, calc(env(safe-area-inset-bottom) + 8px)); height: 44px; min-width: 44px; padding: 0 12px; justify-content: center; border: 0; touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+  html.ed-expo .ed-expo-btn { gap: 8px; padding: 0 16px 0 12px; }
+  html.ed-expo { overscroll-behavior-y: none; }
 }
+/* mobile Expo scene: slim rails, small decoration */
+.ed-m .ed-rail { font-size: 9px; color: rgba(255,255,255,.5); }
+.ed-m .ed-rail-l span { right: 3px; }
+.ed-m .ed-rail-r span { left: 3px; }
+.ed-m .ed-rail span::after { display: none; }
+.ed-m .ed-rail-l i { right: 3px; }
+.ed-m .ed-rail-r i { left: 3px; }
+.ed-m .ed-rail i { width: 6px; }
+.ed-m .ed-formula { font-size: 10px; }
+.ed-m .ed-inner > .ed-ribbon, .ed-m .ed-panel { box-shadow: none; }
 @media (max-width: 767px) {
   :root { --gl: 16px; --gr: 16px; --bar-h: 48px; }
   body { font-size: 15px; }

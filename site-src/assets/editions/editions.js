@@ -126,7 +126,16 @@
   measure(); updateChrome();
   var ticking = false;
   W.addEventListener('scroll', function () { if (ticking) return; ticking = true; requestAnimationFrame(function () { ticking = false; if (expo) expo.frame(); updateChrome(); }); }, { passive: true });
-  W.addEventListener('resize', function () { if (expo) exitExpo(true); measure(); updateChrome(); });
+  // Resize: iOS fires resize whenever the URL bar shows/hides (height only). In Expo we ignore
+  // height-only changes and rebuild the scene in place on a real width change (rotation).
+  var rzT = 0;
+  W.addEventListener('resize', function () {
+    clearTimeout(rzT);
+    rzT = setTimeout(function () {
+      if (expo) { if (root.clientWidth !== expo.vw || mqSmall.matches !== expo.small) rebuildExpo(); return; }
+      measure(); updateChrome();
+    }, 120);
+  });
   W.addEventListener('load', function () { measure(); updateChrome(); });
 
   /* in-page anchors: work in both modes */
@@ -178,14 +187,16 @@
      strips stay contiguous and the far end of the ribbon bends up toward vertical.
      At t = 0 every angle is 0 and scale is 1, so the 3D scene is pixel-identical to the
      flat page; entering/leaving just animates t. */
-  var CFG = { theta: 58, bend: 62, n: 8, h: 130, scale: .6, yFlat: .34, yExpo: .38, persp: 1500, dur: 950 };
+  var CFG = { theta: 58, bend: 62, n: 8, h: 130, scale: .6, yFlat: .34, yExpo: .38, persp: 1500, dur: 950, M: 150, grid: 2400 };
+  // Phones / touch: gentler tilt, shallow 3-strip curve (3 clones instead of 8), less zoom-out, slim rails, little decoration.
+  var CFG_M = { theta: 42, bend: 30, n: 3, h: 170, scale: .8, yFlat: .3, yExpo: .24, persp: 1000, dur: 800, M: 26, grid: 500, mobile: true };
   var btn = $('.ed-expo-btn');
   function lerp(a, b, t) { return a + (b - a) * t; }
   function ease(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
 
-  function buildRails(inner, H) {
+  function buildRails(inner, H, M) {
     ['l', 'r'].forEach(function (side) {
-      var r = d.createElement('div'); r.className = 'ed-rail ed-rail-' + side; r.setAttribute('aria-hidden', 'true');
+      var r = d.createElement('div'); r.className = 'ed-rail ed-rail-' + side; r.setAttribute('aria-hidden', 'true'); r.style.width = M + 'px';
       for (var v = 100; v < H; v += 100) {
         if (v % 500 === 0) { var s = d.createElement('span'); s.style.top = v + 'px'; s.textContent = v; r.appendChild(s); }
         else { var i = d.createElement('i'); i.style.top = v + 'px'; r.appendChild(i); }
@@ -203,43 +214,52 @@
     return w;
   }
 
-  function enterExpo() {
-    if (expo || mqSmall.matches) return;
+  function enterExpo(instant) {
+    if (expo) return;
     measure();
+    var small = mqSmall.matches, C = small ? CFG_M : CFG;
     var s = W.scrollY, vw = root.clientWidth, vh = W.innerHeight;
-    var Wd = ribbon.offsetWidth, H = ribbon.offsetHeight, M = 150;
-    var Y = Math.round(vh * CFG.yFlat), Hf = Math.round(vh * 1.7);
+    var Wd = ribbon.offsetWidth, H = ribbon.offsetHeight, M = C.M;
+    var Y = Math.round(vh * C.yFlat), Hf = Math.round(vh * 1.7);
     host.style.height = H + 'px';
     ribbon.style.width = Wd + 'px';
 
-    var stage = d.createElement('div'); stage.className = 'ed-stage'; stage.style.perspective = CFG.persp + 'px';
+    var stage = d.createElement('div'); stage.className = 'ed-stage' + (small ? ' ed-m' : ''); stage.style.perspective = C.persp + 'px';
     var bg = d.createElement('div'); bg.className = 'ed-stage-bg'; stage.appendChild(bg);
     var world = d.createElement('div'); world.className = 'ed-world'; world.style.width = Wd + 'px'; stage.appendChild(world);
     var floor = d.createElement('div'); floor.className = 'ed-floor'; floor.style.width = Wd + 'px'; floor.style.height = Hf + 'px'; world.appendChild(floor);
-    var grid = d.createElement('div'); grid.className = 'ed-gridplane'; grid.style.cssText = 'left:' + (-2400) + 'px;top:' + (-600) + 'px;width:' + (Wd + 4800) + 'px;height:' + (Hf + 1400) + 'px;transform:translateZ(-60px)';
+    var grid = d.createElement('div'); grid.className = 'ed-gridplane'; grid.style.cssText = 'left:' + (-C.grid) + 'px;top:' + (-600) + 'px;width:' + (Wd + 2 * C.grid) + 'px;height:' + (Hf + 1400) + 'px;transform:translateZ(-60px)';
     floor.appendChild(grid);
     var clip = d.createElement('div'); clip.className = 'ed-clip'; clip.style.cssText = 'left:' + (-M) + 'px;width:' + (Wd + 2 * M) + 'px;height:' + Hf + 'px';
     floor.appendChild(clip);
     var inner = d.createElement('div'); inner.className = 'ed-inner'; inner.style.width = (Wd + 2 * M) + 'px'; inner.style.height = H + 'px';
-    buildRails(inner, H);
+    buildRails(inner, H, M);
+    ribbon.style.margin = '0 ' + M + 'px';
     clip.appendChild(inner);
     inner.insertBefore(ribbon, inner.firstChild);
 
     // hinge chain of inert clones
     var hinges = [], parent = floor;
-    for (var k = 1; k <= CFG.n; k++) {
-      var hg = d.createElement('div'); hg.className = 'ed-hinge'; hg.style.width = Wd + 'px'; hg.style.height = CFG.h + 'px';
-      var hc = d.createElement('div'); hc.className = 'ed-clip'; hc.style.cssText = 'left:' + (-M) + 'px;width:' + (Wd + 2 * M) + 'px;height:' + (CFG.h + 2) + 'px'; // 2px overlap hides seams
+    for (var k = 1; k <= C.n; k++) {
+      var hg = d.createElement('div'); hg.className = 'ed-hinge'; hg.style.width = Wd + 'px'; hg.style.height = C.h + 'px';
+      var hc = d.createElement('div'); hc.className = 'ed-clip'; hc.style.cssText = 'left:' + (-M) + 'px;width:' + (Wd + 2 * M) + 'px;height:' + (C.h + 2) + 'px'; // 2px overlap hides seams
       var cl = inner.cloneNode(true); cl.setAttribute('aria-hidden', 'true'); cl.setAttribute('inert', ''); cl.inert = true;
       $$('[id]', cl).forEach(function (n) { n.removeAttribute('id'); });
       hc.appendChild(cl); hg.appendChild(hc); parent.appendChild(hg);
       hinges.push({ el: hg, inner: cl }); parent = hg;
     }
     // blueprint decoration in the space around the ribbon
-    stage.appendChild(wire('torus', 'right:2%;top:16%;width:240px;height:240px', true));
-    stage.appendChild(wire('cube', 'left:3%;bottom:16%;width:180px;height:180px', false));
-    stage.appendChild(wire('target', 'right:6%;bottom:8%;width:150px;height:150px', true));
-    [['θ = ' + CFG.theta + '°', 'left:16%;top:22%'], ['z(v) = (v − v₀) · sin θ', 'right:18%;top:12%'], ['Δv = ' + CFG.h + 'px × ' + CFG.n, 'left:12%;top:58%'], ['W = ' + Wd + 'px', 'right:9%;top:52%']].forEach(function (f) {
+    var formulas;
+    if (small) {
+      stage.appendChild(wire('cube', 'right:5%;top:9%;width:64px;height:64px', false));
+      formulas = [['θ = ' + C.theta + '°', 'left:5%;top:11%']];
+    } else {
+      stage.appendChild(wire('torus', 'right:2%;top:16%;width:240px;height:240px', true));
+      stage.appendChild(wire('cube', 'left:3%;bottom:16%;width:180px;height:180px', false));
+      stage.appendChild(wire('target', 'right:6%;bottom:8%;width:150px;height:150px', true));
+      formulas = [['θ = ' + C.theta + '°', 'left:16%;top:22%'], ['z(v) = (v − v₀) · sin θ', 'right:18%;top:12%'], ['Δv = ' + C.h + 'px × ' + C.n, 'left:12%;top:58%'], ['W = ' + Wd + 'px', 'right:9%;top:52%']];
+    }
+    formulas.forEach(function (f) {
       var e = d.createElement('div'); e.className = 'ed-formula'; e.style.cssText = f[1]; e.textContent = f[0]; e.setAttribute('aria-hidden', 'true'); stage.appendChild(e);
     });
     var annot = svgEl('svg', { 'class': 'ed-annot', 'aria-hidden': 'true' });
@@ -248,15 +268,15 @@
     indexNav.style.setProperty('--idx-fg', FOG);
     btn.style.setProperty('--idx-fg', FOG); btn.style.setProperty('--idx-line', 'rgba(242,242,242,.4)'); btn.style.setProperty('--idx-bg', 'rgba(10,10,10,.5)');
     btn.setAttribute('aria-pressed', 'true'); btn.setAttribute('aria-label', 'Exit Expo Mode'); $('.ed-expo-label', btn).textContent = 'Back';
-    live.textContent = 'Expo Mode on. Press Escape or Shift to go back.';
+    live.textContent = small ? 'Expo Mode on. Tap Back to return.' : 'Expo Mode on. Press Escape or Shift to go back.';
 
-    expo = { stage: stage, world: world, floor: floor, inner: inner, hinges: hinges, annot: annot, Y: Y, Hf: Hf, Wd: Wd, vw: vw, vh: vh, t: 0, anim: 0 };
+    expo = { stage: stage, world: world, floor: floor, inner: inner, hinges: hinges, annot: annot, Y: Y, Hf: Hf, Wd: Wd, vw: vw, vh: vh, t: 0, anim: 0, C: C, small: small };
     expo.apply = function () {
-      var t = expo.t, sc = lerp(1, CFG.scale, t);
-      var wy = lerp(Y, vh * CFG.yExpo, t), wx = (vw - Wd) / 2;
+      var t = expo.t, sc = lerp(1, C.scale, t);
+      var wy = lerp(Y, vh * C.yExpo, t), wx = (vw - Wd) / 2; // vh frozen at entry: URL-bar resizes don't move the scene
       world.style.transform = 'translate3d(' + wx + 'px,' + wy + 'px,0) scale(' + sc + ')';
-      floor.style.transform = 'rotateX(' + (CFG.theta * t) + 'deg)';
-      var dl = (CFG.bend / CFG.n) * t;
+      floor.style.transform = 'rotateX(' + (C.theta * t) + 'deg)';
+      var dl = (C.bend / C.n) * t;
       for (var i = 0; i < hinges.length; i++) hinges[i].el.style.transform = 'rotateX(' + (-dl) + 'deg)';
       stage.style.setProperty('--expo-t', t.toFixed(3)); annot.style.setProperty('--expo-t', t.toFixed(3));
       expo.frame();
@@ -264,10 +284,14 @@
     expo.frame = function () {
       var v0 = W.scrollY + Y;
       inner.style.transform = 'translate3d(0,' + (-v0) + 'px,0)';
-      for (var i = 0; i < hinges.length; i++) hinges[i].inner.style.transform = 'translate3d(0,' + (-(v0 - (i + 1) * CFG.h)) + 'px,0)';
-      drawAnnotations(v0);
+      for (var i = 0; i < hinges.length; i++) hinges[i].inner.style.transform = 'translate3d(0,' + (-(v0 - (i + 1) * C.h)) + 'px,0)';
+      if (!small || expo.anim) { drawAnnotations(v0); return; }
+      // phones: callouts would be re-laid out every scroll frame; hide while moving, redraw once settled
+      if (!expo.annDirty) { expo.annDirty = true; annot.style.visibility = 'hidden'; }
+      var me = expo; clearTimeout(me.annT);
+      me.annT = setTimeout(function () { if (expo !== me) return; expo.annDirty = false; drawAnnotations(W.scrollY + Y); annot.style.visibility = ''; }, 140);
     };
-    animate(1);
+    if (instant) { expo.t = 1; expo.apply(); } else animate(1);
   }
 
   function drawAnnotations(v0) {
@@ -275,13 +299,25 @@
     if (expo.t < .6) return;
     var vw = root.clientWidth, vh = W.innerHeight, lo = v0, hi = v0 + expo.Hf * .7;
     // right-hand callouts: panel corner → floating label
-    var used = [], CT = ['sky', 'volt', 'lilac', 'orange'];
+    var used = [], CT = ['sky', 'volt', 'lilac', 'orange'], small = expo.small;
     $$('.ed-panel[data-annot]', ribbon).forEach(function (p, pi) {
+      if (small && used.length) return;
       var tone = 't-' + CT[pi % CT.length];
       var sec = p.closest('.ed-sec'), top = sec.offsetTop + p.offsetTop;
       if (top < lo || top > hi) return;
       var r = p.getBoundingClientRect();
       if (r.top < 70 || r.top > vh - 60) return;
+      if (small) {
+        if (r.top < 110 || r.top > vh * .7) return;
+        used.push(r.top);
+        var gm = svgEl('g', { 'class': 'a-pill ' + tone }, a), mx = r.left + 4, my = r.top - 34;
+        var tm = svgEl('text', { x: mx + 12, y: my + 4 }, gm); tm.textContent = p.getAttribute('data-annot');
+        var mw = tm.getComputedTextLength ? tm.getComputedTextLength() + 24 : 160;
+        gm.insertBefore(svgEl('rect', { x: mx, y: my - 12, width: mw, height: 24, rx: 12 }), tm);
+        svgEl('path', { d: 'M' + (mx + 12) + ' ' + (my + 12) + ' V' + r.top }, a);
+        svgEl('circle', { cx: mx + 12, cy: r.top, r: 3, 'class': tone }, a);
+        return;
+      }
       var lx = vw - 36, ly = r.top - 18;
       for (var i = 0; i < used.length; i++) if (Math.abs(used[i] - ly) < 40) return;
       used.push(ly);
@@ -295,7 +331,7 @@
       var dim = svgEl('text', { x: r.left, y: r.bottom + 18, 'class': 'a-dim' }, a); dim.textContent = '↔ ' + p.offsetWidth + ' px';
     });
     // left: active index item → section title
-    var act = $('.ed-index a.is-active');
+    var act = !expo.small && $('.ed-index a.is-active');
     if (act) {
       var sec = $('#' + act.getAttribute('data-sec'));
       var title = sec && $('.ed-title, .ed-word-big', sec);
@@ -314,12 +350,14 @@
 
   function animate(to, cb) {
     cancelAnimationFrame(expo.anim);
+    expo.anim = 0;
     if (mqReduce.matches) { expo.t = to; expo.apply(); if (cb) cb(); return; }
-    var from = expo.t, start = performance.now(), dur = CFG.dur * Math.abs(to - from);
+    var from = expo.t, start = performance.now(), dur = expo.C.dur * Math.abs(to - from);
+    expo.anim = -1;
     (function step(now) {
       var k = Math.min(1, (now - start) / Math.max(1, dur));
       expo.t = lerp(from, to, ease(k)); expo.apply();
-      if (k < 1) expo.anim = requestAnimationFrame(step); else if (cb) cb();
+      if (k < 1) expo.anim = requestAnimationFrame(step); else { expo.anim = 0; expo.apply(); if (cb) cb(); }
     })(start);
   }
 
@@ -329,8 +367,8 @@
     var finish = function () {
       var s = W.scrollY;
       host.insertBefore(ribbon, host.firstChild);
-      ribbon.style.width = ''; host.style.height = '';
-      e.stage.remove(); e.annot.remove();
+      ribbon.style.width = ''; ribbon.style.margin = ''; host.style.height = '';
+      clearTimeout(e.annT); e.stage.remove(); e.annot.remove();
       root.classList.remove('ed-expo');
       expo = null;
       W.scrollTo(0, s);
@@ -341,9 +379,11 @@
     if (instant) { cancelAnimationFrame(e.anim); finish(); } else animate(0, finish);
   }
   function toggleExpo() { if (expo) exitExpo(); else enterExpo(); }
-  W.sanzExpo = { enter: enterExpo, exit: exitExpo, toggle: toggleExpo, cfg: CFG, get on() { return !!expo; } };
+  // rotation / real width change while in Expo: rebuild in place at full tilt, keep scroll position
+  function rebuildExpo() { if (!expo) return; cancelAnimationFrame(expo.anim); var on = expo.t > .5; exitExpo(true); if (on) enterExpo(true); else { measure(); updateChrome(); } }
+  W.sanzExpo = { enter: enterExpo, exit: exitExpo, toggle: toggleExpo, cfg: CFG, cfgMobile: CFG_M, get on() { return !!expo; }, get mobile() { return !!(expo && expo.small); } };
 
-  btn.addEventListener('click', toggleExpo);
+  btn.addEventListener('click', function () { toggleExpo(); });
   // A lone Shift press toggles; Escape exits.
   var shiftArmed = false;
   var editable = function (el) { return el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)); };
@@ -360,5 +400,4 @@
   });
   d.addEventListener('mousedown', function () { shiftArmed = false; }, true);
   W.addEventListener('blur', function () { shiftArmed = false; });
-  mqSmall.addEventListener && mqSmall.addEventListener('change', function () { if (mqSmall.matches) exitExpo(true); });
 })();
