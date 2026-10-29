@@ -89,8 +89,6 @@ html.ed-expo .ed-expo-label { max-width: 120px; }
 .ed-sec[data-field="volt"] { background: var(--volt); }
 .ed-sec[data-field="sky"] { background: var(--sky); }
 .ed-dark { --line: rgba(242,242,242,.34); --line-soft: rgba(242,242,242,.18); }
-.ed-blend { height: 260px; background: linear-gradient(180deg, var(--a), var(--b)); }
-.ed-blend.ed-blend-short { height: 0; } /* ink → volt reads muddy as a gradient; hard edge instead */
 .ed-head { grid-column: 2 / 4; display: flex; align-items: flex-start; gap: 16px; }
 .ed-num { font-family: var(--mono); font-size: 12px; padding-top: 18px; opacity: .7; }
 .ed-title { margin: 0; font-size: clamp(56px, 7.4vw, 112px); line-height: .92; font-weight: 700; letter-spacing: -.045em; }
@@ -220,7 +218,7 @@ a.ed-card:hover { background: rgba(255,255,255,.26); }
 
 /* ---------- expo stage ---------- */
 .ed-stage { position: fixed; inset: 0; z-index: 10; overflow: hidden; background: var(--ink); perspective: 1500px; perspective-origin: 50% 0%; }
-.ed-stage-bg { position: absolute; inset: 0; background-image: radial-gradient(ellipse at 50% 120%, rgba(255,255,255,.07), transparent 60%), linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px); background-size: auto, 64px 64px, 64px 64px; opacity: var(--expo-t, 0); }
+.ed-stage-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px); background-size: auto, 64px 64px, 64px 64px; opacity: var(--expo-t, 0); }
 .ed-world { position: absolute; left: 0; top: 0; transform-style: preserve-3d; transform-origin: 50% 0; }
 .ed-floor, .ed-hinge { position: absolute; left: 0; transform-style: preserve-3d; }
 .ed-floor { top: 0; transform-origin: 50% 0; }
@@ -249,6 +247,17 @@ a.ed-card:hover { background: rgba(255,255,255,.26); }
 .ed-annot circle.t-sky { fill: var(--sky); }
 .ed-annot .a-dim { fill: rgba(255,255,255,.55); font-size: 11px; }
 
+/* Solid extrusion: stacked hard copies in one darker tone of the field (no white, no blur, no gradient).
+   --u = depth per step, --sx/--sy = direction; the desktop wordmark is vertical + rotated 180deg, so its x sign flips. */
+.ed-word-big, .ed-title { --ext: #B8300F; --u: 0px; --sx: 1; --sy: 1; text-shadow: calc(var(--sx) * var(--u) * 1) calc(var(--sy) * var(--u) * 1) 0 var(--ext), calc(var(--sx) * var(--u) * 2) calc(var(--sy) * var(--u) * 2) 0 var(--ext), calc(var(--sx) * var(--u) * 3) calc(var(--sy) * var(--u) * 3) 0 var(--ext), calc(var(--sx) * var(--u) * 4) calc(var(--sy) * var(--u) * 4) 0 var(--ext), calc(var(--sx) * var(--u) * 5) calc(var(--sy) * var(--u) * 5) 0 var(--ext), calc(var(--sx) * var(--u) * 6) calc(var(--sy) * var(--u) * 6) 0 var(--ext), calc(var(--sx) * var(--u) * 7) calc(var(--sy) * var(--u) * 7) 0 var(--ext), calc(var(--sx) * var(--u) * 8) calc(var(--sy) * var(--u) * 8) 0 var(--ext), calc(var(--sx) * var(--u) * 9) calc(var(--sy) * var(--u) * 9) 0 var(--ext), calc(var(--sx) * var(--u) * 10) calc(var(--sy) * var(--u) * 10) 0 var(--ext), calc(var(--sx) * var(--u) * 11) calc(var(--sy) * var(--u) * 11) 0 var(--ext), calc(var(--sx) * var(--u) * 12) calc(var(--sy) * var(--u) * 12) 0 var(--ext); }
+.ed-word-big { --u: .45px; --sx: -1; --sy: 1; }
+.ed-sec[data-field=lilac] .ed-title { --ext: #8F75F0; }
+.ed-sec[data-field=cobalt] .ed-title { --ext: #0A0A0A; }
+.ed-sec[data-field=white] .ed-title { --ext: #C9C9C9; }
+.ed-sec[data-field=ink] .ed-title { --ext: #2B3BFF; }
+.ed-sec[data-field=volt] .ed-title { --ext: #9CC21A; }
+.ed-sec[data-field=sky] .ed-title { --ext: #3AA6D9; }
+
 /* expo state */
 html.ed-expo, html.ed-expo body { background: var(--ink); }
 html.ed-expo { scroll-behavior: auto; }
@@ -256,9 +265,8 @@ html.ed-expo .ed-top { --bar-bg: transparent; --bar-fg: var(--fog); --bar-pill: 
 html.ed-expo .ed-top .ed-pill { background: var(--fog); color: var(--ink); }
 html.ed-expo .ed-index { --idx-fg: var(--fog); opacity: 1; pointer-events: auto; }
 html.ed-expo .ed-expo-btn { --idx-fg: var(--fog); --idx-line: rgba(255,255,255,.4); --idx-bg: rgba(10,10,10,.5); }
-html.ed-expo .ed-word-big { text-shadow: 1px 1px 0 #c7c7c7, 2px 2px 0 #bdbdbd, 3px 3px 0 #b3b3b3, 4px 4px 0 #a8a8a8, 5px 5px 0 #9e9e9e, 6px 6px 0 #949494, 7px 7px 0 #8a8a8a, 8px 8px 0 #808080, 9px 9px 0 #767676, 10px 10px 0 #6b6b6b, 12px 12px 18px rgba(0,0,0,.5); color: #fff; }
-html.ed-expo .ed-title { text-shadow: 1px 1px 0 rgba(10,10,10,.5), 2px 2px 0 rgba(10,10,10,.45), 3px 3px 0 rgba(10,10,10,.4), 4px 4px 0 rgba(10,10,10,.35), 6px 8px 16px rgba(0,0,0,.35); }
-html.ed-expo .ed-dark .ed-title { text-shadow: 1px 1px 0 #9e9e9e, 2px 2px 0 #8a8a8a, 3px 3px 0 #767676, 4px 4px 0 #626262, 6px 8px 16px rgba(0,0,0,.6); }
+html.ed-expo .ed-word-big { --u: 1.25px; }
+html.ed-expo .ed-title { --u: .8px; }
 html.ed-expo .ed-panel { box-shadow: 0 30px 60px -20px rgba(0,0,0,.35); }
 
 /* ---------- responsive ---------- */
@@ -283,7 +291,7 @@ html.ed-expo .ed-panel { box-shadow: 0 30px 60px -20px rgba(0,0,0,.35); }
   .ed-brand-sub, .ed-links { display: none; }
   .ed-sec.ed-hero { display: flex; flex-direction: column; gap: 10px; height: auto; padding: calc(var(--bar-h) + 10px) 12px 12px; }
   .ed-word { writing-mode: horizontal-tb; transform: none; flex-direction: column; align-items: flex-start; }
-  .ed-word-big { font-size: 25vw; line-height: .82; letter-spacing: -.06em; margin-left: -.04em; }
+  .ed-word-big { --sx: 1; --sy: 1; font-size: 25vw; line-height: .82; letter-spacing: -.06em; margin-left: -.04em; }
   .ed-hero-side { position: static; writing-mode: horizontal-tb; transform: none; white-space: normal; font-size: 12px; }
   .ed-hero-cards { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
   .ed-card-index { grid-column: 1 / -1; }
@@ -307,7 +315,6 @@ html.ed-expo .ed-panel { box-shadow: 0 30px 60px -20px rgba(0,0,0,.35); }
   .ed-post em { grid-column: 1; grid-row: auto; justify-self: start; }
   .ed-post strong { font-size: 22px; }
   .ed-quote { min-height: 0; padding: 18px; }
-  .ed-blend { height: 140px; }
   .ed-contact { min-height: 0; }
   .ed-contact-panel { padding: 20px; }
   .ed-foot { flex-wrap: wrap; }
