@@ -54,7 +54,7 @@ a { color: var(--text); text-decoration: none; }
      logo (.sz-seg-ink), counter-transformed so the copy never moves. So each label is dark exactly where the
      highlight covers it and normal (grey / orange) elsewhere, at every frame of the slide.
    site-src/nav.js animates the same transforms (Web Animations API) between these resting states. */
-.sz-seg { --l: 38px; --w: 81px; position: relative; display: inline-grid; grid-template-columns: var(--l) var(--w) var(--w); view-transition-name: sz-nav; height: 40px; padding: 3px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); isolation: isolate; }
+.sz-seg { --l: 38px; --w: 81px; position: relative; display: inline-grid; grid-template-columns: var(--l) var(--w) var(--w); height: 40px; padding: 3px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); isolation: isolate; }
 .sz-seg-thumb { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .sz-seg-thumb > span { position: absolute; top: 3px; left: 0; height: 32px; transform-origin: 0 0; will-change: transform; }
 .sz-seg-p { width: 38px; border-radius: 9px; background: var(--pill); }
@@ -83,23 +83,15 @@ a { color: var(--text); text-decoration: none; }
 .sz-seg-item:focus { outline: none; }
 .sz-seg-item:focus-visible { outline: 2px solid var(--line); outline-offset: 1px; }
 @media (prefers-reduced-motion: reduce) { .sz-seg-item { transition: none; } }
-/* Cross-document View Transitions (same-origin navigations): the nav is the only captured element and has no
-   animation, so it stays put (its live thumb slide shows through). The page itself is not snapshotted
-   (no full-page captures to render and blend, so the new page shows sooner); its content fades in on its own
-   (.sz-main children on load; site-src/nav.js fades it in when a prerendered page is activated). */
-@view-transition { navigation: auto; }
-:root { view-transition-name: none; }
-::view-transition-group(sz-nav), ::view-transition-new(sz-nav) { animation: none; }
-::view-transition-old(sz-nav) { display: none; }
-@media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }
+/* Cross-document page transitions: Framed Drift, in /assets/segue.css (linked on every page, with the
+   @view-transition rule). The whole page, nav and toggle included, moves as one frame. */
 
 /* switcher:start - light/dark toggle, top right on every page (copied into index.html too).
    An icon-only 40px glass circle: translucent fill and 1px stroke mixed from the text colour, a backdrop blur and
    a faint inner top highlight. It shows the mode it switches to (sun in dark mode, moon in light mode); the
-   aria-label says the same ("Switch to light mode"). Aligned with the nav's top; like the nav it has its own
-   view-transition-name and no animation, so it stays put across page switches. */
+   aria-label says the same ("Switch to light mode"). Aligned with the nav's top. */
 html { scrollbar-gutter: stable; }
-.sz-theme { --g: color-mix(in srgb, var(--text) 5%, transparent); --gs: color-mix(in srgb, var(--text) 11%, transparent); --gh: color-mix(in srgb, var(--text) 8%, transparent); position: relative; flex: none; display: inline-grid; place-items: center; width: 40px; height: 40px; margin: 0 0 0 auto; padding: 0; box-sizing: border-box; border: 1px solid var(--gs); border-radius: 50%; background: var(--g); -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%); color: var(--muted); cursor: pointer; view-transition-name: sz-theme; -webkit-tap-highlight-color: transparent; transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.sz-theme { --g: color-mix(in srgb, var(--text) 5%, transparent); --gs: color-mix(in srgb, var(--text) 11%, transparent); --gh: color-mix(in srgb, var(--text) 8%, transparent); position: relative; flex: none; display: inline-grid; place-items: center; width: 40px; height: 40px; margin: 0 0 0 auto; padding: 0; box-sizing: border-box; border: 1px solid var(--gs); border-radius: 50%; background: var(--g); -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%); color: var(--muted); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease; }
 .sz-theme-abs { position: absolute; z-index: 1; top: clamp(28px, 6vw, 80px); right: clamp(28px, 6vw, 80px); }
 .sz-theme svg { grid-area: 1 / 1; display: block; transition: opacity .3s ease, transform .4s var(--ease); }
 .sz-theme .sz-i-moon, [data-theme="light"] .sz-theme .sz-i-sun { opacity: 0; transform: rotate(-60deg) scale(.6); }
@@ -109,8 +101,6 @@ html { scrollbar-gutter: stable; }
 .sz-theme:focus { outline: none; }
 .sz-theme:focus-visible { outline: 2px solid color-mix(in srgb, var(--text) 60%, transparent); outline-offset: 2px; }
 .sz-theme-live { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
-::view-transition-group(sz-theme), ::view-transition-new(sz-theme) { animation: none; }
-::view-transition-old(sz-theme) { display: none; }
 /* While switching modes, colours ease over 250ms (theme.js adds html.sz-theming unless reduced motion). */
 html.sz-theming, html.sz-theming *, html.sz-theming *::before, html.sz-theming *::after { transition: background-color .25s ease, color .25s ease, border-color .25s ease, outline-color .25s ease, fill .25s ease, stroke .25s ease, stop-color .25s ease, text-decoration-color .25s ease !important; }
 html.sz-theming .sz-theme svg { transition: opacity .3s ease, transform .4s var(--ease) !important; }
