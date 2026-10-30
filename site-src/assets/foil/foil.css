@@ -26,52 +26,38 @@ img{display:block;max-width:100%;height:auto}
 main{padding:var(--gut);padding-top:max(var(--gut),env(safe-area-inset-top));display:flex;flex-direction:column;gap:clamp(56px,8vw,120px);max-width:1400px;margin:0 auto}
 
 /* ---------- silver foil: the page itself (pure neutral, luminance only) ----------
-   A neutral silver base, broad diffuse satin bands, and two sets of fine
-   crossing bands that drift against each other (the foil shimmer), then grain
-   and faint brushing for the matte. Moves by transform only, via --lx/--ly. */
-.holo{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;isolation:isolate;background:#CDCDCD}
-.holo .h{position:absolute;display:block}
-.h-base{inset:-20%;
-  background:linear-gradient(162deg,#DADADA 0%,#B6B6B6 24%,#D4D4D4 46%,#AFAFAF 70%,#CCCCCC 100%);
-  transform:translate3d(calc((var(--lx) - .5) * -5%),calc((var(--ly) - .5) * -5%),0);will-change:transform}
-/* fine crossing bands, two angles drifting in opposite directions */
-.h-a{inset:-40%;opacity:.55;mix-blend-mode:soft-light;
-  background:repeating-linear-gradient(118deg,rgba(255,255,255,.55) 0,rgba(255,255,255,0) 90px,rgba(0,0,0,.28) 170px,rgba(255,255,255,0) 250px,rgba(255,255,255,.55) 340px);
-  transform:translate3d(calc((var(--lx) - .5) * -16%),calc((var(--ly) - .5) * -8%),0);will-change:transform}
-.h-b{inset:-40%;opacity:.42;mix-blend-mode:soft-light;
-  background:repeating-linear-gradient(32deg,rgba(0,0,0,.24) 0,rgba(255,255,255,0) 60px,rgba(255,255,255,.5) 120px,rgba(255,255,255,0) 180px,rgba(0,0,0,.24) 240px);
-  transform:translate3d(calc((var(--lx) - .5) * 14%),calc((var(--ly) - .5) * 18%),0);will-change:transform}
-/* satin sheen: broad soft light/dark bands = the metal. never a hotspot */
-.h-sheen{inset:-50%;opacity:1;
-  background:
-    radial-gradient(26% 20% at 50% 50%,rgba(255,255,255,.42),rgba(255,255,255,0) 70%),
-    linear-gradient(108deg,rgba(0,0,0,.17) 0%,rgba(255,255,255,0) 18%,rgba(255,255,255,.5) 31%,rgba(255,255,255,0) 44%,rgba(0,0,0,.19) 58%,rgba(255,255,255,0) 68%,rgba(255,255,255,.4) 78%,rgba(255,255,255,0) 88%,rgba(0,0,0,.15) 100%);
-  transform:translate3d(calc((var(--lx) - .5) * 40%),calc((var(--ly) - .5) * 26%),0);will-change:transform}
-/* the matte: fine grain + faint directional micro-brushing */
-.h-brush{inset:0;opacity:.12;mix-blend-mode:overlay;background-size:900px 300px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='300'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.0016 .42' numOctaves='3' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)'/%3E%3C/svg%3E")}
-.h-grain{inset:0;opacity:.26;mix-blend-mode:overlay;background-size:180px 180px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-.holo::after{content:"";position:absolute;inset:0;background:rgba(236,236,236,.06)}
+   Metallised film = large, soft, out-of-focus reflections, almost no micro
+   texture. Two pre-rendered greyscale reflection maps (env-a/env-b, smooth,
+   no tiling) drift with the eased light and crossfade by --lx; a 256px
+   blue-noise grain at ~1.5% only dithers away 8-bit banding. Transform +
+   opacity only. */
+.holo{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:#CBCBCB}
+.holo .h{position:absolute;display:block;inset:-10%;background-size:cover;background-position:center;will-change:transform}
+.h-env1{background-image:url("env-a.webp");
+  transform:translate3d(calc((var(--lx) - .5) * -9%),calc((var(--ly) - .5) * -7%),0) scale(1.02)}
+.h-env2{background-image:url("env-b.webp");opacity:calc(var(--lx) * .9 + .05);
+  transform:translate3d(calc((var(--lx) - .5) * 11%),calc((var(--ly) - .5) * 8%),0) scale(1.04)}
+.holo .h-grain{inset:0;background:url("grain.png") 0 0/128px 128px;opacity:.018;will-change:auto}
 
 /* soft satin-silver card (a material, not a bag) */
 .satin{position:relative;isolation:isolate;overflow:hidden;border-radius:18px;
   background:linear-gradient(115deg,#D2D2D2 0%,#EAEAEA calc(var(--lx) * 60% + 10%),#CFCFCF calc(var(--lx) * 60% + 40%),#DEDEDE 100%);
   box-shadow:0 0 0 1px rgba(0,0,0,.07),0 18px 36px -28px rgba(0,0,0,.45)}
-.satin::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.22;mix-blend-mode:overlay;background-size:180px 180px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.satin::before{content:"";position:absolute;inset:0;z-index:-1;background:url("grain.png") 0 0/128px 128px;opacity:.018}
 
-/* ---------- matte black: soft-touch / anodized ----------
-   Near-black base; ::before = grain + faint brushing (screened, so it lifts
-   only a hair); ::after = one broad, low-contrast sweep (≤ ~7% lift) on an
-   oversized layer translated by the SAME --lx/--ly as the silver, so dark and
-   silver read as lit by one light. A uniform hairline all round, not an edge accent. */
+/* ---------- matte black: soft-touch print ----------
+   Nearly flat #0D0D0D with one broad, very soft falloff of light that follows
+   the same --lx/--ly as the silver (oversized layer, transform only), plus a
+   1.2% blue-noise tooth so the falloff never bands. No brushing, no stripes. */
 .bar,.panel,.label{background:#0D0D0D;color:var(--fog);position:relative;isolation:isolate;overflow:hidden;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.045),0 14px 30px -22px rgba(0,0,0,.55)}
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.022),0 14px 30px -22px rgba(0,0,0,.5)}
 .bar::before,.panel::before,.label::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='300'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.0016 .42' numOctaves='3' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)'/%3E%3C/svg%3E");background-size:180px 180px,900px 300px;opacity:.085;mix-blend-mode:screen}
-.bar::after,.panel::after,.label::after{content:"";position:absolute;top:-30%;bottom:-30%;left:-100%;width:300%;z-index:-2;pointer-events:none;
+  background:url("grain.png") 0 0/128px 128px;opacity:.014}
+.bar::after,.panel::after,.label::after{content:"";position:absolute;top:-60%;bottom:-60%;left:-60%;right:-60%;z-index:-2;pointer-events:none;
   background:
-    linear-gradient(106deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.028) 40%,rgba(255,255,255,.068) 47%,rgba(255,255,255,.05) 51%,rgba(255,255,255,.02) 58%,rgba(255,255,255,0) 68%),
-    linear-gradient(180deg,rgba(255,255,255,.022),rgba(255,255,255,0) 45%,rgba(0,0,0,.12));
-  transform:translate3d(calc((var(--lx) - .5) * 44%),calc((var(--ly) - .5) * 12%),0);will-change:transform}
+    radial-gradient(38% 46% at 50% 50%,rgba(255,255,255,.058) 0%,rgba(255,255,255,.034) 35%,rgba(255,255,255,.012) 65%,rgba(255,255,255,0) 100%),
+    linear-gradient(180deg,rgba(255,255,255,.012),rgba(0,0,0,0) 50%,rgba(0,0,0,.10));
+  transform:translate3d(calc((var(--lx) - .5) * 70%),calc((var(--ly) - .5) * 30%),0);will-change:transform}
 .bar{display:flex;align-items:center;gap:clamp(14px,2vw,28px);border-radius:14px;padding:0 clamp(14px,1.8vw,22px);height:56px}
 .bar-mark{display:flex;align-items:center;flex:none;padding:6px 0}
 .smark{width:auto;height:30px;display:block}
