@@ -1,6 +1,5 @@
 /* sanz.one segmented nav controller (inlined, not served as a file).
-   Used by scripts/build.mjs (about/journal/posts: script right after the nav) and pasted into index.html
-   (landing shell + bundled template). Clicking any same-origin link to /, /about/ or /journal/... starts
+   Inlined by scripts/build.mjs right after the nav on every page. Clicking any same-origin link to /, /about/ or /journal/... starts
    the highlight sliding right away and stores {from, to, click time} ("sz-seg-from"). When the page is swapped out
    (pageswap) it adds how far the slide got (plus one frame: the old page is captured on its next frame); the next
    page resumes the slide from there on its first frame, so it runs once and does not jump (it only pauses while
