@@ -1,29 +1,42 @@
-/* sanz.one · Foil — moves the light across the satin foil.
-   Writes --lx/--ly (0..1) on :root; CSS crossfades three baked light passes
-   and slides a soft highlight. Fine pointer: follows the cursor (eased).
-   Touch: gentle scroll-driven light. Reduced motion: static light. */
+/* sanz.one · Foil — moves the light across the holographic page.
+   Writes --lx/--ly (0..1) on :root; CSS slides the spectra + satin sheen.
+   Fine pointer: follows the cursor (eased). Touch: scroll drift, plus device
+   tilt where it needs no permission prompt (not iOS). Reduced motion: static. */
 (function () {
   var d = document, root = d.documentElement, w = window;
   var reduce = w.matchMedia('(prefers-reduced-motion: reduce)');
   var fine = w.matchMedia('(hover: hover) and (pointer: fine)');
   var cur = { x: .38, y: .42 }, tgt = { x: .38, y: .42 }, raf = 0;
+  var sc = { x: .5, y: .5 }, tl = { x: 0, y: 0 };
+  var tiltOK = 'DeviceOrientationEvent' in w && typeof DeviceOrientationEvent.requestPermission !== 'function';
   function set(x, y) { root.style.setProperty('--lx', x.toFixed(4)); root.style.setProperty('--ly', y.toFixed(4)); }
   function tick() {
-    cur.x += (tgt.x - cur.x) * .09; cur.y += (tgt.y - cur.y) * .09;
+    cur.x += (tgt.x - cur.x) * .08; cur.y += (tgt.y - cur.y) * .08;
     set(cur.x, cur.y);
     if (Math.abs(tgt.x - cur.x) + Math.abs(tgt.y - cur.y) > .0008) raf = requestAnimationFrame(tick); else raf = 0;
   }
   function go() { if (!raf) raf = requestAnimationFrame(tick); }
+  function clamp(v) { return Math.max(0, Math.min(1, v)); }
+  function touchTarget() { tgt.x = clamp(sc.x + tl.x); tgt.y = clamp(sc.y + tl.y); go(); }
   function onMove(e) { tgt.x = e.clientX / w.innerWidth; tgt.y = e.clientY / w.innerHeight; go(); }
   function onScroll() {
     var t = w.scrollY / Math.max(1, w.innerHeight);
-    tgt.x = .5 + .34 * Math.sin(t * 1.7 - .45); tgt.y = .5 + .22 * Math.cos(t * 1.3); go();
+    sc.x = .5 + .34 * Math.sin(t * 1.7 - .45); sc.y = .5 + .22 * Math.cos(t * 1.3); touchTarget();
+  }
+  function onTilt(e) {
+    if (e.gamma == null) return;
+    tl.x = Math.max(-25, Math.min(25, e.gamma)) / 25 * .3;
+    tl.y = Math.max(-25, Math.min(25, (e.beta || 45) - 45)) / 25 * .2; touchTarget();
   }
   function mode() {
-    w.removeEventListener('pointermove', onMove); w.removeEventListener('scroll', onScroll);
+    w.removeEventListener('pointermove', onMove); w.removeEventListener('scroll', onScroll); w.removeEventListener('deviceorientation', onTilt);
     if (reduce.matches) { cancelAnimationFrame(raf); raf = 0; set(.38, .42); return; }
     if (fine.matches) w.addEventListener('pointermove', onMove, { passive: true });
-    else { w.addEventListener('scroll', onScroll, { passive: true }); onScroll(); }
+    else {
+      w.addEventListener('scroll', onScroll, { passive: true });
+      if (tiltOK) w.addEventListener('deviceorientation', onTilt, { passive: true });
+      onScroll();
+    }
   }
   set(cur.x, cur.y); mode();
   [reduce, fine].forEach(function (m) { m.addEventListener ? m.addEventListener('change', mode) : m.addListener(mode); });
