@@ -109,7 +109,7 @@ const BACK_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" s
 // Top-left segmented nav on journal + about pages: [ logo | About | Journal ]. The landing page (index.html)
 // carries an identical nav (in its shell and its bundled template). Behaviour lives in site-src/nav.js
 // (inlined right after the nav): the page being left is remembered and the thumb slides from it, and the
-// nav has a fixed view-transition-name so it stays put across pages while only the content crossfades.
+// whole page (nav included) moves with the Framed Drift page transition (site-src/assets/segue.css).
 const NAV_ITEMS = [['about', '/about/', 'About'], ['journal', '/journal/', 'Journal']];
 // The logo mark is inlined (fill -> currentColor): orange in the nav, #0A0A0A in the highlight's dark copy.
 const LOGO_MARK = fs.readFileSync(path.join(ROOT, 'site-src/assets/logo.svg'), 'utf8').trim()
@@ -120,6 +120,10 @@ const NAV_JS = fs.readFileSync(path.join(ROOT, 'site-src/nav.js'), 'utf8')
 // Light / dark mode: site-src/theme.js is inlined at the top of every <head> (applies the saved or system mode before first
 // paint); the light/dark toggle sits top right, next to the nav in the persistent header.
 const THEME_JS = fs.readFileSync(path.join(ROOT, 'site-src/theme.js'), 'utf8')
+  .replace(/\/\*[\s\S]*?\*\//, '').split('\n').map((l) => l.trim()).join('').trim();
+// Framed Drift direction: site-src/segue.js is inlined as a blocking <head> script on every page (tags a back
+// traverse 'backwards'); index.html carries a copy.
+const SEGUE_JS = fs.readFileSync(path.join(ROOT, 'site-src/segue.js'), 'utf8')
   .replace(/\/\*[\s\S]*?\*\//, '').split('\n').map((l) => l.trim()).join('').trim();
 const SUN_ICON = '<svg class="sz-i-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
 const MOON_ICON = '<svg class="sz-i-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
@@ -161,6 +165,7 @@ function layout({ title, description, url, ogType = 'website', image = '', card:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>${THEME_JS}</script>
+<script>${SEGUE_JS}</script>
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${esc(abs(url))}">
@@ -168,6 +173,7 @@ function layout({ title, description, url, ogType = 'website', image = '', card:
 <link rel="alternate" type="application/rss+xml" title="${esc(SITE.name)} · ${esc(SITE.journalTitle)}" href="/journal/feed.xml">
 <link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/segue.css">
 <link rel="expect" href="#sz-end" blocking="render">
 ${specRules(current)}<meta name="theme-color" content="#121211">
 <meta property="og:site_name" content="${esc(SITE.name)}">
@@ -334,8 +340,10 @@ function redirectPage(to) {
 <link rel="canonical" href="${esc(url)}">
 <meta http-equiv="refresh" content="0; url=${esc(to)}">
 <script>${THEME_JS}</script>
+<script>${SEGUE_JS}</script>
 <script>location.replace(${JSON.stringify(to)} + location.search + location.hash);</script>
 <link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/segue.css">
 <style>body{color:var(--muted);font:15px Geist,system-ui,sans-serif;padding:28px}</style>
 </head>
 <body>

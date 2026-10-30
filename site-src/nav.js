@@ -8,8 +8,8 @@
    dark label copy, counter-transformed), so it runs on the compositor and keeps moving while the page is busy.
    The easing is sampled into keyframes because the dark copy's counter-scale is not linear. It is an ease-out
    (cubic-bezier(.2,.8,.2,1), 400ms): the highlight visibly moves on the very next frame after the click.
-   With cross-document View Transitions the nav has a fixed view-transition-name and no animation, so it
-   stays put; the page itself is not snapshotted. The pages prerender each other (speculation rules), so a
+   Cross-document page switches play the Framed Drift transition (site-src/assets/segue.css); the nav moves
+   with the page and its slide resumes on the new page. The pages prerender each other (speculation rules), so a
    prerendered page waits for activation (prerenderingchange) before reading the stored slide, and then fades
    its content in (opacity, 200ms) since its own load fade-in already ran while it was hidden.
    The landing shell hands the slide on to the bundled template through window.__szNav (window survives the
