@@ -25,38 +25,38 @@ img{display:block;max-width:100%;height:auto}
 :focus-visible{outline:2px solid var(--orange);outline-offset:3px}
 main{padding:var(--gut);padding-top:max(var(--gut),env(safe-area-inset-top));display:flex;flex-direction:column;gap:clamp(56px,8vw,120px);max-width:1400px;margin:0 auto}
 
-/* ---------- silver foil: the page itself (pure neutral, luminance only) ----------
-   Metallised film = large, soft, out-of-focus reflections, almost no micro
-   texture. Two pre-rendered greyscale reflection maps (env-a/env-b, smooth,
-   no tiling) drift with the eased light and crossfade by --lx; a 256px
-   blue-noise grain at ~1.5% only dithers away 8-bit banding. Transform +
-   opacity only. */
-.holo{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:#CBCBCB}
-.holo .h{position:absolute;display:block;inset:-10%;background-size:cover;background-position:center;will-change:transform}
-.h-env1{background-image:url("env-a.webp");
-  transform:translate3d(calc((var(--lx) - .5) * -9%),calc((var(--ly) - .5) * -7%),0) scale(1.02)}
-.h-env2{background-image:url("env-b.webp");opacity:calc(var(--lx) * .9 + .05);
-  transform:translate3d(calc((var(--lx) - .5) * 11%),calc((var(--ly) - .5) * 8%),0) scale(1.04)}
-.holo .h-grain{inset:0;background:url("grain.png") 0 0/128px 128px;opacity:.018;will-change:auto}
+/* ---------- silver foil: the page itself (pure CSS, neutral, no images) ----------
+   Satin metal from a few large, soft, eased radial gradients: highlights on one
+   oversized layer, soft shade lobes on another, drifting against each other with
+   the eased light (--lx/--ly). Long low-contrast falloffs with many stops so 8-bit
+   steps don't show. No textures. Transform only. */
+.holo{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;
+  background:linear-gradient(158deg,#D0D0D0 0%,#CBCBCB 30%,#C4C4C4 55%,#C9C9C9 78%,#C2C2C2 100%)}
+.holo .h{position:absolute;display:block;inset:-25%;will-change:transform}
+.h-g1{background:
+    radial-gradient(34% 26% at 30% 36%,rgba(255,255,255,0.6200) 0.0%,rgba(255,255,255,0.5485) 11.1%,rgba(255,255,255,0.4333) 22.2%,rgba(255,255,255,0.3048) 33.3%,rgba(255,255,255,0.1901) 44.4%,rgba(255,255,255,0.1043) 55.6%,rgba(255,255,255,0.0496) 66.7%,rgba(255,255,255,0.0198) 77.8%,rgba(255,255,255,0.0060) 88.9%,rgba(255,255,255,0.0000) 100.0%),
+    radial-gradient(26% 20% at 74% 64%,rgba(255,255,255,0.4600) 0.0%,rgba(255,255,255,0.4070) 11.1%,rgba(255,255,255,0.3215) 22.2%,rgba(255,255,255,0.2262) 33.3%,rgba(255,255,255,0.1410) 44.4%,rgba(255,255,255,0.0774) 55.6%,rgba(255,255,255,0.0368) 66.7%,rgba(255,255,255,0.0147) 77.8%,rgba(255,255,255,0.0045) 88.9%,rgba(255,255,255,0.0000) 100.0%),
+    radial-gradient(40% 18% at 58% 18%,rgba(255,255,255,0.3000) 0.0%,rgba(255,255,255,0.2654) 11.1%,rgba(255,255,255,0.2097) 22.2%,rgba(255,255,255,0.1475) 33.3%,rgba(255,255,255,0.0920) 44.4%,rgba(255,255,255,0.0504) 55.6%,rgba(255,255,255,0.0240) 66.7%,rgba(255,255,255,0.0096) 77.8%,rgba(255,255,255,0.0029) 88.9%,rgba(255,255,255,0.0000) 100.0%);
+  transform:translate3d(calc((var(--lx) - .5) * 14%),calc((var(--ly) - .5) * 10%),0)}
+.h-g2{background:
+    radial-gradient(30% 24% at 78% 26%,rgba(0,0,0,0.1700) 0.0%,rgba(0,0,0,0.1504) 11.1%,rgba(0,0,0,0.1188) 22.2%,rgba(0,0,0,0.0836) 33.3%,rgba(0,0,0,0.0521) 44.4%,rgba(0,0,0,0.0286) 55.6%,rgba(0,0,0,0.0136) 66.7%,rgba(0,0,0,0.0054) 77.8%,rgba(0,0,0,0.0016) 88.9%,rgba(0,0,0,0.0000) 100.0%),
+    radial-gradient(36% 26% at 18% 80%,rgba(0,0,0,0.1500) 0.0%,rgba(0,0,0,0.1327) 11.1%,rgba(0,0,0,0.1048) 22.2%,rgba(0,0,0,0.0738) 33.3%,rgba(0,0,0,0.0460) 44.4%,rgba(0,0,0,0.0252) 55.6%,rgba(0,0,0,0.0120) 66.7%,rgba(0,0,0,0.0048) 77.8%,rgba(0,0,0,0.0015) 88.9%,rgba(0,0,0,0.0000) 100.0%),
+    radial-gradient(50% 30% at 50% 104%,rgba(0,0,0,0.1000) 0.0%,rgba(0,0,0,0.0885) 11.1%,rgba(0,0,0,0.0699) 22.2%,rgba(0,0,0,0.0492) 33.3%,rgba(0,0,0,0.0307) 44.4%,rgba(0,0,0,0.0168) 55.6%,rgba(0,0,0,0.0080) 66.7%,rgba(0,0,0,0.0032) 77.8%,rgba(0,0,0,0.0010) 88.9%,rgba(0,0,0,0.0000) 100.0%);
+  transform:translate3d(calc((var(--lx) - .5) * -8%),calc((var(--ly) - .5) * -6%),0)}
 
 /* soft satin-silver card (a material, not a bag) */
 .satin{position:relative;isolation:isolate;overflow:hidden;border-radius:18px;
   background:linear-gradient(115deg,#D2D2D2 0%,#EAEAEA calc(var(--lx) * 60% + 10%),#CFCFCF calc(var(--lx) * 60% + 40%),#DEDEDE 100%);
   box-shadow:0 0 0 1px rgba(0,0,0,.07),0 18px 36px -28px rgba(0,0,0,.45)}
-.satin::before{content:"";position:absolute;inset:0;z-index:-1;background:url("grain.png") 0 0/128px 128px;opacity:.018}
 
 /* ---------- matte black: soft-touch print ----------
-   Nearly flat #0D0D0D with one broad, very soft falloff of light that follows
-   the same --lx/--ly as the silver (oversized layer, transform only), plus a
-   1.2% blue-noise tooth so the falloff never bands. No brushing, no stripes. */
+   Flat #0D0D0D with one large, soft, eased radial highlight (~5% lift at its
+   centre) that follows the same --lx/--ly as the silver, on an oversized layer
+   (transform only), No texture. */
 .bar,.panel,.label{background:#0D0D0D;color:var(--fog);position:relative;isolation:isolate;overflow:hidden;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.022),0 14px 30px -22px rgba(0,0,0,.5)}
-.bar::before,.panel::before,.label::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;
-  background:url("grain.png") 0 0/128px 128px;opacity:.014}
-.bar::after,.panel::after,.label::after{content:"";position:absolute;top:-60%;bottom:-60%;left:-60%;right:-60%;z-index:-2;pointer-events:none;
-  background:
-    radial-gradient(38% 46% at 50% 50%,rgba(255,255,255,.058) 0%,rgba(255,255,255,.034) 35%,rgba(255,255,255,.012) 65%,rgba(255,255,255,0) 100%),
-    linear-gradient(180deg,rgba(255,255,255,.012),rgba(0,0,0,0) 50%,rgba(0,0,0,.10));
+  box-shadow:0 14px 30px -22px rgba(0,0,0,.5)}
+.bar::after,.panel::after,.label::after{content:"";position:absolute;top:-60%;bottom:-60%;left:-60%;right:-60%;z-index:-1;pointer-events:none;
+  background:radial-gradient(40% 50% at 50% 50%,rgba(255,255,255,0.0520) 0.0%,rgba(255,255,255,0.0479) 8.3%,rgba(255,255,255,0.0415) 16.7%,rgba(255,255,255,0.0337) 25.0%,rgba(255,255,255,0.0256) 33.3%,rgba(255,255,255,0.0182) 41.7%,rgba(255,255,255,0.0120) 50.0%,rgba(255,255,255,0.0074) 58.3%,rgba(255,255,255,0.0042) 66.7%,rgba(255,255,255,0.0021) 75.0%,rgba(255,255,255,0.0010) 83.3%,rgba(255,255,255,0.0003) 91.7%,rgba(255,255,255,0.0000) 100.0%);
   transform:translate3d(calc((var(--lx) - .5) * 70%),calc((var(--ly) - .5) * 30%),0);will-change:transform}
 .bar{display:flex;align-items:center;gap:clamp(14px,2vw,28px);border-radius:14px;padding:0 clamp(14px,1.8vw,22px);height:56px}
 .bar-mark{display:flex;align-items:center;flex:none;padding:6px 0}
