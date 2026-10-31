@@ -1,11 +1,14 @@
-// Build the deployable site into _site/:
-//   - root landing files are copied byte-for-byte (index.html, favicon.svg, CNAME, .nojekyll)
-//   - media/ is copied as-is (Pages CMS uploads land in media/journal)
-//   - content/posts/*.md is rendered to /journal/, /journal/<slug>/ and /journal/feed.xml
-//   - /about/ is generated from the template below
-//   - /blog/... (old URLs) are redirect pages to /journal/...; /blog/feed.xml is a copy of the journal feed
-//   - shared CSS, fonts and logo are copied from site-src/assets to /assets/
-// Posts with `draft: true` are skipped entirely.
+// Build the deployable site into _site/ (sanz.one · Notes):
+//   /                 Home: intro, latest writing, work, gear
+//   /writing/         Writing list; /writing/<slug>/ is the three-pane reader (sidebar, list, post); /writing/feed.xml
+//   /work/            Roles, How I lead, Building, Selected work, About (#about), Contact (#contact)
+//   /gear/            Daily carry, the next bag, on the radar
+//   /404.html
+// Old URLs keep working: /journal/... and /blog/... redirect to /writing/..., /about/ to /work/#about,
+// and /journal/feed.xml and /blog/feed.xml are copies of /writing/feed.xml.
+// Content: content/posts/*.md (Pages CMS; `draft: true` posts are skipped). Media: media/ copied as-is.
+// Assets: site-src/assets -> /assets/. site-src/theme.js and site-src/segue.js are inlined in <head>; site-src/ui.js is /assets/ui.js.
+// Placeholders: text marked "To add:" or "Confirm:" is waiting on Jason; never replace it with made-up facts.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,13 +22,19 @@ const POSTS_DIR = path.join(ROOT, 'content/posts');
 const SITE = {
   url: 'https://sanz.one',
   name: 'Jason Sanzone',
-  journalTitle: 'Journal',
-  journalDescription: 'Jason Sanzone on design, AI, EDC and gear, and everything else.',
-  journalSubline: 'Notes on design, AI, gear, and everything else.',
+  writingTitle: 'Writing',
+  writingDescription: 'Jason Sanzone on design, AI, EDC and gear, and everything else.',
+  writingSubline: 'Notes on design, AI, gear, and everything else.',
   lang: 'en',
 };
-
-const ROOT_FILES = ['index.html', 'favicon.svg', 'CNAME', '.nojekyll'];
+const SOCIAL = {
+  email: 'jason@sanz.one',
+  linkedin: 'https://linkedin.com/in/jasonsanzone',
+  instagram: 'https://instagram.com/jasonsanzone',
+  x: 'https://x.com/jasonsanzone',
+};
+const ROOT_FILES = ['favicon.svg', 'CNAME', '.nojekyll'];
+const EXT = 'target="_blank" rel="noopener noreferrer"';
 
 // ---------- helpers ----------
 const esc = (s = '') => String(s)
@@ -85,7 +94,7 @@ function loadPosts() {
     posts.push({
       file: f,
       slug,
-      url: `/journal/${slug}/`,
+      url: `/writing/${slug}/`,
       title: String(data.title).trim(),
       description: data.description ? String(data.description).trim() : '',
       cover: data.cover ? String(data.cover).trim() : '',
@@ -98,163 +107,331 @@ function loadPosts() {
   return posts;
 }
 
-// ---------- templates ----------
-const FOOTER = `<footer class="sz-footer">
-    <span class="sz-roles"><span class="sz-role">VP, Design/Creative, <a class="sz-u" href="https://www.clickfunnels.com" target="_blank" rel="noopener noreferrer">ClickFunnels</a></span><span class="sz-sep" aria-hidden="true">  ·  </span><span class="sz-role">Co-Founder &amp; Head of Design, <a class="sz-u" href="https://www.overskill.com" target="_blank" rel="noopener noreferrer">Overskill</a></span></span>
-  </footer>`;
+// ---------- icons (16px grid, stroke) ----------
+const I = {
+  home: '<path d="M3 7.5 8 3.5l5 4V13H3z"/>',
+  pen: '<path d="M3 13h3l7-7-3-3-7 7z"/>',
+  case: '<rect x="2.5" y="5" width="11" height="8" rx="1.5"/><path d="M6 5V3.5h4V5"/>',
+  bag: '<path d="M4 6h8l-.6 7.5H4.6z"/><path d="M6 6V4.5a2 2 0 0 1 4 0V6"/>',
+  search: '<circle cx="7" cy="7" r="4"/><path d="m10 10 3 3"/>',
+  out: '<path d="M6 3.5h6.5V10M12.5 3.5 4 12"/>',
+  menu: '<path d="M2.5 5h11M2.5 8h11M2.5 11h11"/>',
+  copy: '<rect x="5" y="5" width="8" height="8" rx="1.5"/><path d="M3 10.5V4.5A1.5 1.5 0 0 1 4.5 3h6"/>',
+  mail: '<rect x="2" y="3.5" width="12" height="9" rx="1.5"/><path d="m2.5 4.5 5.5 4 5.5-4"/>',
+  rss: '<path d="M3.5 3.5a9 9 0 0 1 9 9M3.5 7.5a5 5 0 0 1 5 5"/><circle cx="4" cy="12" r=".6"/>',
+  arrow: '<path d="M3 8h10M9 4l4 4-4 4"/>',
+  back: '<path d="M13 8H3M7 4 3 8l4 4"/>',
+  sun: '<circle cx="8" cy="8" r="2.8"/><path d="M8 1.8v1.4M8 12.8v1.4M1.8 8h1.4M12.8 8h1.4M3.6 3.6l1 1M11.4 11.4l1 1M3.6 12.4l1-1M11.4 4.6l1-1"/>',
+  hash: '<path d="M6 2.5 5 13.5M11 2.5l-1 11M2.5 6h11M2 10h11"/>',
+};
+const ico = (k) => `<svg class="ico" viewBox="0 0 16 16" aria-hidden="true" focusable="false">${I[k]}</svg>`;
+// The Zed Tab Stencil (round5/final/svg/zed-stencil-favicon-*.svg): rust symbol on the charcoal tile, the only rust in a view.
+const STENCIL = '<path d="M3 5.5a2.5 2.5 0 0 1 2.5-2.5h13a2.5 2.5 0 0 1 2.5 2.5"/><path d="M3 18.5a2.5 2.5 0 0 0 2.5 2.5h13a2.5 2.5 0 0 0 2.5-2.5"/><path d="M16 9.4L8 14.6"/>';
+const tile = (s) => { const i = Math.round(s * 0.62); return `<span class="tile" style="width:${s}px;height:${s}px" aria-hidden="true"><svg viewBox="0 0 24 24" width="${i}" height="${i}" fill="none" stroke="var(--sym)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${STENCIL}</svg></span>`; };
+const PH = (t) => `<span class="ph">To add: ${t}</span>`;
+const CF = (t) => `<span class="ph">Confirm: ${t}</span>`;
 
-const ARROW_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
-const BACK_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>';
+// Inlined head scripts (block comments stripped, one line).
+const inline = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').split('\n').map((l) => l.trim()).join('').trim();
+const THEME_JS = inline('site-src/theme.js');
+const SEGUE_JS = inline('site-src/segue.js');
 
-// Top-left segmented nav on journal + about pages: [ logo | About | Journal ]. The landing page (index.html)
-// carries an identical nav (in its shell and its bundled template). Behaviour lives in site-src/nav.js
-// (inlined right after the nav): the page being left is remembered and the thumb slides from it, and the
-// nav has a fixed view-transition-name so it stays put across pages while only the content crossfades.
-const NAV_ITEMS = [['about', '/about/', 'About'], ['journal', '/journal/', 'Journal']];
-// The logo mark is inlined (fill -> currentColor): orange in the nav, #0A0A0A in the highlight's dark copy.
-const LOGO_MARK = fs.readFileSync(path.join(ROOT, 'site-src/assets/logo.svg'), 'utf8').trim()
-  .replace(/^<svg[^>]*>/, '<svg width="16.1" height="21" viewBox="0 0 105 137" fill="none" aria-hidden="true" focusable="false">')
-  .replaceAll('fill="#FA431E"', 'fill="currentColor"');
-const NAV_JS = fs.readFileSync(path.join(ROOT, 'site-src/nav.js'), 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//, '').split('\n').map((l) => l.trim()).join('').trim();
-// Light / dark mode: site-src/theme.js is inlined at the top of every <head> (applies the saved or system mode before first
-// paint); the light/dark toggle sits top right, next to the nav in the persistent header.
-const THEME_JS = fs.readFileSync(path.join(ROOT, 'site-src/theme.js'), 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//, '').split('\n').map((l) => l.trim()).join('').trim();
-const SUN_ICON = '<svg class="sz-i-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
-const MOON_ICON = '<svg class="sz-i-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
-// abs: absolutely positioned top right (landing page); on the other pages it is the last item of the header row.
-function themeButton(abs = false) {
-  return `<button type="button" class="sz-theme${abs ? ' sz-theme-abs' : ''}" aria-label="Switch to light mode">${SUN_ICON}${MOON_ICON}<span class="sz-theme-live" role="status" aria-live="polite"></span></button><script>window.__szTheme && window.__szTheme.sync();</script>`;
+// ---------- copy (all from the existing site and posts; see placeholders for what is still missing) ----------
+const ROLES = [
+  { company: 'ClickFunnels', title: 'VP, Design/Creative', href: 'https://www.clickfunnels.com', host: 'clickfunnels.com' },
+  { company: 'Overskill', title: 'Co-founder and head of design', href: 'https://www.overskill.com', host: 'overskill.com', note: 'An AI app builder.' },
+];
+const cfLink = `<a class="lk" href="${ROLES[0].href}" ${EXT}>ClickFunnels</a>`;
+const osLink = `<a class="lk" href="${ROLES[1].href}" ${EXT}>Overskill</a>`;
+const SUBLINE = 'Designing brands, products, and interfaces.';
+const BIO_LEDE = "I'm a designer based just north of Atlanta, Georgia. I've spent my career building brands, products, and interfaces, including work for some of the world's most recognizable brands.";
+const BIO_REST = `Today I lead design and creative at ${cfLink} and co-founded ${osLink}, where I head up design. Away from the screen, you'll find me outdoors, tinkering with new tech and AI, or hunting down gear that makes everyday life a little easier.`;
+const PAGE_DESC = 'Jason Sanzone is a designer based just north of Atlanta, Georgia. He leads design and creative at ClickFunnels and co-founded Overskill, where he heads up design.';
+// Every principle and Building quote is quoted verbatim from a post (slug).
+const PRINCIPLES = [
+  ['Judgment', 'Taste is the new bottleneck, and it doesn\u2019t scale with headcount.', 'size-isnt-everything'],
+  ['Leverage', 'Use the tools hard, hire only for leverage or judgment you don\u2019t have, and keep the path from idea to shipped short.', 'size-isnt-everything'],
+  ['Craft', 'The first version of almost anything is fine. The tenth version is where it starts to feel like someone cared.', 'caring-too-much-is-underrated'],
+  ['Shipping', 'Taste is also knowing when to stop polishing and ship.', 'caring-too-much-is-underrated'],
+  ['Who I hire for', 'Obsession. Pattern recognition. Zero deference. Delusional optimism. Most people treat those like red flags. They\u2019re more like a stack.', 'the-formula-nobody-puts-on-a-resume'],
+];
+const BUILDING = [
+  ['Building Overskill, I watch things that used to take a sprint get done in an afternoon. When making things gets that cheap, having lots of people who make things stops being the advantage.', 'size-isnt-everything'],
+  ['AI can spit out a screen in seconds, and most of it looks fine. Fine is everywhere.', 'caring-too-much-is-underrated'],
+  ['AI can do the first draft. It can\u2019t do that stack. That\u2019s still on you.', 'the-formula-nobody-puts-on-a-resume'],
+];
+// Gear: from Jason's Gear-bot messages (Oct 2026), shown with a Confirm marker until he signs off.
+const CARRY = [
+  ['Evergoods CTB26', 'The 26L Civic Travel Bag. Worn in. Looking for something smaller.', 'Daily, on the way out'],
+  ['Yeti 20oz tumbler', 'Only rides in the bag when it\u2019s empty.', 'Daily carry'],
+  ['Roka glasses', 'Glasses, in their case.', 'Daily carry'],
+  ['Essentia bottle', 'Water bottle.', 'Daily carry'],
+  ['Laptop, 16" or smaller', 'Never both at once.', 'Daily carry'],
+];
+const NEXT_BAG = ['20\u201328L', 'A bottle pocket each side', 'A 16" sleeve', 'Real admin up front', 'Big uncoated zippers', 'Soft straps'];
+
+// ---------- shell ----------
+const NAV = [['home', '/', 'Home', 'home'], ['writing', '/writing/', 'Writing', 'pen'], ['work', '/work/', 'Work', 'case'], ['gear', '/gear/', 'Gear', 'bag']];
+const ELSEWHERE = [['LinkedIn', SOCIAL.linkedin], ['Instagram', SOCIAL.instagram], ['X', SOCIAL.x]];
+
+function sidebar(current, posts) {
+  const nav = NAV.map(([k, href, label, ic]) => `<a href="${href}"${k === current ? ' aria-current="page"' : ''}>${ico(ic)}${label}${k === 'writing' ? `<span class="n">${posts.length}</span>` : ''}</a>`).join('');
+  const els = ELSEWHERE.map(([l, u]) => `<a href="${u}" ${EXT}>${ico('out')}${l}</a>`).join('') + `<a href="/writing/feed.xml">${ico('rss')}RSS</a>`;
+  return `<aside class="sb" id="sb" aria-label="Site">
+  <div class="sb-in">
+    <a class="id" href="/" aria-label="Jason Sanzone, home">${tile(26)}<span class="lockup">Jason Sanzone</span></a>
+    <button class="srch" type="button" data-cmdk aria-haspopup="dialog">${ico('search')}Search<kbd class="kbd-only">⌘K</kbd></button>
+    <nav class="nav" aria-label="Pages">${nav}</nav>
+    <div><p class="grp">Elsewhere</p><nav class="nav" aria-label="Elsewhere">${els}</nav></div>
+    <div class="sb-foot">
+      <button class="mail" type="button" data-copy-email title="Copy email address">${ico('copy')}${SOCIAL.email}<kbd class="kbd-only">C</kbd></button>
+      <div class="seg" role="group" aria-label="Theme"><button type="button" data-theme-set="auto" aria-pressed="true">Auto</button><button type="button" data-theme-set="light" aria-pressed="false">Light</button><button type="button" data-theme-set="dark" aria-pressed="false">Dark</button></div>
+    </div>
+  </div>
+</aside>`;
 }
 
-function nav(current) {
-  const active = current === 'post' ? 'journal' : current;
-  const home = `<a class="sz-seg-item sz-seg-home" data-key="home" href="/" aria-label="Home">${LOGO_MARK}</a>`;
-  const items = NAV_ITEMS.map(([key, href, label]) => {
-    const aria = current === key ? ' aria-current="page"' : key === active ? ' aria-current="true"' : '';
-    return `<a class="sz-seg-item" data-key="${key}" href="${href}"${aria}>${label}</a>`;
-  }).join('');
-  const ink = `<span class="sz-seg-ink"><span class="sz-seg-ink-home">${LOGO_MARK}</span>${NAV_ITEMS.map(([, , label]) => `<span>${label}</span>`).join('')}</span>`;
-  return `<nav class="sz-seg" data-active="${active}" aria-label="Site"><span class="sz-seg-thumb" aria-hidden="true"><span class="sz-seg-p"></span><span class="sz-seg-p"></span><span class="sz-seg-p"></span><span class="sz-seg-win">${ink}</span></span>${home}${items}</nav><script>${NAV_JS}(document.currentScript.previousElementSibling);</script>`;
+const TBAR = `<header class="tbar">
+    <a class="id" href="/" aria-label="Jason Sanzone, home" style="display:flex;align-items:center;gap:10px">${tile(28)}<span class="lockup">Jason Sanzone</span></a>
+    <span class="acts2"><button class="ib" type="button" data-cmdk aria-label="Search" aria-haspopup="dialog">${ico('search')}</button><button class="ib" type="button" data-menu aria-label="Menu" aria-expanded="false" aria-controls="sb">${ico('menu')}</button></span>
+  </header>`;
+
+function cmdk(posts) {
+  let n = 0;
+  const item = (g, inner, attrs) => `<${attrs.href ? 'a' : 'button type="button"'} class="cmdk-i" id="cmdk-${n++}" role="option" aria-selected="false" data-g="${g}"${attrs.href ? ` href="${attrs.href}"` : ''}${attrs.ext ? ` ${EXT}` : ''}${attrs.act ? ` data-act="${attrs.act}"` : ''}${attrs.label ? ` data-label="${attrs.label}"` : ''}${attrs.k ? ` data-k="${esc(attrs.k)}"` : ''}>${inner}</${attrs.href ? 'a' : 'button'}>`;
+  const group = (g, label, items) => `<p class="cmdk-g" data-g="${g}" role="presentation">${label}</p>${items.join('')}`;
+  const pages = NAV.map(([k, href, label, ic]) => item('p', `${ico(ic)}${label}`, { href, k: k === 'home' ? 'start index' : k === 'work' ? 'clickfunnels overskill leadership building' : k === 'gear' ? 'edc carry bag' : 'blog journal posts' }));
+  const writing = posts.map((p) => item('w', `${ico('pen')}${esc(p.title)}<span class="x">${shortDate(p.date)}</span>`, { href: p.url, k: p.description }));
+  const work = [['How I lead', '/work/#lead', 'principles leadership'], ['Building at Overskill', '/work/#building', 'ai'], ['About', '/work/#about', 'bio'], ['Contact', '/work/#contact', 'email reach']]
+    .map(([l, href, k]) => item('k', `${ico('hash')}${l}`, { href, k }));
+  const actions = [
+    item('a', `${ico('copy')}Copy email address<kbd class="kbd-only">C</kbd>`, { act: 'copy', k: SOCIAL.email + ' contact' }),
+    item('a', `${ico('mail')}Email me`, { href: 'mailto:' + SOCIAL.email, k: 'contact' }),
+    item('a', `${ico('sun')}Theme: Auto`, { act: 'theme:auto', label: 'Auto', k: 'system mode' }),
+    item('a', `${ico('sun')}Theme: Light`, { act: 'theme:light', label: 'Light', k: 'mode' }),
+    item('a', `${ico('sun')}Theme: Dark`, { act: 'theme:dark', label: 'Dark', k: 'mode night' }),
+    item('a', `${ico('rss')}RSS feed`, { href: '/writing/feed.xml', k: 'subscribe' }),
+  ];
+  const elsewhere = ELSEWHERE.map(([l, u]) => item('e', `${ico('out')}${l}`, { href: u, ext: true, k: 'social' }));
+  return `<dialog class="cmdk" id="cmdk" aria-label="Search and commands">
+  <div class="cmdk-q">${ico('search')}<input type="text" placeholder="Search pages, writing and actions" aria-label="Search" role="combobox" aria-expanded="true" aria-controls="cmdk-l" aria-autocomplete="list" autocomplete="off" spellcheck="false"><kbd>Esc</kbd></div>
+  <div class="cmdk-l" id="cmdk-l" role="listbox" aria-label="Results">
+    ${group('p', 'Pages', pages)}${group('w', 'Writing', writing)}${group('k', 'Work', work)}${group('a', 'Actions', actions)}${group('e', 'Elsewhere', elsewhere)}
+    <p class="cmdk-none" hidden>No results</p>
+  </div>
+  <div class="cmdk-f"><span><kbd>↑</kbd><kbd>↓</kbd> to move</span><span><kbd>↵</kbd> to open</span></div>
+</dialog>`;
 }
 
-// Speculation rules: every page prerenders the other nav destinations as soon as it loads (Chrome/Edge), so a
-// nav click activates an already-rendered page (landing included, bundle already booted) instead of waiting
-// for the network, parsing and booting. Browsers without speculation rules ignore this. The landing page
-// carries the same rules (without "/") in its bundled template.
-// rel=expect: the page does not paint until it is fully parsed (up to #sz-end). Without it, a fast page could
-// paint its first frame with only the nav parsed, which made Chrome skip the cross-document view transition
-// (old page "aborted because of invalid state") and then hold the content back for ~0.5s.
-const NAV_URLS = ['/', '/about/', '/journal/'];
-function specRules(current) {
-  const self = { about: '/about/', journal: '/journal/' }[current];
-  const urls = NAV_URLS.filter((u) => u !== self);
-  return `<script type="speculationrules">${JSON.stringify({ prerender: [{ urls, eagerness: 'immediate' }], prefetch: [{ urls, eagerness: 'immediate' }] })}</script>\n`;
+// Prerender the other top pages as soon as a page loads (instant switches, and the segue plays on a ready page);
+// prerender a post when its link is hovered. Document rules (selectors, not URLs) so this works under any base path.
+function specRules() {
+  return `<script type="speculationrules">${JSON.stringify({ prerender: [{ where: { selector_matches: '.sb .nav[aria-label=Pages] a:not([aria-current])' }, eagerness: 'immediate' }, { where: { selector_matches: '.li, a.row, .next' }, eagerness: 'moderate' }] })}</script>`;
 }
 
-function layout({ title, description, url, ogType = 'website', image = '', card: cardType = '', current = '', extraHead = '', body }) {
-  const card = cardType || (image ? 'summary_large_image' : 'summary');
+function layout({ title, description, url, current, posts, body, list = '', reader = false, ogType = 'website', image = '/media/about/jason.jpg', noindex = false, extraHead = '' }) {
   return `<!DOCTYPE html>
-<html lang="${SITE.lang}">
+<html lang="${SITE.lang}" data-email="${SOCIAL.email}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>${THEME_JS}</script>
+<script>${SEGUE_JS}</script>
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
-<link rel="canonical" href="${esc(abs(url))}">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="alternate" type="application/rss+xml" title="${esc(SITE.name)} · ${esc(SITE.journalTitle)}" href="/journal/feed.xml">
-<link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
+${noindex ? '<meta name="robots" content="noindex">\n' : `<link rel="canonical" href="${esc(abs(url))}">\n`}<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="alternate" type="application/rss+xml" title="${esc(SITE.name)} · ${SITE.writingTitle}" href="/writing/feed.xml">
+<link rel="preload" href="/assets/fonts/archivo-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/bigshoulders-800-caps.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/segue.css">
 <link rel="expect" href="#sz-end" blocking="render">
-${specRules(current)}<meta name="theme-color" content="#121211">
+${specRules()}
+<meta name="theme-color" content="#ECECE8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191A17" media="(prefers-color-scheme: dark)">
 <meta property="og:site_name" content="${esc(SITE.name)}">
 <meta property="og:type" content="${ogType}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:url" content="${esc(abs(url))}">
-${image ? `<meta property="og:image" content="${esc(abs(image))}">\n` : ''}<meta name="twitter:card" content="${card}">
+<meta property="og:image" content="${esc(abs(image))}">
+<meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(description)}">
-${image ? `<meta name="twitter:image" content="${esc(abs(image))}">\n` : ''}${extraHead}</head>
+<meta name="twitter:image" content="${esc(abs(image))}">
+${extraHead}</head>
 <body>
-<main class="sz-main">
-  <header class="sz-top">
-    ${nav(current)}
-    ${themeButton()}
-  </header>
-  ${body}
-  ${FOOTER}
-</main>
+<a class="sr skip" href="#main">Skip to content</a>
+<div class="app${list ? ' r3' : ''}">
+${sidebar(current, posts)}
+${list}<div class="pane">
+  ${TBAR}
+  <main id="main" class="${reader ? 'read' : 'main'}">
+${body}
+  </main>
+</div>
+</div>
+${cmdk(posts)}
+<p class="toast" role="status" aria-live="polite"></p>
+<script src="/assets/ui.js" defer></script>
 <i id="sz-end" hidden></i>
 </body>
 </html>
 `;
 }
 
-// Journal index: each post is a full-width rounded card (one link): date + reading time, title, a 2-line
-// description, an optional cover thumbnail on the right (stacked on top on small screens) and an arrow.
-function postCard(p) {
-  const thumb = p.cover ? `<span class="sz-card-thumb"><img src="${esc(p.cover)}" alt="" loading="lazy" decoding="async"></span>` : '';
-  return `<li><a class="sz-card${p.cover ? ' sz-card-has-thumb' : ''}" href="${p.url}">
-        <div class="sz-card-body">
-          <div class="sz-card-meta"><time datetime="${isoDate(p.date)}">${shortDate(p.date)}</time><span aria-hidden="true">·</span><span>${p.minutes} min read</span></div>
-          <h2 class="sz-card-title">${esc(p.title)}</h2>
-          ${p.description ? `<p class="sz-card-desc">${esc(p.description)}</p>` : ''}
-        </div>
-        ${thumb}<span class="sz-card-arrow" aria-hidden="true">${ARROW_ICON}<span class="sz-card-arrow-hot">${ARROW_ICON}</span></span>
-      </a></li>`;
-}
+const footer = () => `<footer class="ft"><span>Just north of Atlanta, Georgia. Email is the fastest way to reach me: <a class="lk" href="mailto:${SOCIAL.email}">${SOCIAL.email}</a></span><span class="soc">${ELSEWHERE.map(([l, u]) => `<a href="${u}" ${EXT}>${l}</a>`).join('')}<a href="/writing/feed.xml">RSS</a></span></footer>`;
+const secH = (id, label, link = '') => `<h2 class="sec-h" id="${id}">${label}${link}</h2>`;
+const postRow = (p) => `<a class="row" href="${p.url}"><b>${esc(p.title)}</b><span class="d"><time datetime="${isoDate(p.date)}">${shortDate(p.date)}</time></span>${p.description ? `<p>${esc(p.description)}</p>` : ''}</a>`;
+const carryTable = (rows) => `<div class="tbl"><table class="spec gear"><thead><tr><th>Item</th><th>Note</th><th>Status</th></tr></thead><tbody>${rows.map(([n, v, s]) => `<tr><td>${esc(n)}</td><td>${esc(v)}</td><td>${esc(s)}</td></tr>`).join('')}</tbody></table></div>`;
 
-function indexPage(posts) {
-  const list = posts.length
-    ? `<ol class="sz-posts" reversed>
-      ${posts.map(postCard).join('\n      ')}
-    </ol>`
-    : `<p class="sz-empty">First post coming soon.</p>`;
+// ---------- pages ----------
+function homePage(posts) {
   return layout({
-    title: `${SITE.journalTitle} · ${SITE.name}`,
-    description: SITE.journalDescription,
-    url: '/journal/',
-    current: 'journal',
-    body: `<section class="sz-content">
-    <h1 class="sz-h1">${esc(SITE.journalTitle)}</h1>
-    <p class="sz-sub">${esc(SITE.journalSubline)}</p>
-    ${list}
-  </section>`,
+    title: `${SITE.name} · Design, writing and gear`,
+    description: PAGE_DESC,
+    url: '/',
+    current: 'home',
+    posts,
+    ogType: 'profile',
+    body: `<div class="col">
+<h1 class="sr">Jason Sanzone</h1>
+<p class="intro">${SUBLINE} <span class="t2">${ROLES[0].title} at ${ROLES[0].company}. Co-founder and head of design at ${ROLES[1].company}, an AI app builder.</span></p>
+<div class="acts"><a class="btn pri" href="mailto:${SOCIAL.email}">Email me</a>${posts[0] ? `<a class="btn" href="${posts[0].url}">Read the latest</a>` : ''}</div>
+<section class="sec" aria-labelledby="h-writing">${secH('h-writing', 'Writing', '<a class="lk" href="/writing/">All writing</a>')}${posts.slice(0, 3).map(postRow).join('') || '<p class="empty">No posts yet.</p>'}</section>
+<section class="sec" aria-labelledby="h-work">${secH('h-work', 'Work', '<a class="lk" href="/work/#lead">How I lead</a>')}
+<a class="row" href="/work/#roles"><b>${ROLES[0].company}</b><span class="d">${PH('since')}</span><p>${ROLES[0].title}. ${PH('team size and scope')}</p></a>
+<a class="row" href="/work/#roles"><b>${ROLES[1].company}</b><span class="d">${PH('since')}</span><p>${ROLES[1].title}. ${ROLES[1].note}</p></a>
+<a class="row" href="/work/#selected"><b>Selected work</b><span class="d"></span><p>${PH('up to three case studies: problem, decision, outcome')}</p></a></section>
+<section class="sec" aria-labelledby="h-gear">${secH('h-gear', 'Gear', '<a class="lk" href="/gear/">Everything I carry</a>')}${carryTable(CARRY)}<p class="sec-p" style="margin:10px 0 0;font-size:13.5px">${CF('current carry, Oct 2026')}</p></section>
+${footer()}
+</div>`,
   });
 }
 
-function postPage(p) {
-  const desc = p.description || `${p.title}, by ${SITE.name}.`;
-  const back = `<a class="sz-back" href="/journal/">${BACK_ICON}<span>${esc(SITE.journalTitle)}</span></a>`;
+function writingPage(posts) {
+  return layout({
+    title: `${SITE.writingTitle} · ${SITE.name}`,
+    description: SITE.writingDescription,
+    url: '/writing/',
+    current: 'writing',
+    posts,
+    body: `<div class="col">
+<h1 class="ph1">Writing</h1>
+<p class="sub">${SITE.writingSubline}</p>
+<div class="acts"><a class="btn" href="/writing/feed.xml">${ico('rss')}RSS feed</a></div>
+<section class="sec" aria-label="Posts">${posts.map(postRow).join('') || '<p class="empty">No posts yet.</p>'}</section>
+${footer()}
+</div>`,
+  });
+}
+
+function listPane(posts, current) {
+  return `<section class="list" aria-label="All writing">
+  <div class="list-h">Writing<span>${posts.length} post${posts.length === 1 ? '' : 's'}</span></div>
+  ${posts.map((p) => `<a class="li" href="${p.url}"${p.slug === current ? ' aria-current="page"' : ''}><b>${esc(p.title)}</b>${p.description ? `<p>${esc(p.description)}</p>` : ''}<p class="d">${shortDate(p.date)} · ${p.minutes} min read</p></a>`).join('\n  ')}
+</section>
+`;
+}
+
+function postPage(p, i, posts) {
+  const next = posts.length > 1 ? posts[(i + 1) % posts.length] : null;
+  const ld = { '@context': 'https://schema.org', '@type': 'BlogPosting', headline: p.title, description: p.description || undefined, datePublished: isoDate(p.date), url: abs(p.url), author: { '@type': 'Person', name: SITE.name, url: SITE.url }, image: p.cover ? abs(p.cover) : undefined };
   return layout({
     title: `${p.title} · ${SITE.name}`,
-    description: desc,
+    description: p.description || SITE.writingDescription,
     url: p.url,
+    current: 'writing',
+    posts,
+    reader: true,
     ogType: 'article',
-    current: 'post',
-    image: p.cover,
-    extraHead: `<meta property="article:published_time" content="${p.date.toISOString()}">\n<meta property="article:author" content="${esc(SITE.name)}">\n`,
-    body: `<section class="sz-content">
-    ${back}
-    <article class="sz-article">
-      <header>
-        <h1 class="sz-article-title">${esc(p.title)}</h1>
-        <p class="sz-article-meta"><time datetime="${isoDate(p.date)}">${fmtDate(p.date)}</time></p>
-      </header>
-      ${p.cover ? `<img class="sz-cover" src="${esc(p.cover)}" alt="">` : ''}
-      <div class="sz-prose">
+    image: p.cover || '/media/about/jason.jpg',
+    list: listPane(posts, p.slug),
+    extraHead: `<meta property="article:published_time" content="${isoDate(p.date)}">\n<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>\n`,
+    body: `<article>
+<a class="back" href="/writing/">${ico('back')}Writing</a>
+<p class="meta"><time datetime="${isoDate(p.date)}">${fmtDate(p.date)}</time><span aria-hidden="true">·</span><span>${p.minutes} min read</span></p>
+<h1>${esc(p.title)}</h1>
+${p.description ? `<p class="dek">${esc(p.description)}</p>` : ''}
+${p.cover ? `<img class="cover" src="${esc(p.cover)}" alt="" decoding="async">` : ''}
+<div class="prose">
 ${p.html}
-      </div>
-      <footer class="sz-article-foot">${back}</footer>
-    </article>
-  </section>`,
+</div>
+${next ? `<a class="next" href="${next.url}"><span><small>Next</small><b>${esc(next.title)}</b></span>${ico('arrow')}</a>` : ''}
+</article>`,
   });
 }
 
+function workPage(posts) {
+  const bySlug = new Map(posts.map((p) => [p.slug, p]));
+  const src = (slug) => { const p = bySlug.get(slug); return p ? `<a href="${p.url}">From ${esc(p.title)}</a>` : ''; };
+  return layout({
+    title: `Work · ${SITE.name}`,
+    description: PAGE_DESC,
+    url: '/work/',
+    current: 'work',
+    posts,
+    ogType: 'profile',
+    body: `<div class="col">
+<h1 class="ph1">Work</h1>
+<p class="sub">Today I lead design and creative at ${cfLink} and co-founded ${osLink}, where I head up design.</p>
+<section class="sec" aria-labelledby="roles">${secH('roles', 'Roles')}
+<a class="row" href="${ROLES[0].href}" ${EXT}><b>${ROLES[0].company}</b><span class="d">${PH('since')}</span><p>${ROLES[0].title}. ${PH('team size, disciplines and who you report to')}</p></a>
+<a class="row" href="${ROLES[1].href}" ${EXT}><b>${ROLES[1].company}</b><span class="d">${PH('since')}</span><p>${ROLES[1].title}. ${ROLES[1].note}</p></a></section>
+<section class="sec" aria-labelledby="lead">${secH('lead', 'How I lead')}<p class="sec-p">Each one is quoted from a post in Writing.</p>
+<dl class="pr">${PRINCIPLES.map(([l, q, s]) => `<dt>${esc(l)}</dt><dd><p>${esc(q)}</p>${src(s)}</dd>`).join('')}</dl></section>
+<section class="sec" aria-labelledby="building">${secH('building', 'Building at Overskill', `<a class="lk" href="${ROLES[1].href}" ${EXT}>overskill.com</a>`)}
+<div style="padding:0 4px">${BUILDING.map(([q, s]) => `<figure class="q"><blockquote><p>${esc(q)}</p></blockquote><figcaption>${src(s)}</figcaption></figure>`).join('')}
+<div class="cols2" style="margin-top:10px"><div class="panel"><b>The product</b><p>${PH('Overskill product screenshots')}</p></div><div class="panel"><b>Milestone</b><p>${PH('an Overskill milestone you can share, like a launch date')}</p></div></div></div></section>
+<section class="sec" aria-labelledby="selected">${secH('selected', 'Selected work')}
+<div style="padding:0 4px"><div class="panel"><b>Case study 1</b><p>${PH('problem, decision, outcome')}</p></div><div class="panel"><b>Case study 2</b><p>${PH('problem, decision, outcome')}</p></div><div class="panel"><b>Case study 3</b><p>${PH('problem, decision, outcome')}</p></div><div class="panel"><b>Brands</b><p>${PH('brands you can name publicly')}</p></div></div></section>
+<section class="sec" aria-labelledby="about">${secH('about', 'About')}
+<div class="about"><picture><source srcset="/media/about/jason.webp" type="image/webp"><img src="/media/about/jason.jpg" alt="Jason Sanzone" width="120" height="120" loading="lazy" decoding="async"></picture><div><p>${BIO_LEDE}</p><p>${BIO_REST}</p></div></div></section>
+<section class="sec" aria-labelledby="contact">${secH('contact', 'Contact')}<p class="sec-p">Email is the fastest way to reach me.</p>
+<div class="contact"><a class="btn pri" href="mailto:${SOCIAL.email}">${SOCIAL.email}</a><button class="btn" type="button" data-copy-email>${ico('copy')}Copy</button>${ELSEWHERE.map(([l, u]) => `<a class="btn" href="${u}" ${EXT}>${l}</a>`).join('')}</div></section>
+${footer()}
+</div>`,
+  });
+}
+
+function gearPage(posts) {
+  return layout({
+    title: `Gear · ${SITE.name}`,
+    description: 'What Jason Sanzone carries every day, the bag he wants next, and what is on his radar.',
+    url: '/gear/',
+    current: 'gear',
+    posts,
+    body: `<div class="col">
+<h1 class="ph1">Gear</h1>
+<p class="sub">What I carry, what I'm replacing, and what's on my radar. ${CF('current carry, Oct 2026')}</p>
+<section class="sec" aria-labelledby="carry">${secH('carry', 'Daily carry')}${carryTable(CARRY)}</section>
+<section class="sec" aria-labelledby="next">${secH('next', 'The next bag')}<p class="sec-p">The CTB26 is on the way out.</p>
+<div class="tbl"><table class="spec kv"><tbody><tr><td>Want</td><td>${NEXT_BAG.map(esc).join(', ')}</td></tr><tr><td>Considering</td><td>Pioneer Duration, Panda</td></tr><tr><td>Leaning</td><td>Duration ${CF('still leaning Duration?')}</td></tr></tbody></table></div></section>
+<section class="sec" aria-labelledby="radar">${secH('radar', 'On my radar')}<p class="sec-p">Buck 797 Range Ops Pro. ${CF('did you buy it?')}</p>
+<div class="tbl"><table class="spec kv"><tbody><tr><td>Blade</td><td>3.38" 154CM reverse tanto</td></tr><tr><td>Lock</td><td>Crossbar lock</td></tr><tr><td>Weight</td><td>3.6 oz</td></tr><tr><td>Made in</td><td>USA</td></tr></tbody></table></div></section>
+<section class="sec" aria-labelledby="photos">${secH('photos', 'Photos')}<p class="sec-p">${PH('photos of the carry')}</p></section>
+${footer()}
+</div>`,
+  });
+}
+
+function notFoundPage(posts) {
+  return layout({
+    title: `Not found · ${SITE.name}`,
+    description: 'This page does not exist.',
+    url: '/404.html',
+    current: '',
+    posts,
+    noindex: true,
+    body: `<div class="col">
+<h1 class="ph1">Not found</h1>
+<p class="sub">That page doesn't exist. Press <kbd>⌘K</kbd> to search, or head home.</p>
+<div class="acts"><a class="btn pri" href="/">Home</a><a class="btn" href="/writing/">Writing</a></div>
+</div>`,
+  });
+}
+
+// ---------- feed + redirects ----------
 function feed(posts) {
   const items = posts.slice(0, 50).map((p) => {
     // Make root-relative links/images absolute for feed readers.
@@ -270,61 +447,24 @@ ${p.description ? `      <description>${esc(p.description)}</description>\n` : '
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>${esc(SITE.name)} · ${esc(SITE.journalTitle)}</title>
-    <link>${SITE.url}/journal/</link>
-    <description>${esc(SITE.journalDescription)}</description>
+    <title>${esc(SITE.name)} · ${SITE.writingTitle}</title>
+    <link>${SITE.url}/writing/</link>
+    <description>${esc(SITE.writingDescription)}</description>
     <language>en-us</language>
-${posts.length ? `    <lastBuildDate>${posts[0].date.toUTCString()}</lastBuildDate>\n` : ''}    <atom:link href="${SITE.url}/journal/feed.xml" rel="self" type="application/rss+xml"/>
+${posts.length ? `    <lastBuildDate>${posts[0].date.toUTCString()}</lastBuildDate>\n` : ''}    <atom:link href="${SITE.url}/writing/feed.xml" rel="self" type="application/rss+xml"/>
 ${items}
   </channel>
 </rss>
 `;
 }
 
-
-// ---------- About ----------
-const SOCIAL = {
-  email: 'jason@sanz.one',
-  linkedin: 'https://linkedin.com/in/jasonsanzone',
-  instagram: 'https://instagram.com/jasonsanzone',
-  x: 'https://x.com/jasonsanzone',
-};
-const spin = '<animateTransform attributeName="gradientTransform" type="rotate" values="0 .5 .5;360 .5 .5" dur="7s" repeatCount="indefinite"></animateTransform>';
-// Icons copied from the landing page (index.html); hover swaps the fill/stroke to the same rotating brand gradient ("Prism").
-const TILES = `<nav class="sz-social" aria-label="Social">
-        <a class="sz-tile sz-tile-li" href="${SOCIAL.linkedin}" target="_blank" rel="noopener" aria-label="LinkedIn" title="LinkedIn"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="gli" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="#6FB6FF"></stop><stop offset="0.50" stop-color="#0A66C2"></stop><stop offset="1.00" stop-color="#3D9BFF"></stop>${spin}</linearGradient></defs><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"></path></svg></a>
-        <a class="sz-tile sz-tile-ig" href="${SOCIAL.instagram}" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram"><svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke-width="1.9" aria-hidden="true"><defs><linearGradient id="gig" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="#FEDA75"></stop><stop offset="0.25" stop-color="#FA7E1E"></stop><stop offset="0.50" stop-color="#D62976"></stop><stop offset="0.75" stop-color="#962FBF"></stop><stop offset="1.00" stop-color="#4F5BD5"></stop>${spin}</linearGradient></defs><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4.2"></circle><circle class="sz-dot" cx="17.4" cy="6.6" r=".6"></circle></svg></a>
-        <a class="sz-tile sz-tile-x" href="${SOCIAL.x}" target="_blank" rel="noopener" aria-label="X" title="X"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="gx" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="#FFFFFF"></stop><stop offset="0.50" stop-color="#7A7A7A"></stop><stop offset="1.00" stop-color="#FFFFFF"></stop>${spin}</linearGradient></defs><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z"></path></svg></a>
-      </nav>`;
-
-function aboutPage() {
-  const photo = '/media/about/jason.jpg';
-  return layout({
-    title: `About · ${SITE.name}`,
-    description: 'Jason Sanzone is a designer based just north of Atlanta, Georgia. He leads design and creative at ClickFunnels and co-founded Overskill, where he heads up design.',
-    url: '/about/',
-    ogType: 'profile',
-    image: photo,
-    card: 'summary',
-    current: 'about',
-    body: `<section class="sz-content sz-about">
-    <picture>
-      <source srcset="/media/about/jason.webp" type="image/webp">
-      <img class="sz-photo" src="${photo}" alt="Jason Sanzone" width="144" height="144">
-    </picture>
-    <h1 class="sz-h1">About</h1>
-    <p class="sz-bio">I'm a designer based just north of Atlanta, Georgia. I've spent my career building brands, products, and interfaces, including work for some of the world's most recognizable brands. Today I lead design and creative at <a class="sz-u" href="https://www.clickfunnels.com" target="_blank" rel="noopener noreferrer">ClickFunnels</a> and co-founded <a class="sz-u" href="https://www.overskill.com" target="_blank" rel="noopener noreferrer">Overskill</a>, where I head up design. Away from the screen, you'll find me outdoors, tinkering with new tech and AI, or hunting down gear that makes everyday life a little easier.</p>
-    <div class="sz-contact">
-      <a class="sz-email" href="mailto:${SOCIAL.email}">${SOCIAL.email}</a>
-      ${TILES}
-    </div>
-  </section>`,
-  });
-}
-
-// ---------- Redirects ----------
-function redirectPage(to) {
+// GitHub Pages has no server-side redirects: these pages forward instantly (keeping ?query and #hash).
+// Targets are written relative to the redirect page, so they also work when the site is served under a base path.
+function redirectPage(from, to) {
   const url = abs(to);
+  const [toPath, toHash = ''] = to.split('#');
+  const depth = from.split('/').filter(Boolean).length;
+  const rel = ('../'.repeat(depth) + toPath.replace(/^\//, '')) || './';
   return `<!DOCTYPE html>
 <html lang="${SITE.lang}">
 <head>
@@ -332,14 +472,13 @@ function redirectPage(to) {
 <title>Moved to ${esc(url)}</title>
 <meta name="robots" content="noindex">
 <link rel="canonical" href="${esc(url)}">
-<meta http-equiv="refresh" content="0; url=${esc(to)}">
+<meta http-equiv="refresh" content="0; url=${esc(rel + (toHash ? '#' + toHash : ''))}">
 <script>${THEME_JS}</script>
-<script>location.replace(${JSON.stringify(to)} + location.search + location.hash);</script>
-<link rel="stylesheet" href="/assets/site.css">
-<style>body{color:var(--muted);font:15px Geist,system-ui,sans-serif;padding:28px}</style>
+<script>location.replace(${JSON.stringify(rel)} + location.search + (location.hash || ${JSON.stringify(toHash ? '#' + toHash : '')}));</script>
+<link rel="stylesheet" href="${'../'.repeat(depth)}assets/site.css">
 </head>
-<body>
-<p>This page has moved to <a href="${esc(to)}">${esc(url)}</a>.</p>
+<body style="padding:28px;color:var(--tx2)">
+<p>This page has moved to <a class="lk" href="${esc(rel + (toHash ? '#' + toHash : ''))}">${esc(url)}</a>.</p>
 </body>
 </html>
 `;
@@ -356,17 +495,24 @@ for (const f of ROOT_FILES) {
 }
 if (fs.existsSync(path.join(ROOT, 'media'))) fs.cpSync(path.join(ROOT, 'media'), path.join(OUT, 'media'), { recursive: true, filter: (s) => path.basename(s) !== '.gitkeep' });
 fs.cpSync(path.join(ROOT, 'site-src/assets'), path.join(OUT, 'assets'), { recursive: true });
+fs.copyFileSync(path.join(ROOT, 'site-src/ui.js'), path.join(OUT, 'assets/ui.js'));
 
 const posts = loadPosts();
-write('journal/index.html', indexPage(posts));
-for (const p of posts) write(`journal/${p.slug}/index.html`, postPage(p));
+write('index.html', homePage(posts));
+write('writing/index.html', writingPage(posts));
+posts.forEach((p, i) => write(`writing/${p.slug}/index.html`, postPage(p, i, posts)));
+write('work/index.html', workPage(posts));
+write('gear/index.html', gearPage(posts));
+write('404.html', notFoundPage(posts));
 const feedXml = feed(posts);
-write('journal/feed.xml', feedXml);
+write('writing/feed.xml', feedXml);
 
-// Old /blog URLs (GitHub Pages has no server-side redirects)
-write('blog/index.html', redirectPage('/journal/'));
-for (const p of posts) write(`blog/${p.slug}/index.html`, redirectPage(p.url));
-write('blog/feed.xml', feedXml);
-write('about/index.html', aboutPage());
+// Old URLs
+for (const base of ['journal', 'blog']) {
+  write(`${base}/index.html`, redirectPage(`/${base}/`, '/writing/'));
+  for (const p of posts) write(`${base}/${p.slug}/index.html`, redirectPage(`/${base}/${p.slug}/`, p.url));
+  write(`${base}/feed.xml`, feedXml);
+}
+write('about/index.html', redirectPage('/about/', '/work/#about'));
 
 console.log(`Built ${posts.length} post(s) into ${path.relative(ROOT, OUT)}/`);

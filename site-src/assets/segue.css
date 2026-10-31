@@ -1,0 +1,17 @@
+/* Quiet segues between pages (cross-document view transitions). The sidebar, top bar and Writing list pane are named,
+   so they hold still while only the content pane changes: the old one fades out quickly and the new one fades in with a
+   6px drift. 'backwards' (set by site-src/segue.js) mirrors the drift. Reduced motion turns it all off. */
+@view-transition{navigation:auto}
+::view-transition-group(root){animation-duration:200ms}
+::view-transition-old(root){animation:120ms cubic-bezier(.4,0,1,1) both sz-out}
+::view-transition-new(root){animation:200ms cubic-bezier(.2,.7,.2,1) 40ms both sz-in}
+html:active-view-transition-type(backwards)::view-transition-new(root){animation-name:sz-in-back}
+::view-transition-group(sb),::view-transition-group(tbar),::view-transition-group(list){animation-duration:160ms}
+::view-transition-old(sb),::view-transition-new(sb),::view-transition-old(tbar),::view-transition-new(tbar),::view-transition-old(list),::view-transition-new(list){animation-duration:160ms;animation-timing-function:ease}
+@keyframes sz-out{to{opacity:0}}
+@keyframes sz-in{from{opacity:0;transform:translateY(6px)}}
+@keyframes sz-in-back{from{opacity:0;transform:translateY(-6px)}}
+@media (prefers-reduced-motion:reduce){
+  @view-transition{navigation:none}
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}
+}
