@@ -202,7 +202,7 @@
     var a = expo.annot; while (a.firstChild) a.removeChild(a.firstChild);
     if (expo.t < .6) return;
     var vw = root.clientWidth, vh = W.innerHeight, lo = v0, hi = v0 + expo.Hf * .7;
-    var used = [], CT = ['sky', 'volt', 'lilac', 'orange'], small = expo.small;
+    var used = [], CT = ['teal', 'volt', 'violet', 'orange'], small = expo.small;
     $$('[data-annot]', ribbon).forEach(function (p, pi) {
       if (small && used.length) return;
       var tone = 't-' + CT[pi % CT.length];

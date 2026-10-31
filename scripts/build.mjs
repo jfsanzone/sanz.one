@@ -1,7 +1,7 @@
 // Build the deployable site into _site/:
 //   - root files are copied byte-for-byte (favicon.svg, CNAME, .nojekyll); site-src/assets/ goes to /assets/
 //   - the menu pages are generated from the templates below, one full-bleed band each, in menu order:
-//     / (home, neutral), /work/ (cobalt), /about/ (lilac), /notes/ (sky), /journal/ (neutral), /contact/ (volt)
+//     / (home, neutral), /work/ (cobalt), /about/ (violet), /notes/ (teal), /journal/ (neutral), /contact/ (volt)
 //   - media/ is copied as-is (Pages CMS uploads land in media/journal)
 //   - content/posts/*.md is rendered to /journal/, /journal/<slug>/ and /journal/feed.xml
 //   - /blog/... (old URLs) are redirect pages to /journal/...; /blog/feed.xml is a copy of the journal feed
@@ -103,7 +103,7 @@ function loadPosts() {
 // One system for every page (site-src/assets/site.css):
 //   - structure: a narrow editorial column, Inter + mono, pure neutrals, whitespace between sections;
 //   - surfaces: satin-silver foil and matte-black panels lit by the eased pointer / scroll light (--lx/--ly);
-//   - colour: full-bleed section bands in the supplemental palette (cobalt, lilac, sky, volt) with hard edges;
+//   - colour: full-bleed section bands in the supplemental palette (cobalt, violet, teal, volt) with hard edges;
 //   - play: Expo Mode on every menu page (site-src/assets/sanz.js);
 //   - motion: Framed Drift between pages (site-src/assets/segue.css + site-src/segue.js).
 const SOCIAL = {
@@ -179,15 +179,8 @@ function specRules(current, url) {
 const copyBtn = (cls = 'sz-btn') => `<button class="${cls}" type="button" data-copy="${SOCIAL.email}">Copy email</button>`;
 const socialBtns = (cls) => `<a class="${cls}" href="${SOCIAL.linkedin}" ${EXT}>LinkedIn${OUT_ICON}</a><a class="${cls}" href="${SOCIAL.instagram}" ${EXT}>Instagram${OUT_ICON}</a><a class="${cls}" href="${SOCIAL.x}" ${EXT}>X${OUT_ICON}</a>`;
 
-// The spec sticker on the home band (facts kept exactly as on the Foil landing page).
-const STICKER = `<dl class="sticker" aria-label="Spec">
-          <div class="st-row st-head"><span class="st-dot" aria-hidden="true"></span><span class="mono">SPEC SHEET / 001</span></div>
-          <div class="st-row"><dt>Name</dt><dd>Jason Sanzone</dd></div>
-          <div class="st-row"><dt>Role</dt><dd>VP, Design/Creative, ClickFunnels</dd></div>
-          <div class="st-row"><dt>Building</dt><dd>Overskill, co&#8209;founder &amp; head of design</dd></div>
-          <div class="st-row"><dt>Based</dt><dd>North of Atlanta, GA</dd></div>
-          <div class="st-row st-sku"><dt>SKU</dt><dd class="mono">SZ-ONE-JS-26</dd></div>
-        </dl>`;
+// The facts, folded into one compact line under the hero subline (the old spec sheet, minus the name, which is the h1, and the SKU).
+const FACTS = `<p class="sz-facts" data-annot="Jason Sanzone"><span class="st-dot" aria-hidden="true"></span><span>${esc(ROLES[0].title)}, ${esc(ROLES[0].company)}</span><span class="sep" aria-hidden="true">·</span><span>${esc(ROLES[1].title)}, ${esc(ROLES[1].company)}</span></p>`;
 const FOOTER = `<footer class="sz-foot">
   <div class="sz-wrap">
     <div class="sz-foot-grid">
@@ -281,7 +274,7 @@ const postList = (posts, h) => posts.length
 // One band per menu page, all built the same way: a full-bleed colour field (hard edges, at least a screen tall
 // so every page transition moves a whole colour), the numbered section head with the page title as h1, the page's
 // content, and a link on to the next page in menu order. The bands are .ed-sec so Expo Mode can fold them.
-const EXT_FIELD = { home: 'neutral', work: 'cobalt', about: 'lilac', notes: 'sky', journal: 'page', contact: 'volt' };
+const EXT_FIELD = { home: 'neutral', work: 'cobalt', about: 'violet', notes: 'teal', journal: 'page', contact: 'volt' };
 const pageHead = (num, title, sub = '', extra = '') => `<header class="ed-head">
       <span class="ed-num mono">${num}</span>
       <h1 class="ed-title">${title}</h1>
@@ -380,7 +373,7 @@ const PHOTO = `<picture>
 
 const PAGE_DESC = 'Jason Sanzone is a designer based just north of Atlanta, Georgia. He leads design and creative at ClickFunnels and co-founded Overskill, where he heads up design.';
 
-// /about/ (lilac): the landing About and the old About page merged; the roles live on /work/, the email on /contact/.
+// /about/ (violet): the landing About and the old About page merged; the roles live on /work/, the email on /contact/.
 function aboutPage() {
   return layout({
     title: `About · ${SITE.name}`,
@@ -422,7 +415,7 @@ function workPage() {
   });
 }
 
-// /notes/ (sky): lines quoted verbatim from the posts, each linking to its post.
+// /notes/ (teal): lines quoted verbatim from the posts, each linking to its post.
 const QUOTES = [
   ['Taste is the new bottleneck, and it doesn\'t scale with headcount.', 'size-isnt-everything'],
   ['AI can do the first draft. It can\'t do that stack. That\'s still on you.', 'the-formula-nobody-puts-on-a-resume'],
@@ -465,8 +458,8 @@ function contactPage() {
   });
 }
 
-// / (neutral): the hero is a band like every other page: numbered head, the name as h1, the subline, then the spec
-// sticker and one entry card per menu page, each in that page's colour.
+// / (neutral): the hero is a band like every other page: numbered head, the name as h1, the subline, then one
+// compact facts line and one entry card per menu page, each in that page's colour.
 const ENTRY_SUB = {
   work: 'Two roles, one practice.',
   about: "I'm a designer based just north of Atlanta, Georgia.",
@@ -490,8 +483,8 @@ function homePage() {
     current: 'home',
     expo: true,
     body: band('home', `${pageHead('Designer · North of Atlanta, GA', esc(SITE.name), esc(SUBLINE))}
+    ${FACTS}
     <div class="entries">
-      <div class="entry-spec" data-annot="Spec sheet">${STICKER}</div>
       ${entries}
     </div>`, ' sz-home'),
   });
