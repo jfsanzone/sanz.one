@@ -1,7 +1,7 @@
 // Build the deployable site into _site/:
 //   - root files are copied byte-for-byte (favicon.svg, CNAME, .nojekyll); site-src/assets/ goes to /assets/
 //   - the menu pages are generated from the templates below, one full-bleed band each, in menu order:
-//     / (home, neutral), /work/ (cobalt), /about/ (violet), /notes/ (teal), /journal/ (neutral), /contact/ (volt)
+//     / (home, neutral), /work/ (midnight), /about/ (royal), /notes/ (azure), /journal/ (neutral), /contact/ (cyan)
 //   - media/ is copied as-is (Pages CMS uploads land in media/journal)
 //   - content/posts/*.md is rendered to /journal/, /journal/<slug>/ and /journal/feed.xml
 //   - /blog/... (old URLs) are redirect pages to /journal/...; /blog/feed.xml is a copy of the journal feed
@@ -103,7 +103,7 @@ function loadPosts() {
 // One system for every page (site-src/assets/site.css):
 //   - structure: a narrow editorial column, Inter + mono, pure neutrals, whitespace between sections;
 //   - surfaces: satin-silver foil and matte-black panels lit by the eased pointer / scroll light (--lx/--ly);
-//   - colour: full-bleed section bands in the supplemental palette (cobalt, violet, teal, volt) with hard edges;
+//   - colour: full-bleed section bands in the supplemental palette (midnight, royal, azure, cyan) with hard edges;
 //   - play: Expo Mode on every menu page (site-src/assets/sanz.js);
 //   - motion: Framed Drift between pages (site-src/assets/segue.css + site-src/segue.js).
 const SOCIAL = {
@@ -274,7 +274,7 @@ const postList = (posts, h) => posts.length
 // One band per menu page, all built the same way: a full-bleed colour field (hard edges, at least a screen tall
 // so every page transition moves a whole colour), the numbered section head with the page title as h1, the page's
 // content, and a link on to the next page in menu order. The bands are .ed-sec so Expo Mode can fold them.
-const EXT_FIELD = { home: 'neutral', work: 'cobalt', about: 'violet', notes: 'teal', journal: 'page', contact: 'volt' };
+const EXT_FIELD = { home: 'neutral', work: 'midnight', about: 'royal', notes: 'azure', journal: 'page', contact: 'cyan' };
 const pageHead = (num, title, sub = '', extra = '') => `<header class="ed-head">
       <span class="ed-num mono">${num}</span>
       <h1 class="ed-title">${title}</h1>
@@ -373,7 +373,7 @@ const PHOTO = `<picture>
 
 const PAGE_DESC = 'Jason Sanzone is a designer based just north of Atlanta, Georgia. He leads design and creative at ClickFunnels and co-founded Overskill, where he heads up design.';
 
-// /about/ (violet): the landing About and the old About page merged; the roles live on /work/, the email on /contact/.
+// /about/ (royal): the landing About and the old About page merged; the roles live on /work/, the email on /contact/.
 function aboutPage() {
   return layout({
     title: `About · ${SITE.name}`,
@@ -395,7 +395,7 @@ function aboutPage() {
   });
 }
 
-// /work/ (cobalt): Currently, the two roles on satin-silver cards with matte-black labels.
+// /work/ (midnight): Currently, the two roles on satin-silver cards with matte-black labels.
 function workPage() {
   return layout({
     title: `Currently · ${SITE.name}`,
@@ -415,7 +415,7 @@ function workPage() {
   });
 }
 
-// /notes/ (teal): lines quoted verbatim from the posts, each linking to its post.
+// /notes/ (azure): lines quoted verbatim from the posts, each linking to its post.
 const QUOTES = [
   ['Taste is the new bottleneck, and it doesn\'t scale with headcount.', 'size-isnt-everything'],
   ['AI can do the first draft. It can\'t do that stack. That\'s still on you.', 'the-formula-nobody-puts-on-a-resume'],
@@ -441,7 +441,7 @@ function notesPage(posts) {
   });
 }
 
-// /contact/ (volt): the email on a matte-black panel, copy button and socials.
+// /contact/ (cyan): the email on a matte-black panel, copy button and socials.
 function contactPage() {
   return layout({
     title: `Get in touch · ${SITE.name}`,

@@ -17,7 +17,7 @@
 @media (prefers-color-scheme: light) { :root:not([data-theme]) { color-scheme: light; --bg: #FAFAFA; --home: #FAFAFA; --card: #F0F0F0; --card-hover: #E9E9E9; --surface: #FFFFFF; --tile: #F2F2F2; --border: #E6E6E6; --line: #CFCFCF; --hover: #F2F2F2; --text: #0A0A0A; --body: rgba(10,10,10,.82); --muted: rgba(10,10,10,.66); --faint: rgba(10,10,10,.5); --strong: #000000; --pill: #0A0A0A; --pill-text: #F2F2F2; --logo: #FA431E; --logo-on: #FA431E; --uline: rgba(10,10,10,.28); --sel: rgba(250,67,30,.28); } }
 :root {
   --ink: #0A0A0A; --fog: #F2F2F2; --orange: #FA431E;
-  --cobalt: #2B3BFF; --violet: #7A2BFF; --teal: #00B39A; --volt: #C6F000;
+  --midnight: #0B1F5C; --royal: #1740C8; --azure: #0A64D2; --cyan: #00C2F0;
   --lx: .38; --ly: .42;
   --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -137,10 +137,10 @@ html.sz-theming .sz-theme svg { transition: opacity .3s ease, transform .4s var(
 
 /* ---------- bands: full-bleed supplemental colour, hard edges (no gradient between sections) ---------- */
 .band, .ed-sec { padding: var(--space) 0; }
-.band-cobalt { background: var(--cobalt); color: var(--fog); }
-.band-violet { background: var(--violet); color: var(--fog); }
-.band-teal { background: var(--teal); color: var(--ink); }
-.band-volt { background: var(--volt); color: var(--ink); }
+.band-midnight { background: var(--midnight); color: var(--fog); }
+.band-royal { background: var(--royal); color: var(--fog); }
+.band-azure { background: var(--azure); color: var(--fog); }
+.band-cyan { background: var(--cyan); color: var(--ink); }
 
 /* ---------- materials ---------- */
 /* satin silver (Foil): a soft sheen that slides with the light */
@@ -180,12 +180,13 @@ html.sz-theming .sz-theme svg { transition: opacity .3s ease, transform .4s var(
 .entry-s { margin-top: 10px; max-width: 30ch; font-size: 15px; font-weight: 500; line-height: 1.4; padding-right: 48px; }
 .entry-go { position: absolute; right: 18px; bottom: 20px; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--ink); color: var(--fog); transition: transform .3s var(--ease); }
 .entry:hover .entry-go { transform: translateX(2px); }
-.entry-cobalt { background: var(--cobalt); color: var(--fog); }
-.entry-cobalt .entry-go { background: var(--fog); color: var(--ink); }
-.entry-violet { background: var(--violet); color: var(--fog); }
-.entry-violet .entry-go { background: var(--fog); color: var(--ink); }
-.entry-teal { background: var(--teal); color: var(--ink); }
-.entry-volt { background: var(--volt); color: var(--ink); }
+.entry-midnight { background: var(--midnight); color: var(--fog); }
+.entry-midnight .entry-go { background: var(--fog); color: var(--ink); }
+.entry-royal { background: var(--royal); color: var(--fog); }
+.entry-royal .entry-go { background: var(--fog); color: var(--ink); }
+.entry-azure { background: var(--azure); color: var(--fog); }
+.entry-azure .entry-go { background: var(--fog); color: var(--ink); }
+.entry-cyan { background: var(--cyan); color: var(--ink); }
 .entry-page { background: #0A0A0A; color: var(--fog); }
 .entry-page .entry-go { background: var(--fog); color: var(--ink); }
 .entry:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; border-radius: 16px; }
@@ -197,7 +198,7 @@ html.sz-theming .sz-theme svg { transition: opacity .3s ease, transform .4s var(
 /* the orange dot on the facts line */
 .st-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--orange); }
 
-/* ---------- 01 Currently (cobalt): two silver role cards ---------- */
+/* ---------- 01 Currently (midnight): two silver role cards ---------- */
 .roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(12px, 2vw, 20px); }
 .role { display: flex; flex-direction: column; min-height: 300px; padding: 10px 10px 24px; transition: transform .3s var(--ease); }
 .role:hover { transform: translateY(-3px); }
@@ -209,7 +210,7 @@ html.sz-theming .sz-theme svg { transition: opacity .3s ease, transform .4s var(
 .role:focus-visible { outline-color: var(--fog); }
 @media (prefers-reduced-motion: reduce) { .role, .role-go { transition: none; } .role:hover { transform: none; } }
 
-/* ---------- 02 About (violet): borderless photo card with even padding ---------- */
+/* ---------- 02 About (royal): borderless photo card with even padding ---------- */
 .sz-about-grid { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: clamp(32px, 6vw, 80px); align-items: start; }
 .sz-photo { padding: 10px; border-radius: 18px; background: #FFFFFF; }
 .sz-photo img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; }
@@ -234,7 +235,7 @@ html.sz-theming .sz-theme svg { transition: opacity .3s ease, transform .4s var(
 .sz-empty { padding: 24px; border-radius: 14px; background: var(--card); color: var(--muted); }
 @media (prefers-reduced-motion: reduce) { .sz-card, .sz-card-arrow, .sz-card-arrow svg { transition: none; } .sz-card:hover .sz-card-arrow svg { transform: none; } }
 
-/* ---------- 04 Notes (teal): quotes from the posts, on white cards ---------- */
+/* ---------- 04 Notes (azure): quotes from the posts, on white cards ---------- */
 .notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(12px, 2vw, 20px); }
 .note { display: flex; flex-direction: column; justify-content: space-between; gap: 32px; padding: clamp(22px, 3vw, 32px); border-radius: 16px; background: #FFFFFF; color: var(--ink); }
 .note blockquote p { font-size: clamp(22px, 2.4vw, 30px); font-weight: 600; line-height: 1.16; letter-spacing: -.028em; text-wrap: balance; }
@@ -243,7 +244,7 @@ html.sz-theming .sz-theme svg { transition: opacity .3s ease, transform .4s var(
 .note figcaption a { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
 .note figcaption a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
-/* ---------- 05 Get in touch (volt): black panel ---------- */
+/* ---------- 05 Get in touch (cyan): black panel ---------- */
 .contact-panel { display: grid; gap: 18px; justify-items: start; padding: clamp(24px, 4vw, 48px); }
 .contact-email { display: inline-block; font-size: clamp(34px, 6.4vw, 84px); font-weight: 700; line-height: 1; letter-spacing: -.05em; overflow-wrap: anywhere; }
 .contact-email:hover { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 8px; }
@@ -340,13 +341,13 @@ html.ed-expo .ed-expo-label { max-width: 120px; }
 .ed-annot line, .ed-annot path { stroke: rgba(255,255,255,.75); stroke-width: 1; fill: none; }
 .ed-annot circle { fill: #fff; }
 .ed-annot text { fill: var(--fog); font-family: var(--mono); font-size: 12px; }
-.ed-annot .a-pill rect { fill: var(--teal); stroke: none; }
-.ed-annot .a-pill text { fill: var(--ink); font-family: var(--sans); font-weight: 600; font-size: 13px; }
-.ed-annot .a-pill.t-volt rect, .ed-annot circle.t-volt { fill: var(--volt); }
-.ed-annot .a-pill.t-violet rect, .ed-annot circle.t-violet { fill: var(--violet); }
-.ed-annot .a-pill.t-violet text { fill: var(--fog); }
+.ed-annot .a-pill rect { fill: var(--azure); stroke: none; }
+.ed-annot .a-pill text { fill: var(--fog); font-family: var(--sans); font-weight: 600; font-size: 13px; }
+.ed-annot .a-pill.t-cyan rect, .ed-annot circle.t-cyan { fill: var(--cyan); }
+.ed-annot .a-pill.t-royal rect, .ed-annot circle.t-royal { fill: var(--royal); }
+.ed-annot .a-pill.t-cyan text, .ed-annot .a-pill.t-orange text { fill: var(--ink); }
 .ed-annot .a-pill.t-orange rect, .ed-annot circle.t-orange { fill: var(--orange); }
-.ed-annot circle.t-teal { fill: var(--teal); }
+.ed-annot circle.t-azure { fill: var(--azure); }
 .ed-annot .a-dim { fill: rgba(255,255,255,.55); font-size: 11px; }
 
 /* solid extrusion in Expo only: stacked hard copies in one darker tone of the field (never white, no blur) */
@@ -354,10 +355,10 @@ html.ed-expo .ed-expo-label { max-width: 120px; }
 @property --u { syntax: "<length>"; inherits: true; initial-value: 0px; }
 .ed-word-big, .ed-title { transition: --u .7s cubic-bezier(.2,.7,.2,1); }
 .ed-sec[data-field=page] .ed-title, .ed-sec[data-field=neutral] .ed-title { --ext: var(--line); }
-.ed-sec[data-field=cobalt] .ed-title { --ext: #0A0A0A; }
-.ed-sec[data-field=violet] .ed-title { --ext: #3D0F99; }
-.ed-sec[data-field=teal] .ed-title { --ext: #00594D; }
-.ed-sec[data-field=volt] .ed-title { --ext: #5E7300; }
+.ed-sec[data-field=midnight] .ed-title { --ext: #0A0A0A; }
+.ed-sec[data-field=royal] .ed-title { --ext: #0A1E66; }
+.ed-sec[data-field=azure] .ed-title { --ext: #06367A; }
+.ed-sec[data-field=cyan] .ed-title { --ext: #005F78; }
 html.ed-expo, html.ed-expo body { background: var(--ink); }
 html.ed-expo { scroll-behavior: auto; }
 html.ed-expo .ed-word-big { --u: 1.25px; }
