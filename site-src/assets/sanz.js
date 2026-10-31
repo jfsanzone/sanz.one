@@ -3,7 +3,7 @@
       soft highlights with it. Fine pointer: follows the cursor. Touch: drifts with scroll, plus device tilt
       where no permission prompt is needed (not iOS). Reduced motion: a fixed light.
    2. Copy email: any [data-copy] button copies its value (falls back to mailto:), announced in .sz-live.
-   3. Expo Mode (landing page only, needs #ribbon): ported from the Editions experiment. Pure CSS 3D, no
+   3. Expo Mode (every menu page, needs #ribbon): ported from the Editions experiment. Pure CSS 3D, no
       WebGL/canvas. Shift toggles, Escape exits, the bottom-left button works everywhere. */
 (function () {
   'use strict';
