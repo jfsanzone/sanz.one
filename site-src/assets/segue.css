@@ -1,0 +1,100 @@
+/*
+  Segue: Framed Drift (frame: mode: reel, angle: 180, depth: 55, perspective: 140, gap: 6, radius: 24, tilt: 12, dim: 0, drift: 0, push: 0.45, slide: 0.85, slideEase: power2.inOut)
+
+  Drop this in and any view transition on the page uses it:
+  - same page:   document.startViewTransition(() => updateTheDOM())
+  - across pages: the @view-transition rule below opts same-origin
+    navigations in; it needs to be on both pages.
+  Reduced motion falls back to the default crossfade.
+*/
+
+@view-transition {
+  navigation: auto;
+}
+
+:root {
+  --segue-lead-color: #0A0A0A;
+  --segue-duration: 1.75s;
+}
+
+@keyframes segue-frame-out {
+  0% {
+    transform: perspective(140vmax) translate(calc(0 * (100vw / 1 + 6vmin)), calc(0 * (100vw / 1 + 6vmin))) translateZ(0vmax) rotate3d(0, -1, 0, 0deg);
+    clip-path: inset(0 round 0px);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  25.714% {
+    transform: perspective(140vmax) translate(calc(0 * (100vw / 1 + 6vmin)), calc(0 * (100vw / 1 + 6vmin))) translateZ(-55vmax) rotate3d(0, -1, 0, 12deg);
+    clip-path: inset(0 round 24px);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  74.286% {
+    transform: perspective(140vmax) translate(calc(-1 * (100vw / 1 + 6vmin)), calc(0 * (100vw / 1 + 6vmin))) translateZ(-55vmax) rotate3d(0, -1, 0, 12deg);
+    clip-path: inset(0 round 24px);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  100% {
+    transform: perspective(140vmax) translate(calc(-1 * (100vw / 1 + 6vmin)), calc(0 * (100vw / 1 + 6vmin))) translateZ(0vmax) rotate3d(0, -1, 0, 0deg);
+    clip-path: inset(0 round 0px);
+  }
+}
+@keyframes segue-frame-in {
+  0% {
+    transform: perspective(140vmax) translate(calc(1 * (100vw / 1 + 6vmin)), calc(0 * (100vw / 1 + 6vmin))) translateZ(0vmax) rotate3d(0, -1, 0, 0deg);
+    clip-path: inset(0 round 0px);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  25.714% {
+    transform: perspective(140vmax) translate(calc(1 * (100vw / 1 + 6vmin)), calc(0 * (100vw / 1 + 6vmin))) translateZ(-55vmax) rotate3d(0, -1, 0, 12deg);
+    clip-path: inset(0 round 24px);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  74.286% {
+    transform: perspective(140vmax) translate(calc(0 * (100vw / 1 + 6vmin)), calc(0 * (100vw / 1 + 6vmin))) translateZ(-55vmax) rotate3d(0, -1, 0, 12deg);
+    clip-path: inset(0 round 24px);
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  100% {
+    transform: perspective(140vmax) translate(calc(0 * (100vw / 1 + 6vmin)), calc(0 * (100vw / 1 + 6vmin))) translateZ(0vmax) rotate3d(0, -1, 0, 0deg);
+    clip-path: inset(0 round 0px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(root) {
+    animation: none;
+    background: var(--segue-lead-color);
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    mix-blend-mode: normal;
+    animation-duration: var(--segue-duration);
+    animation-fill-mode: both;
+  }
+  ::view-transition-old(root) {
+    animation-name: segue-frame-out;
+  }
+  ::view-transition-new(root) {
+    animation-name: segue-frame-in;
+  }
+}
+
+/*
+  Backwards: the same move, the other way, for going back. It runs when the
+  view transition carries the type "backwards":
+  - same page:   document.startViewTransition({ update, types: ['backwards'] })
+  - across pages: in a 'pagereveal' listener, when the navigation went back,
+    event.viewTransition.types.add('backwards')
+*/
+
+@media (prefers-reduced-motion: no-preference) {
+  :root:active-view-transition-type(backwards)::view-transition-old(root) {
+    animation-name: segue-frame-in;
+    animation-direction: reverse;
+    z-index: 1;
+  }
+  :root:active-view-transition-type(backwards)::view-transition-new(root) {
+    animation-name: segue-frame-out;
+    animation-direction: reverse;
+  }
+}

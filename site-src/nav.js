@@ -1,6 +1,5 @@
 /* sanz.one segmented nav controller (inlined, not served as a file).
-   Used by scripts/build.mjs (about/journal/posts: script right after the nav) and pasted into index.html
-   (landing shell + bundled template). Clicking any same-origin link to /, /about/ or /journal/... starts
+   Inlined by scripts/build.mjs right after the nav on every page. Clicking any same-origin link to a menu page (/, /work/, /about/, /notes/, /journal/..., /contact/) starts
    the highlight sliding right away and stores {from, to, click time} ("sz-seg-from"). When the page is swapped out
    (pageswap) it adds how far the slide got (plus one frame: the old page is captured on its next frame); the next
    page resumes the slide from there on its first frame, so it runs once and does not jump (it only pauses while
@@ -8,8 +7,8 @@
    dark label copy, counter-transformed), so it runs on the compositor and keeps moving while the page is busy.
    The easing is sampled into keyframes because the dark copy's counter-scale is not linear. It is an ease-out
    (cubic-bezier(.2,.8,.2,1), 400ms): the highlight visibly moves on the very next frame after the click.
-   With cross-document View Transitions the nav has a fixed view-transition-name and no animation, so it
-   stays put; the page itself is not snapshotted. The pages prerender each other (speculation rules), so a
+   Cross-document page switches play the Framed Drift transition (site-src/assets/segue.css); the nav moves
+   with the page and its slide resumes on the new page. The pages prerender each other (speculation rules), so a
    prerendered page waits for activation (prerenderingchange) before reading the stored slide, and then fades
    its content in (opacity, 200ms) since its own load fade-in already ran while it was hidden.
    The landing shell hands the slide on to the bundled template through window.__szNav (window survives the
@@ -17,22 +16,34 @@
    (e.g. a quick second navigation) rejects its promises; those are caught to keep the console clean. Chrome
    sometimes skips a transition before the new page can see it (pagereveal has no viewTransition), so those
    rejections are silenced by name and message ("Transition was ...") in an unhandledrejection listener.
+   Geometry: the segment widths come from the --ln / --wn custom properties on .sz-seg (site.css; they shrink on
+   phones), and paths are read relative to the home link, so the nav also works under a base path. /contact/ has no
+   segment (it is the header's Get in touch pill): there the highlight fades out instead of sliding.
    Keep this file free of // comments and backslashes: it is inlined as a single line (and JSON-escaped in the landing template). */
 (function (n) {
   if (!n) return;
   var W = window, K = 'sz-seg-from', D = 400, c = n.getAttribute('data-active');
   var th = n.querySelector('.sz-seg-thumb');
   var els = [].slice.call(th.querySelectorAll('.sz-seg-p')).concat([th.querySelector('.sz-seg-win'), th.querySelector('.sz-seg-ink')]);
-  var L = 38, M = 81, G = { home: [3, 41], about: [41, 122], journal: [122, 203] };
+  var L = 38, M = 81, G = {};
+  var keys = [].slice.call(n.querySelectorAll('.sz-seg-item')).map(function (a) { return a.getAttribute('data-key'); });
+  var hm = n.querySelector('.sz-seg-home'), base = hm ? hm.pathname : '/';
+  var geo = function () {
+    var cs = W.getComputedStyle(n), l = parseFloat(cs.getPropertyValue('--ln')), m = parseFloat(cs.getPropertyValue('--wn'));
+    if (l > 0 && m > 0) { L = l; M = m; }
+    G = {};
+    for (var i = 0; i < keys.length; i++) G[keys[i]] = i ? [3 + L + (i - 1) * M, 3 + L + i * M] : [3, 3 + L];
+  };
+  geo();
   var rm = function () { return W.matchMedia('(prefers-reduced-motion: reduce)').matches; };
   var now = function () { return performance.timeOrigin + performance.now(); };
   var set = function (k) { n.setAttribute('data-active', k); };
   var keyOf = function (a) {
     if (!a || a.origin !== location.origin) return null;
     var p = a.pathname;
-    if (p === '/' || p === '/index.html') return 'home';
-    if (p === '/about' || p === '/about/') return 'about';
-    return p === '/journal' || p.slice(0, 9) === '/journal/' ? 'journal' : null;
+    if (p.indexOf(base) !== 0) return null;
+    p = p.slice(base.length).replace(/index[.]html$/, '').split('/')[0] || 'home';
+    return G[p] || p === 'contact' ? p : null;
   };
   var bz = function (u, p, q) { var v = 1 - u; return 3 * v * v * u * p + 3 * v * u * u * q + u * u * u; };
   var ez = function (t) {
@@ -83,7 +94,7 @@
       try { s = JSON.parse(sessionStorage.getItem(K)); sessionStorage.removeItem(K); } catch (e) { s = null; }
     }
     var e = s ? (s.e != null ? s.e : now() - s.t0) : D;
-    if (s && s.t === c && s.f !== c && G[s.f] && !rm() && e < D && now() - s.t0 < 10000) {
+    if (s && s.t === c && s.f !== c && G[s.f] && G[c] && !rm() && e < D && now() - s.t0 < 10000) {
       slide(G[s.f], G[c], st, e);
       W.__szNav = { s: s, a: anims[0] };
     }
@@ -97,9 +108,10 @@
     if (!k || k === c || !n.isConnected) return;
     try { sessionStorage.setItem(K, JSON.stringify({ f: c, t: k, t0: now() })); } catch (err) {}
     if (rm()) return;
+    if (!run) geo();
     var A = at();
     set(k);
-    slide(A, G[k], null, 0);
+    if (G[k] && A) slide(A, G[k], null, 0);
   });
   W.addEventListener('pageshow', function (e) { if (e.persisted) { stop(); set(c); } });
   var quiet = function (e) { var v = e.viewTransition, f = function () {}; if (v) { v.ready.catch(f); v.finished.catch(f); if (v.updateCallbackDone) v.updateCallbackDone.catch(f); } };

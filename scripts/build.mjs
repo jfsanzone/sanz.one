@@ -1,8 +1,9 @@
 // Build the deployable site into _site/:
-//   - root landing files are copied byte-for-byte (index.html, favicon.svg, CNAME, .nojekyll)
+//   - root files are copied byte-for-byte (favicon.svg, CNAME, .nojekyll); site-src/assets/ goes to /assets/
+//   - the menu pages are generated from the templates below, one full-bleed band each, in menu order:
+//     / (home, neutral), /work/ (midnight), /about/ (royal), /notes/ (azure), /journal/ (neutral), /contact/ (cyan)
 //   - media/ is copied as-is (Pages CMS uploads land in media/journal)
 //   - content/posts/*.md is rendered to /journal/, /journal/<slug>/ and /journal/feed.xml
-//   - /about/ is generated from the template below
 //   - /blog/... (old URLs) are redirect pages to /journal/...; /blog/feed.xml is a copy of the journal feed
 //   - shared CSS, fonts and logo are copied from site-src/assets to /assets/
 // Posts with `draft: true` are skipped entirely.
@@ -25,7 +26,7 @@ const SITE = {
   lang: 'en',
 };
 
-const ROOT_FILES = ['index.html', 'favicon.svg', 'CNAME', '.nojekyll'];
+const ROOT_FILES = ['favicon.svg', 'CNAME', '.nojekyll'];
 
 // ---------- helpers ----------
 const esc = (s = '') => String(s)
@@ -99,38 +100,64 @@ function loadPosts() {
 }
 
 // ---------- templates ----------
-const FOOTER = `<footer class="sz-footer">
-    <span class="sz-roles"><span class="sz-role">VP, Design/Creative, <a class="sz-u" href="https://www.clickfunnels.com" target="_blank" rel="noopener noreferrer">ClickFunnels</a></span><span class="sz-sep" aria-hidden="true">  ·  </span><span class="sz-role">Co-Founder &amp; Head of Design, <a class="sz-u" href="https://www.overskill.com" target="_blank" rel="noopener noreferrer">Overskill</a></span></span>
-  </footer>`;
+// One system for every page (site-src/assets/site.css):
+//   - structure: a narrow editorial column, Inter + mono, pure neutrals, whitespace between sections;
+//   - surfaces: satin-silver foil and matte-black panels lit by the eased pointer / scroll light (--lx/--ly);
+//   - colour: full-bleed section bands in the supplemental palette (midnight, royal, azure, cyan) with hard edges;
+//   - play: Expo Mode on every menu page (site-src/assets/sanz.js);
+//   - motion: Framed Drift between pages (site-src/assets/segue.css + site-src/segue.js).
+const SOCIAL = {
+  email: 'jason@sanz.one',
+  linkedin: 'https://linkedin.com/in/jasonsanzone',
+  instagram: 'https://instagram.com/jasonsanzone',
+  x: 'https://x.com/jasonsanzone',
+};
+const ROLES = [
+  { company: 'ClickFunnels', title: 'VP, Design/Creative', href: 'https://www.clickfunnels.com', host: 'clickfunnels.com', n: '01' },
+  { company: 'Overskill', title: 'Co\u2011Founder & Head of Design', href: 'https://www.overskill.com', host: 'overskill.com', n: '02' },
+];
+const SUBLINE = 'Designing brands, products, and interfaces.';
+const BIO_LEDE = "I'm a designer based just north of Atlanta, Georgia. I've spent my career building brands, products, and interfaces, including work for some of the world's most recognizable brands.";
+const BIO_REST = `Today I lead design and creative at <a class="sz-u" href="https://www.clickfunnels.com" target="_blank" rel="noopener noreferrer">ClickFunnels</a> and co-founded <a class="sz-u" href="https://www.overskill.com" target="_blank" rel="noopener noreferrer">Overskill</a>, where I head up design. Away from the screen, you'll find me outdoors, tinkering with new tech and AI, or hunting down gear that makes everyday life a little easier.`;
+const EXT = 'target="_blank" rel="noopener noreferrer"';
 
 const ARROW_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+const OUT_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 17 17 7M8 7h9v9"/></svg>';
 const BACK_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>';
 
-// Top-left segmented nav on journal + about pages: [ logo | About | Journal ]. The landing page (index.html)
-// carries an identical nav (in its shell and its bundled template). Behaviour lives in site-src/nav.js
-// (inlined right after the nav): the page being left is remembered and the thumb slides from it, and the
-// nav has a fixed view-transition-name so it stays put across pages while only the content crossfades.
-const NAV_ITEMS = [['about', '/about/', 'About'], ['journal', '/journal/', 'Journal']];
-// The logo mark is inlined (fill -> currentColor): orange in the nav, #0A0A0A in the highlight's dark copy.
+// Menu order, left to right. It drives the segmented nav, the Framed Drift direction (site-src/segue.js: a move to
+// a page further left plays backwards) and the footer. Contact is the orange "Get in touch" pill at the far right
+// of the header rather than a nav segment.
+const PAGES = [
+  { key: 'home', href: '/', label: 'Home', n: '00' },
+  { key: 'work', href: '/work/', label: 'Work', n: '01', title: 'Currently' },
+  { key: 'about', href: '/about/', label: 'About', n: '02', title: 'About' },
+  { key: 'notes', href: '/notes/', label: 'Notes', n: '03', title: 'Notes' },
+  { key: 'journal', href: '/journal/', label: 'Journal', n: '04', title: 'Journal' },
+  { key: 'contact', href: '/contact/', label: 'Get in touch', n: '05', title: 'Get in touch' },
+];
+const PAGE = Object.fromEntries(PAGES.map((p) => [p.key, p]));
+// Top-left segmented nav [ logo | Work | About | Notes | Journal ]. Behaviour lives in site-src/nav.js (inlined right
+// after the nav): the page being left is remembered and the thumb slides from it, and the whole page (nav included)
+// moves with the Framed Drift page transition (site-src/assets/segue.css).
+const NAV_ITEMS = PAGES.filter((p) => p.key !== 'home' && p.key !== 'contact').map((p) => [p.key, p.href, p.label]);
 const LOGO_MARK = fs.readFileSync(path.join(ROOT, 'site-src/assets/logo.svg'), 'utf8').trim()
   .replace(/^<svg[^>]*>/, '<svg width="16.1" height="21" viewBox="0 0 105 137" fill="none" aria-hidden="true" focusable="false">')
   .replaceAll('fill="#FA431E"', 'fill="currentColor"');
-const NAV_JS = fs.readFileSync(path.join(ROOT, 'site-src/nav.js'), 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//, '').split('\n').map((l) => l.trim()).join('').trim();
-// Light / dark mode: site-src/theme.js is inlined at the top of every <head> (applies the saved or system mode before first
-// paint); the light/dark toggle sits top right, next to the nav in the persistent header.
-const THEME_JS = fs.readFileSync(path.join(ROOT, 'site-src/theme.js'), 'utf8')
-  .replace(/\/\*[\s\S]*?\*\//, '').split('\n').map((l) => l.trim()).join('').trim();
+const inline = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/\/\*[\s\S]*?\*\//, '').split('\n').map((l) => l.trim()).join('').trim();
+const NAV_JS = inline('site-src/nav.js');
+// Light / dark mode: site-src/theme.js is inlined at the top of every <head> (applies the saved or system mode
+// before first paint); the toggle sits top right in the floating header.
+const THEME_JS = inline('site-src/theme.js');
+// Framed Drift direction: site-src/segue.js is inlined as a blocking <head> script (tags a back traverse 'backwards').
+const SEGUE_JS = inline('site-src/segue.js');
 const SUN_ICON = '<svg class="sz-i-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
 const MOON_ICON = '<svg class="sz-i-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
-// abs: absolutely positioned top right (landing page); on the other pages it is the last item of the header row.
-function themeButton(abs = false) {
-  return `<button type="button" class="sz-theme${abs ? ' sz-theme-abs' : ''}" aria-label="Switch to light mode">${SUN_ICON}${MOON_ICON}<span class="sz-theme-live" role="status" aria-live="polite"></span></button><script>window.__szTheme && window.__szTheme.sync();</script>`;
-}
+const themeButton = () => `<button type="button" class="sz-theme" aria-label="Switch to light mode">${SUN_ICON}${MOON_ICON}<span class="sz-theme-live" role="status" aria-live="polite"></span></button><script>window.__szTheme && window.__szTheme.sync();</script>`;
 
 function nav(current) {
   const active = current === 'post' ? 'journal' : current;
-  const home = `<a class="sz-seg-item sz-seg-home" data-key="home" href="/" aria-label="Home">${LOGO_MARK}</a>`;
+  const home = `<a class="sz-seg-item sz-seg-home" data-key="home" href="/" aria-label="Home"${current === 'home' ? ' aria-current="page"' : ''}>${LOGO_MARK}</a>`;
   const items = NAV_ITEMS.map(([key, href, label]) => {
     const aria = current === key ? ' aria-current="page"' : key === active ? ' aria-current="true"' : '';
     return `<a class="sz-seg-item" data-key="${key}" href="${href}"${aria}>${label}</a>`;
@@ -139,91 +166,145 @@ function nav(current) {
   return `<nav class="sz-seg" data-active="${active}" aria-label="Site"><span class="sz-seg-thumb" aria-hidden="true"><span class="sz-seg-p"></span><span class="sz-seg-p"></span><span class="sz-seg-p"></span><span class="sz-seg-win">${ink}</span></span>${home}${items}</nav><script>${NAV_JS}(document.currentScript.previousElementSibling);</script>`;
 }
 
-// Speculation rules: every page prerenders the other nav destinations as soon as it loads (Chrome/Edge), so a
-// nav click activates an already-rendered page (landing included, bundle already booted) instead of waiting
-// for the network, parsing and booting. Browsers without speculation rules ignore this. The landing page
-// carries the same rules (without "/") in its bundled template.
-// rel=expect: the page does not paint until it is fully parsed (up to #sz-end). Without it, a fast page could
-// paint its first frame with only the nav parsed, which made Chrome skip the cross-document view transition
-// (old page "aborted because of invalid state") and then hold the content back for ~0.5s.
-const NAV_URLS = ['/', '/about/', '/journal/'];
-function specRules(current) {
-  const self = { about: '/about/', journal: '/journal/' }[current];
-  const urls = NAV_URLS.filter((u) => u !== self);
+// Speculation rules: every page prerenders the other nav destinations (Chrome/Edge), so a nav click activates an
+// already-rendered page. rel=expect (in the head): the page does not paint until it is parsed up to #sz-end, so a
+// fast page never paints a half page and Chrome does not skip the cross-document view transition.
+const NAV_URLS = PAGES.map((p) => p.href);
+function specRules(current, url) {
+  const up = '../'.repeat(url.split('/').filter(Boolean).length) || './';
+  const urls = NAV_URLS.filter((u) => u !== url).map((u) => up + u.slice(1));
   return `<script type="speculationrules">${JSON.stringify({ prerender: [{ urls, eagerness: 'immediate' }], prefetch: [{ urls, eagerness: 'immediate' }] })}</script>\n`;
 }
 
-function layout({ title, description, url, ogType = 'website', image = '', card: cardType = '', current = '', extraHead = '', body }) {
+const copyBtn = (cls = 'sz-btn') => `<button class="${cls}" type="button" data-copy="${SOCIAL.email}">Copy email</button>`;
+const socialBtns = (cls) => `<a class="${cls}" href="${SOCIAL.linkedin}" ${EXT}>LinkedIn${OUT_ICON}</a><a class="${cls}" href="${SOCIAL.instagram}" ${EXT}>Instagram${OUT_ICON}</a><a class="${cls}" href="${SOCIAL.x}" ${EXT}>X${OUT_ICON}</a>`;
+
+// The facts, folded into one compact line under the hero subline (the old spec sheet, minus the name, which is the h1, and the SKU).
+const FACTS = `<p class="sz-facts" data-annot="Jason Sanzone"><span class="st-dot" aria-hidden="true"></span><span>${esc(ROLES[0].title)}, ${esc(ROLES[0].company)}</span><span class="sep" aria-hidden="true">·</span><span>${esc(ROLES[1].title)}, ${esc(ROLES[1].company)}</span></p>`;
+const FOOTER = `<footer class="sz-foot">
+  <div class="sz-wrap">
+    <div class="sz-foot-grid">
+      <div class="sz-foot-id">
+        <a class="sz-foot-mark" href="/" aria-label="Home">${LOGO_MARK}</a>
+        <p><strong>${esc(SITE.name)}</strong><br>${esc(ROLES[0].title)}, ${esc(ROLES[0].company)}<br>${esc(ROLES[1].title)}, ${esc(ROLES[1].company)}</p>
+      </div>
+      <nav class="sz-foot-col" aria-label="Footer"><span class="sz-label">Site</span>${PAGES.map((p) => `<a href="${p.href}">${esc(p.label)}</a>`).join('')}<a href="/journal/feed.xml">RSS</a></nav>
+      <nav class="sz-foot-col" aria-label="Elsewhere"><span class="sz-label">Elsewhere</span><a href="${SOCIAL.linkedin}" ${EXT}>LinkedIn</a><a href="${SOCIAL.instagram}" ${EXT}>Instagram</a><a href="${SOCIAL.x}" ${EXT}>X</a></nav>
+    </div>
+    <div class="sz-foot-base"><span class="mono">SZ-ONE-JS-26</span><span>&copy; ${new Date().getFullYear()} ${esc(SITE.name)}</span></div>
+  </div>
+</footer>`;
+
+const EXPO_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M12 2.8 20 7.4v9.2L12 21.2 4 16.6V7.4z"/><path d="M4 7.4 12 12l8-4.6M12 12v9.2"/></svg>';
+const EXPO_BTN = `<button class="ed-expo-btn" type="button" aria-pressed="false" aria-label="Enter Expo Mode" title="Expo Mode (Shift)">
+  ${EXPO_ICON}
+  <span class="ed-expo-label">Expo Mode</span>
+</button>
+`;
+
+// expo: the body is one band (.ed-sec) wrapped in the ribbon Expo Mode folds onto its floor (site-src/assets/sanz.js).
+function layout({ title, description, url, ogType = 'website', image = '', card: cardType = '', current = '', extraHead = '', body, expo = false }) {
   const card = cardType || (image ? 'summary_large_image' : 'summary');
   return `<!DOCTYPE html>
 <html lang="${SITE.lang}">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script>${THEME_JS}</script>
+<script>${SEGUE_JS}</script>
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${esc(abs(url))}">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="alternate" type="application/rss+xml" title="${esc(SITE.name)} · ${esc(SITE.journalTitle)}" href="/journal/feed.xml">
-<link rel="preload" href="/assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/segue.css">
+<script defer src="/assets/sanz.js"></script>
 <link rel="expect" href="#sz-end" blocking="render">
-${specRules(current)}<meta name="theme-color" content="#121211">
+${specRules(current, url)}<meta name="theme-color" content="#0A0A0A">
 <meta property="og:site_name" content="${esc(SITE.name)}">
 <meta property="og:type" content="${ogType}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:url" content="${esc(abs(url))}">
 ${image ? `<meta property="og:image" content="${esc(abs(image))}">\n` : ''}<meta name="twitter:card" content="${card}">
+<meta name="twitter:site" content="@jasonsanzone">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(description)}">
 ${image ? `<meta name="twitter:image" content="${esc(abs(image))}">\n` : ''}${extraHead}</head>
-<body>
-<main class="sz-main">
-  <header class="sz-top">
-    ${nav(current)}
+<body class="sz-on-${current || 'page'}">
+<a class="sz-skip" href="#content">Skip to content</a>
+<header class="sz-top">
+  ${nav(current)}
+  <div class="sz-top-r">
     ${themeButton()}
-  </header>
-  ${body}
-  ${FOOTER}
+    <a class="sz-btn sz-btn-pri sz-top-cta" href="/contact/"${current === 'contact' ? ' aria-current="page"' : ''}>Get in touch</a>
+  </div>
+</header>
+<main class="sz-main" id="content">
+${expo ? `<div id="ed-host">\n<div class="ed-ribbon" id="ribbon">\n${body}\n</div>\n</div>` : body}
 </main>
+${FOOTER}
+${expo ? EXPO_BTN : ''}<p class="sz-live" role="status" aria-live="polite"></p>
 <i id="sz-end" hidden></i>
 </body>
 </html>
 `;
 }
 
-// Journal index: each post is a full-width rounded card (one link): date + reading time, title, a 2-line
-// description, an optional cover thumbnail on the right (stacked on top on small screens) and an arrow.
-function postCard(p) {
+// Post cards (journal index): date + reading time, title, a 2-line description, optional cover, arrow.
+function postCard(p, h = 'h2') {
   const thumb = p.cover ? `<span class="sz-card-thumb"><img src="${esc(p.cover)}" alt="" loading="lazy" decoding="async"></span>` : '';
   return `<li><a class="sz-card${p.cover ? ' sz-card-has-thumb' : ''}" href="${p.url}">
-        <div class="sz-card-body">
-          <div class="sz-card-meta"><time datetime="${isoDate(p.date)}">${shortDate(p.date)}</time><span aria-hidden="true">·</span><span>${p.minutes} min read</span></div>
-          <h2 class="sz-card-title">${esc(p.title)}</h2>
-          ${p.description ? `<p class="sz-card-desc">${esc(p.description)}</p>` : ''}
-        </div>
-        ${thumb}<span class="sz-card-arrow" aria-hidden="true">${ARROW_ICON}<span class="sz-card-arrow-hot">${ARROW_ICON}</span></span>
+        <span class="sz-card-body">
+          <span class="sz-card-meta"><time datetime="${isoDate(p.date)}">${shortDate(p.date)}</time><span aria-hidden="true">·</span><span>${p.minutes} min read</span></span>
+          <${h} class="sz-card-title">${esc(p.title)}</${h}>
+          ${p.description ? `<span class="sz-card-desc">${esc(p.description)}</span>` : ''}
+        </span>
+        ${thumb}<span class="sz-card-arrow" aria-hidden="true">${ARROW_ICON}</span>
       </a></li>`;
 }
+const postList = (posts, h) => posts.length
+  ? `<ol class="sz-posts" reversed>
+      ${posts.map((p) => postCard(p, h)).join('\n      ')}
+    </ol>`
+  : `<p class="sz-empty">First post coming soon.</p>`;
+
+// One band per menu page, all built the same way: a full-bleed colour field (hard edges, at least a screen tall
+// so every page transition moves a whole colour), the numbered section head with the page title as h1, the page's
+// content, and a link on to the next page in menu order. The bands are .ed-sec so Expo Mode can fold them.
+const EXT_FIELD = { home: 'neutral', work: 'midnight', about: 'royal', notes: 'azure', journal: 'page', contact: 'cyan' };
+const pageHead = (num, title, sub = '', extra = '') => `<header class="ed-head">
+      <span class="ed-num mono">${num}</span>
+      <h1 class="ed-title">${title}</h1>
+      ${sub ? `<p class="ed-sub">${sub}</p>` : ''}${extra}
+    </header>`;
+function nextLink(key) {
+  const i = PAGES.findIndex((p) => p.key === key), nx = PAGES[i + 1];
+  if (!nx) return '';
+  return `<a class="sz-next" href="${nx.href}"><span class="mono">${nx.n}</span><span class="sz-next-t">${esc(nx.title || nx.label)}</span>${ARROW_ICON}</a>`;
+}
+const band = (key, inner, cls = '') => {
+  const f = EXT_FIELD[key];
+  return `<section class="ed-sec sz-page${f === 'page' ? '' : ` band band-${f}`}${cls}" id="${key}" data-field="${f}">
+  <div class="sz-wrap">
+    ${inner}
+    ${key === 'home' ? '' : nextLink(key)}
+  </div>
+</section>`;
+};
 
 function indexPage(posts) {
-  const list = posts.length
-    ? `<ol class="sz-posts" reversed>
-      ${posts.map(postCard).join('\n      ')}
-    </ol>`
-    : `<p class="sz-empty">First post coming soon.</p>`;
   return layout({
     title: `${SITE.journalTitle} · ${SITE.name}`,
     description: SITE.journalDescription,
     url: '/journal/',
     current: 'journal',
-    body: `<section class="sz-content">
-    <h1 class="sz-h1">${esc(SITE.journalTitle)}</h1>
-    <p class="sz-sub">${esc(SITE.journalSubline)}</p>
-    ${list}
-  </section>`,
+    expo: true,
+    body: band('journal', `${pageHead(PAGE.journal.n, esc(SITE.journalTitle), esc(SITE.journalSubline), `
+      <div class="sz-btns"><a class="sz-btn sz-btn-line" href="/journal/feed.xml">RSS feed</a></div>`)}
+    <div data-annot="Latest from the journal">${postList(posts)}</div>`),
   });
 }
 
@@ -238,20 +319,23 @@ function postPage(p) {
     current: 'post',
     image: p.cover,
     extraHead: `<meta property="article:published_time" content="${p.date.toISOString()}">\n<meta property="article:author" content="${esc(SITE.name)}">\n`,
-    body: `<section class="sz-content">
+    body: `<section class="sz-sec sz-post">
+  <div class="sz-wrap sz-col">
     ${back}
     <article class="sz-article">
       <header>
+        <p class="sz-card-meta"><time datetime="${isoDate(p.date)}">${fmtDate(p.date)}</time><span aria-hidden="true">·</span><span>${p.minutes} min read</span></p>
         <h1 class="sz-article-title">${esc(p.title)}</h1>
-        <p class="sz-article-meta"><time datetime="${isoDate(p.date)}">${fmtDate(p.date)}</time></p>
+        ${p.description ? `<p class="sz-article-desc">${esc(p.description)}</p>` : ''}
       </header>
       ${p.cover ? `<img class="sz-cover" src="${esc(p.cover)}" alt="">` : ''}
       <div class="sz-prose">
 ${p.html}
       </div>
-      <footer class="sz-article-foot">${back}</footer>
+      <footer class="sz-article-foot">${back}<a class="sz-btn sz-btn-pri" href="/contact/">Get in touch</a></footer>
     </article>
-  </section>`,
+  </div>
+</section>`,
   });
 }
 
@@ -281,44 +365,128 @@ ${items}
 `;
 }
 
-
 // ---------- About ----------
-const SOCIAL = {
-  email: 'jason@sanz.one',
-  linkedin: 'https://linkedin.com/in/jasonsanzone',
-  instagram: 'https://instagram.com/jasonsanzone',
-  x: 'https://x.com/jasonsanzone',
-};
-const spin = '<animateTransform attributeName="gradientTransform" type="rotate" values="0 .5 .5;360 .5 .5" dur="7s" repeatCount="indefinite"></animateTransform>';
-// Icons copied from the landing page (index.html); hover swaps the fill/stroke to the same rotating brand gradient ("Prism").
-const TILES = `<nav class="sz-social" aria-label="Social">
-        <a class="sz-tile sz-tile-li" href="${SOCIAL.linkedin}" target="_blank" rel="noopener" aria-label="LinkedIn" title="LinkedIn"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="gli" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="#6FB6FF"></stop><stop offset="0.50" stop-color="#0A66C2"></stop><stop offset="1.00" stop-color="#3D9BFF"></stop>${spin}</linearGradient></defs><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"></path></svg></a>
-        <a class="sz-tile sz-tile-ig" href="${SOCIAL.instagram}" target="_blank" rel="noopener" aria-label="Instagram" title="Instagram"><svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke-width="1.9" aria-hidden="true"><defs><linearGradient id="gig" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="#FEDA75"></stop><stop offset="0.25" stop-color="#FA7E1E"></stop><stop offset="0.50" stop-color="#D62976"></stop><stop offset="0.75" stop-color="#962FBF"></stop><stop offset="1.00" stop-color="#4F5BD5"></stop>${spin}</linearGradient></defs><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4.2"></circle><circle class="sz-dot" cx="17.4" cy="6.6" r=".6"></circle></svg></a>
-        <a class="sz-tile sz-tile-x" href="${SOCIAL.x}" target="_blank" rel="noopener" aria-label="X" title="X"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="gx" x1="0" y1="0" x2="1" y2="1"><stop offset="0.00" stop-color="#FFFFFF"></stop><stop offset="0.50" stop-color="#7A7A7A"></stop><stop offset="1.00" stop-color="#FFFFFF"></stop>${spin}</linearGradient></defs><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z"></path></svg></a>
-      </nav>`;
+const PHOTO = `<picture>
+          <source srcset="/media/about/jason.webp" type="image/webp">
+          <img src="/media/about/jason.jpg" alt="Jason Sanzone" width="480" height="480" decoding="async">
+        </picture>`;
 
+const PAGE_DESC = 'Jason Sanzone is a designer based just north of Atlanta, Georgia. He leads design and creative at ClickFunnels and co-founded Overskill, where he heads up design.';
+
+// /about/ (royal): the landing About and the old About page merged; the roles live on /work/, the email on /contact/.
 function aboutPage() {
-  const photo = '/media/about/jason.jpg';
   return layout({
     title: `About · ${SITE.name}`,
-    description: 'Jason Sanzone is a designer based just north of Atlanta, Georgia. He leads design and creative at ClickFunnels and co-founded Overskill, where he heads up design.',
+    description: PAGE_DESC,
     url: '/about/',
     ogType: 'profile',
-    image: photo,
+    image: '/media/about/jason.jpg',
     card: 'summary',
     current: 'about',
-    body: `<section class="sz-content sz-about">
-    <picture>
-      <source srcset="/media/about/jason.webp" type="image/webp">
-      <img class="sz-photo" src="${photo}" alt="Jason Sanzone" width="144" height="144">
-    </picture>
-    <h1 class="sz-h1">About</h1>
-    <p class="sz-bio">I'm a designer based just north of Atlanta, Georgia. I've spent my career building brands, products, and interfaces, including work for some of the world's most recognizable brands. Today I lead design and creative at <a class="sz-u" href="https://www.clickfunnels.com" target="_blank" rel="noopener noreferrer">ClickFunnels</a> and co-founded <a class="sz-u" href="https://www.overskill.com" target="_blank" rel="noopener noreferrer">Overskill</a>, where I head up design. Away from the screen, you'll find me outdoors, tinkering with new tech and AI, or hunting down gear that makes everyday life a little easier.</p>
-    <div class="sz-contact">
-      <a class="sz-email" href="mailto:${SOCIAL.email}">${SOCIAL.email}</a>
-      ${TILES}
-    </div>
-  </section>`,
+    expo: true,
+    body: band('about', `<div class="sz-about-grid">
+      <div class="sz-photo" data-annot="Jason Sanzone">${PHOTO}</div>
+      <div>
+        ${pageHead(PAGE.about.n, 'About')}
+        <p class="sz-lede">${esc(BIO_LEDE)}</p>
+        <p class="sz-body">${BIO_REST}</p>
+      </div>
+    </div>`),
+  });
+}
+
+// /work/ (midnight): Currently, the two roles on satin-silver cards with matte-black labels.
+function workPage() {
+  return layout({
+    title: `Currently · ${SITE.name}`,
+    description: PAGE_DESC,
+    url: '/work/',
+    current: 'work',
+    expo: true,
+    body: band('work', `${pageHead(PAGE.work.n, 'Currently', 'Two roles, one practice.')}
+    <div class="roles" data-annot="Two roles, one practice">
+      ${ROLES.map((r) => `<a class="satin role" href="${r.href}" ${EXT}>
+        <span class="label role-label"><span class="mono">Role ${r.n}</span><span class="mono">${esc(r.host)}</span></span>
+        <span class="role-co">${esc(r.company)}</span>
+        <span class="role-t">${esc(r.title)}</span>
+        <span class="role-go" aria-hidden="true">${OUT_ICON}</span>
+      </a>`).join('\n      ')}
+    </div>`),
+  });
+}
+
+// /notes/ (azure): lines quoted verbatim from the posts, each linking to its post.
+const QUOTES = [
+  ['Taste is the new bottleneck, and it doesn\'t scale with headcount.', 'size-isnt-everything'],
+  ['AI can do the first draft. It can\'t do that stack. That\'s still on you.', 'the-formula-nobody-puts-on-a-resume'],
+  ['Fine is everywhere.', 'caring-too-much-is-underrated'],
+  ['The next great companies will look tiny. The big ones will look surprised.', 'size-isnt-everything'],
+];
+function notesPage(posts) {
+  const bySlug = new Map(posts.map((p) => [p.slug, p]));
+  const quotes = QUOTES.filter(([, s]) => bySlug.has(s)).map(([q, s]) => {
+    const p = bySlug.get(s);
+    return `<figure class="note"><blockquote><p>${esc(q)}</p></blockquote><figcaption><a href="${p.url}">${esc(p.title)}${ARROW_ICON}</a></figcaption></figure>`;
+  }).join('\n      ');
+  return layout({
+    title: `Notes · ${SITE.name}`,
+    description: SITE.journalDescription,
+    url: '/notes/',
+    current: 'notes',
+    expo: true,
+    body: band('notes', `${pageHead(PAGE.notes.n, 'Notes', 'Pulled from the posts.')}
+    <div class="notes" data-annot="Pulled from the posts">
+      ${quotes}
+    </div>`),
+  });
+}
+
+// /contact/ (cyan): the email on a matte-black panel, copy button and socials.
+function contactPage() {
+  return layout({
+    title: `Get in touch · ${SITE.name}`,
+    description: PAGE_DESC,
+    url: '/contact/',
+    current: 'contact',
+    expo: true,
+    body: band('contact', `${pageHead(PAGE.contact.n, 'Get in touch')}
+    <div class="panel contact-panel" data-annot="Say hello">
+      <span class="mono hp-k">Say hello</span>
+      <a class="contact-email" href="mailto:${SOCIAL.email}">${SOCIAL.email}</a>
+      <div class="sz-btns">${copyBtn('sz-btn sz-btn-pri')}${socialBtns('sz-btn sz-btn-ghost')}</div>
+    </div>`),
+  });
+}
+
+// / (neutral): the hero is a band like every other page: numbered head, the name as h1, the subline, then one
+// compact facts line and one entry card per menu page, each in that page's colour.
+const ENTRY_SUB = {
+  work: 'Two roles, one practice.',
+  about: "I'm a designer based just north of Atlanta, Georgia.",
+  notes: 'Pulled from the posts.',
+  journal: SITE.journalSubline,
+  contact: SOCIAL.email,
+};
+function homePage() {
+  const entries = PAGES.filter((p) => p.key !== 'home').map((p) => `<a class="entry entry-${EXT_FIELD[p.key]}" href="${p.href}">
+        <span class="mono entry-n">${p.n}</span>
+        <span class="entry-t">${esc(p.title)}</span>
+        <span class="entry-s">${esc(ENTRY_SUB[p.key])}</span>
+        <span class="entry-go" aria-hidden="true">${ARROW_ICON}</span>
+      </a>`).join('\n      ');
+  return layout({
+    title: `${SITE.name} · ${SUBLINE.replace(/\.$/, '')}`,
+    description: PAGE_DESC,
+    url: '/',
+    image: '/media/about/jason.jpg',
+    card: 'summary',
+    current: 'home',
+    expo: true,
+    body: band('home', `${pageHead('Designer · North of Atlanta, GA', esc(SITE.name), esc(SUBLINE))}
+    ${FACTS}
+    <div class="entries">
+      ${entries}
+    </div>`, ' sz-home'),
   });
 }
 
@@ -334,9 +502,11 @@ function redirectPage(to) {
 <link rel="canonical" href="${esc(url)}">
 <meta http-equiv="refresh" content="0; url=${esc(to)}">
 <script>${THEME_JS}</script>
+<script>${SEGUE_JS}</script>
 <script>location.replace(${JSON.stringify(to)} + location.search + location.hash);</script>
 <link rel="stylesheet" href="/assets/site.css">
-<style>body{color:var(--muted);font:15px Geist,system-ui,sans-serif;padding:28px}</style>
+<link rel="stylesheet" href="/assets/segue.css">
+<style>body{color:var(--muted);font:15px Inter,system-ui,sans-serif;padding:28px}</style>
 </head>
 <body>
 <p>This page has moved to <a href="${esc(to)}">${esc(url)}</a>.</p>
@@ -367,6 +537,10 @@ write('journal/feed.xml', feedXml);
 write('blog/index.html', redirectPage('/journal/'));
 for (const p of posts) write(`blog/${p.slug}/index.html`, redirectPage(p.url));
 write('blog/feed.xml', feedXml);
+write('index.html', homePage());
+write('work/index.html', workPage());
 write('about/index.html', aboutPage());
+write('notes/index.html', notesPage(posts));
+write('contact/index.html', contactPage());
 
 console.log(`Built ${posts.length} post(s) into ${path.relative(ROOT, OUT)}/`);
