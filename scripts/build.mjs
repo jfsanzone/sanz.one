@@ -1,7 +1,7 @@
 // Build the deployable site into _site/:
 //   - root files are copied byte-for-byte (favicon.svg, CNAME, .nojekyll); site-src/assets/ goes to /assets/
 //   - the menu pages are generated from the templates below, one full-bleed band each, in menu order:
-//     / (home, orange), /work/ (cobalt), /about/ (lilac), /notes/ (sky), /journal/ (neutral), /contact/ (volt)
+//     / (home, neutral), /work/ (cobalt), /about/ (lilac), /notes/ (sky), /journal/ (neutral), /contact/ (volt)
 //   - media/ is copied as-is (Pages CMS uploads land in media/journal)
 //   - content/posts/*.md is rendered to /journal/, /journal/<slug>/ and /journal/feed.xml
 //   - /blog/... (old URLs) are redirect pages to /journal/...; /blog/feed.xml is a copy of the journal feed
@@ -281,7 +281,7 @@ const postList = (posts, h) => posts.length
 // One band per menu page, all built the same way: a full-bleed colour field (hard edges, at least a screen tall
 // so every page transition moves a whole colour), the numbered section head with the page title as h1, the page's
 // content, and a link on to the next page in menu order. The bands are .ed-sec so Expo Mode can fold them.
-const EXT_FIELD = { home: 'orange', work: 'cobalt', about: 'lilac', notes: 'sky', journal: 'page', contact: 'volt' };
+const EXT_FIELD = { home: 'neutral', work: 'cobalt', about: 'lilac', notes: 'sky', journal: 'page', contact: 'volt' };
 const pageHead = (num, title, sub = '', extra = '') => `<header class="ed-head">
       <span class="ed-num mono">${num}</span>
       <h1 class="ed-title">${title}</h1>
@@ -465,7 +465,7 @@ function contactPage() {
   });
 }
 
-// / (orange): the hero is a band like every other page: numbered head, the name as h1, the subline, then the spec
+// / (neutral): the hero is a band like every other page: numbered head, the name as h1, the subline, then the spec
 // sticker and one entry card per menu page, each in that page's colour.
 const ENTRY_SUB = {
   work: 'Two roles, one practice.',
