@@ -1,6 +1,8 @@
 /* sanz.one · Notes. Archivo at product sizes; Big Shoulders only in the tiny lockup.
    Brand (round5/final/palette.json): Charcoal #1E1F1C, Stone #DCDDD8, Deep Olive #4F5A33, Light Olive #9AA86E, Rust #B8571E.
    Rust is only the symbol, and it sits on the charcoal tile, never against deep olive. Surfaces step by fill, never by 1px lines.
+   Dark surfaces sit below Charcoal, darkest first: bg2 #0B0C0A (sidebar) < bg #0F100E < pop #161714 < fill #181916 < tile #1A1B18 < fill2 #20211D.
+   Dark text on every dark surface: tx 13.0:1+, tx2 6.5:1+, link 6.3:1+ (AA).
    Theme: Auto follows the system; data-theme="light" | "dark" on <html> pins it (site-src/theme.js). */
 @font-face{font-family:Archivo;src:url(/assets/fonts/archivo-latin-wght.woff2) format("woff2");font-weight:400 700;font-display:swap}
 @font-face{font-family:"Big Shoulders";src:url(/assets/fonts/bigshoulders-800-caps.woff2) format("woff2");font-weight:800;font-display:block}
@@ -14,20 +16,20 @@
   --pop:#FBFBF9;--shadow:0 1px 2px rgba(30,31,28,.06),0 12px 40px rgba(30,31,28,.16);
   --focus:#4F5A33}
 :root[data-theme="dark"]{color-scheme:dark;
-  --bg:#1E1F1C;--bg2:#191A17;--fill:#292A26;--fill2:#33342F;
+  --bg:#0F100E;--bg2:#0B0C0A;--fill:#181916;--fill2:#20211D;
   --tx:#E6E7E2;--tx2:#A3A59D;
-  --link:#9AA86E;--btn:#9AA86E;--btntx:#1E1F1C;
-  --tile:#2A2B27;
+  --link:#9AA86E;--btn:#9AA86E;--btntx:#0F100E;
+  --tile:#1A1B18;
   --ph:#343A27;--phtx:#C9D3A4;
-  --pop:#262723;--shadow:0 1px 2px rgba(0,0,0,.3),0 16px 48px rgba(0,0,0,.5);
+  --pop:#161714;--shadow:0 1px 2px rgba(0,0,0,.3),0 16px 48px rgba(0,0,0,.5);
   --focus:#9AA86E}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
-  --bg:#1E1F1C;--bg2:#191A17;--fill:#292A26;--fill2:#33342F;
+  --bg:#0F100E;--bg2:#0B0C0A;--fill:#181916;--fill2:#20211D;
   --tx:#E6E7E2;--tx2:#A3A59D;
-  --link:#9AA86E;--btn:#9AA86E;--btntx:#1E1F1C;
-  --tile:#2A2B27;
+  --link:#9AA86E;--btn:#9AA86E;--btntx:#0F100E;
+  --tile:#1A1B18;
   --ph:#343A27;--phtx:#C9D3A4;
-  --pop:#262723;--shadow:0 1px 2px rgba(0,0,0,.3),0 16px 48px rgba(0,0,0,.5);
+  --pop:#161714;--shadow:0 1px 2px rgba(0,0,0,.3),0 16px 48px rgba(0,0,0,.5);
   --focus:#9AA86E}}
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}

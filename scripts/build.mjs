@@ -248,7 +248,7 @@ ${noindex ? '<meta name="robots" content="noindex">\n' : `<link rel="canonical" 
 <link rel="expect" href="#sz-end" blocking="render">
 ${specRules()}
 <meta name="theme-color" content="#ECECE8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#191A17" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#0B0C0A" media="(prefers-color-scheme: dark)">
 <meta property="og:site_name" content="${esc(SITE.name)}">
 <meta property="og:type" content="${ogType}">
 <meta property="og:title" content="${esc(title)}">
